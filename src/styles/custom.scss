@@ -6,41 +6,107 @@ PLIK: styles/custom.scss (importowany w komponencie)
 @import "./variables";
 @import "./mixins";
 
-
+/* --- Tekst/brand/linki --- */
 .brand { @apply font-bold; }
-.link { @apply hover:text-indigo-600; }
+.link { @apply text-slate-700 hover:text-indigo-600 transition-colors; }
 
-
-.btn { @include btn-base; border: 1px solid theme("colors.slate.300"); }
+/* --- Przyciski --- */
+.btn { 
+  @include btn-base; 
+  @apply border border-slate-300 bg-white text-slate-900 hover:bg-slate-50;
+}
 .btn-primary {
-@extend .btn;
-background: $primary;
-color: #fff;
-&:hover { background: $primary-500; }
+  @extend .btn;
+  background: $primary;
+  color: #fff;
+  &:hover { background: $primary-500; }
 }
-.btn-ghost { @extend .btn; background: transparent; }
+.btn-ghost { 
+  @extend .btn; 
+  @apply bg-transparent hover:bg-slate-100;
+}
 
+/* --- Nagłówki/sekcje --- */
+.section-title { @apply text-3xl md:text-4xl font-extrabold tracking-tight; }
 
-.section-title { @apply text-3xl font-bold tracking-tight; }
-
-
-.card { @include card; }
+/* --- Karty/miniatury --- */
+.card { 
+  @include card; 
+  @apply transition-transform hover:-translate-y-0.5;
+}
 .card-title { @apply mt-4 text-lg font-semibold; }
+
 .thumb {
-aspect-ratio: 16/9;
-border-radius: $radius-2xl;
-background: linear-gradient(135deg, #eef2ff, #fae8ff);
-display: grid; place-items: center; color: $text-muted; font-size: .9rem;
+  aspect-ratio: 16/9;
+  border-radius: $radius-2xl;
+  background: linear-gradient(135deg, #eef2ff, #fae8ff);
+  display: grid; place-items: center;
+  color: $text-muted; font-size: .9rem;
 }
 
+/* --- Chip/tag (do listy technologii) --- */
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-700 bg-white;
+}
 
+/* --- Avatar/wyliczenia --- */
 .avatar { height: 20rem; border-radius: 1rem; background: linear-gradient(135deg,#c7d2fe,#f5d0fe); }
 .bullet { @apply flex items-center gap-2 text-sm; }
 .bullet::before { content: ""; width: .375rem; height: .375rem; border-radius: 9999px; background: $primary-600; display: inline-block; }
 
-
+/* --- Tła/gradienty --- */
 .gradient-surface { background: linear-gradient(180deg,#eef2ff, #ffffff 40%, #ffffff); }
 
-
+/* --- Formularz --- */
 .label { @apply block text-sm font-medium text-slate-700; }
-.input, .textarea { @apply mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500; }
+.input, .textarea { 
+  @apply mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 outline-none 
+         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white;
+}
+
+/* --- (opcjonalnie) rytm pionowy sekcji, gdy nie używasz utility w JSX --- */
+/* .section { @apply py-20 md:py-28; } */
+
+
+/* HEADER BASE — bez pozycjonowania (to masz w TSX) */
+.site-header {
+  @apply transition-colors duration-300; /* żadnego fixed/sticky/z-index tutaj */
+  height: 3.5rem; /* = h-14, pasuje do nav */
+  background: #0f172a; /* slate-900 */
+
+  .brand { @apply text-white text-xl font-bold tracking-tight; }
+
+  .nav-link { 
+    @apply text-slate-100 hover:text-white transition-colors;
+  }
+
+  .nav-btn {
+    @apply px-4 py-2 rounded-xl font-semibold transition-colors;
+    background: white; 
+    color: black;
+    &:hover { @apply bg-slate-200; }
+    &:focus-visible { @apply outline-none ring-2 ring-offset-2 ring-slate-300; }
+  }
+}
+
+/* SCROLLED — biały header + czarne litery + czarny przycisk */
+.site-header.scrolled {
+  @apply bg-white border-b shadow-sm;
+
+  .brand { @apply text-slate-900; }
+
+  .nav-link { 
+    @apply text-slate-800 hover:text-black;
+  }
+
+  .nav-btn {
+    background: black; 
+    color: white;
+    &:hover { background: #1e293b; } /* slate-800 */
+    &:focus-visible { @apply outline-none ring-2 ring-offset-2 ring-slate-400; }
+  }
+}
+
+/* (opcjonalnie) drobna korekta klikalnego obszaru */
+.site-header .nav-link,
+.site-header .nav-btn { @apply leading-none; }
