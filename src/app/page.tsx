@@ -1,161 +1,162 @@
 'use client';
 
-import "@/styles/custom.scss"; // <- SCSS aktywne (zamień na "@/styles/custom.less" jeśli chcesz LESS)
-import "@/styles/_mixins.scss"; 
-import "@/styles/_variables.scss"; 
+import "@/styles/custom.scss";
 import { motion } from "framer-motion";
+import Header from "@/app/_components/Header";
+import "@/styles/custom.scss";
+import Image from "next/image";
+
+
+
+import dynamic from "next/dynamic";
+const ContactForm = dynamic(() => import("@/app/_components/ContactForm"), { ssr: false });
 
 
 export default function OnePager() {
-return (
-<div className="min-h-screen bg-white text-slate-900">
-{/* NAV */}
-  <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/70 border-b">
-    <nav className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-      <a href="#home" className="brand text-xl tracking-tight">Przemysław Pietrzak</a>
-      <div className="hidden sm:flex items-center gap-6 text-sm">
-        <a className="link" href="#portfolio">Portfolio</a>
-        <a className="link" href="#about">O mnie</a>
-        <a className="link" href="#contact">Kontakt</a>
-      </div>
-      <a href="#contact" className="btn btn-primary">Napisz do mnie</a>
-    </nav>
-  </header>
+  return (
+    <>
+      {/* NAV */}
+      <Header />
 
 
-{/* HERO */}
-  <section id="home" className="relative overflow-hidden">
-    <div className="absolute inset-0 -z-10 gradient-surface" />
-      <div className="mx-auto max-w-6xl px-4 py-24 sm:py-28 lg:py-32">
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="heading-hero"
-          >
-          Prawnik & Developer
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.05 }}
-          className="mt-4 max-w-2xl text-lg text-slate-600"
-          >
-          Buduję nowoczesne aplikacje webowe (Next.js, Laravel) i systemy AI offline. Łączę warsztat prawniczy z technologią.
-        </motion.p>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-        <a href="#portfolio" className="btn btn-primary">Zobacz projekty</a>
-        <a href="#contact" className="btn btn-ghost">Skontaktuj się</a>
+
+      <main className="pt-14 bg-white text-slate-900">
+        {/* HERO */}
+        <section id="home" className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white">
+          <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-2xl bg-indigo-200/60 blur-xl" />
+          <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
+          <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight"
+              >
+                Prawnik & Web Developer
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.05 }}
+                className="mt-5 max-w-prose text-lg text-slate-600"
+              >
+                Buduję nowoczesne aplikacje webowe (Next.js, Laravel) i systemy AI offline. Łączę warsztat prawniczy z technologią.
+              </motion.p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a href="#portfolio" className="btn btn-primary">Zobacz projekty</a>
+                <a href="#contact" className="btn btn-ghost">Skontaktuj się</a>
+              </div>
+            </div>
+
+          <div className="relative">
+            <div className="aspect-[4/3] rounded-2xl bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+              <Image
+                src="/images/ja.jpeg"
+                alt="Przemysław Pietrzak"
+                fill
+                className="object-cover object-top"
+                priority
+              />
+            </div>
+          </div>
+          </div>
+        </section>
+        {/* PORTFOLIO */}
+        <section id="portfolio" className="py-20 md:py-28">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="section-title">Portfolio</h2>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  title: "AI Offline Stack",
+                  desc: "Ollama + Whisper + WebUI; prywatne przetwarzanie lokalne.",
+                  tags: ["Docker", "LLM", "Whisper"],
+                  link: "#",
+                },
+                {
+                  title: "CASN Next.js",
+                  desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
+                  tags: ["Next.js", "Prisma", "MySQL"],
+                  link: "#",
+                },
+                {
+                  title: "Panel Kancelarii",
+                  desc: "System do obsługi klientów kancelarii (sprawy, dokumenty, komunikacja).",
+                  tags: ["Laravel", "Livewire", "Docker"],
+                  link: "#",
+                },
+              ].map((p, i) => (
+                <motion.a
+                  key={p.title}
+                  href={p.link}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="card group"
+                >
+                  <div className="thumb">Podgląd</div>
+                  <h3 className="card-title group-hover:text-indigo-700">{p.title}</h3>
+                  <p className="mt-1 text-sm text-slate-600">{p.desc}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {p.tags.map((t) => (
+                      <span key={t} className="chip">{t}</span>
+                    ))}
+                  </div>
+                </motion.a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ABOUT */}
+        <section id="about" className="bg-slate-50">
+          <div className="mx-auto max-w-6xl px-4 py-20 md:py-28 grid gap-10 lg:grid-cols-5 lg:items-center">
+            <div className="lg:col-span-2">
+              <div className="avatar" />
+            </div>
+            <div className="lg:col-span-3">
+              <h2 className="section-title">O mnie</h2>
+              <p className="mt-4 text-slate-700 leading-7">
+                Jestem prawnikiem specjalizującym się w prawie UE i prawach człowieka oraz developerem budującym nowoczesne aplikacje webowe. 
+                Łączę analityczne podejście z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker oraz integracje z modelami AI.
+              </p>
+              <ul className="mt-8 grid gap-3 sm:grid-cols-2 text-sm text-slate-700">
+                {["Next.js / React", "Laravel / PHP", "Prisma / SQL", "Docker / CI"].map((i) => (
+                  <li key={i} className="bullet">{i}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* CONTACT */}
+
+        <section id="contact" className="py-20 md:py-28">
+          <div className="mx-auto max-w-3xl px-4">
+            <h2 className="section-title">Kontakt</h2>
+            <ContactForm />
+          </div>
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="border-t">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} Przemysław Pietrzak</p>
+          <div className="flex items-center gap-4">
+            <a className="link" href="#">GitHub</a>
+            <a className="link" href="#">LinkedIn</a>
+            <a className="link" href="#">E-mail</a>
+          </div>
         </div>
-      </div>
-  </section>
+      </footer>
 
-
-{/* PORTFOLIO */}
-<section id="portfolio" className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-  <h2 className="section-title">Portfolio</h2>
-  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {[
-      {
-        title: "AI Offline Stack",
-        desc: "Ollama + Whisper + WebUI; prywatne przetwarzanie lokalne.",
-        tags: ["Docker", "LLM", "Whisper"],
-        link: "#",
-      },
-      {
-        title: "CASN Next.js",
-        desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
-        tags: ["Next.js", "Prisma", "MySQL"],
-        link: "#",
-      },
-      {
-        title: "Panel Kancelarii",
-        desc: "System do obsługi klientów kancelarii (sprawy, dokumenty, komunikacja).",
-        tags: ["Laravel", "Livewire", "Docker"],
-        link: "#",
-      },
-    ].map((p, i) => (
-      <motion.a
-        key={p.title}
-        href={p.link}
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.4, delay: i * 0.05 }}
-        className="card group"
-      >
-        <div className="thumb">Podgląd</div>
-        <h3 className="card-title group-hover:text-indigo-700">{p.title}</h3>
-        <p className="mt-1 text-sm text-slate-600">{p.desc}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {p.tags.map((t) => (
-            <span key={t} className="chip">{t}</span>
-          ))}
-        </div>
-      </motion.a>
-    ))}
-  </div>
-</section>
-
-
-
-{/* ABOUT */}
-<section id="about" className="bg-slate-50">
-<div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
-<div className="lg:col-span-2">
-<div className="avatar" />
-</div>
-<div className="lg:col-span-3">
-<h2 className="section-title">O mnie</h2>
-<p className="mt-3 text-slate-700 leading-relaxed">
-Jestem prawnikiem specjalizującym się w prawie UE i prawach człowieka oraz developerem budującym nowoczesne aplikacje webowe. Łączę analityczne podejście z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker oraz integracje z modelami AI.
-</p>
-<ul className="mt-6 grid gap-3 sm:grid-cols-2">
-{["Next.js / React", "Laravel / PHP", "Prisma / SQL", "Docker / CI"].map((i) => (
-<li key={i} className="bullet">{i}</li>
-))}
-</ul>
-</div>
-</div>
-</section>
-
-
-{/* CONTACT */}
-<section id="contact" className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
-<h2 className="section-title">Kontakt</h2>
-<p className="mt-2 text-slate-600">Napisz wiadomość – odpowiem możliwie szybko.</p>
-<form onSubmit={(e) => e.preventDefault()} className="mt-8 grid gap-4">
-<div>
-<label className="label">Imię</label>
-<input className="input" placeholder="Twoje imię" />
-</div>
-<div>
-<label className="label">E‑mail</label>
-<input type="email" className="input" placeholder="you@example.com" />
-</div>
-<div>
-<label className="label">Wiadomość</label>
-<textarea rows={5} className="textarea" placeholder="Jak mogę pomóc?" />
-</div>
-<button className="btn btn-primary mt-2">Wyślij</button>
-</form>
-</section>
-
-
-{/* FOOTER */}
-<footer className="border-t">
-<div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
-<p>© {new Date().getFullYear()} Przemysław Pietrzak</p>
-<div className="flex items-center gap-4">
-<a className="link" href="#">GitHub</a>
-<a className="link" href="#">LinkedIn</a>
-<a className="link" href="#">E‑mail</a>
-</div>
-</div>
-</footer>
-</div>
-);
+    </>
+  );
 }
+
 
 /*
 import Image from "next/image";
