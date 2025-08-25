@@ -26,16 +26,16 @@ export default function OnePager() {
           <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
           <div className="relative">
-            <div className="aspect-[4/3] rounded-2xl bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+            <div className="aspect-[4/3] overflow-hidden">
               <Image
-                src="/images/ja.jpeg"
+                src="/images/PP-2-JPG-01.webp"
                 alt="Przemysław Pietrzak"
                 fill
-                className="object-cover object-top"
+                className="object-cover"
                 priority
               />
             </div>
-             </div>
+          </div>
      <div>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
@@ -43,7 +43,7 @@ export default function OnePager() {
                 transition={{ duration: 0.6 }}
                 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight"
               >
-                Prawnik & Web Developer
+                Next.js & PHP Web Developer
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 12 }}
@@ -54,8 +54,8 @@ export default function OnePager() {
                 Buduję nowoczesne aplikacje webowe (Next.js, Laravel) i systemy AI offline. Łączę warsztat prawniczy z technologią.
               </motion.p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <a href="#portfolio" className="btn btn-primary">Zobacz projekty</a>
-                <a href="#contact" className="btn btn-ghost">Skontaktuj się</a>
+                <a href="#portfolio" className="btn btn-primary border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Zobacz projekty</a>
+                <a href="#contact" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Skontaktuj się</a>
               </div>
             </div>
 
@@ -66,65 +66,109 @@ export default function OnePager() {
 {/* PORTFOLIO */}
 <section id="portfolio" className="py-20 md:py-28">
   <div className="mx-auto max-w-6xl px-4">
-    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Portfolio</h2>
+    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">Portfolio</h2>
 
-    <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      {[
-        {
-          title: "AI Offline Stack",
-          desc: "Ollama + Whisper + WebUI; prywatne przetwarzanie lokalne.",
-          tags: ["Docker", "LLM", "Whisper"],
-          img: "/portfolio/ai-offline.jpg",
-          newTech: false,
-        },
-        {
-          title: "CASN Next.js",
-          desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
-          tags: ["Next.js", "Prisma", "MySQL"],
-          img: "/portfolio/casn-next.jpg",
-          newTech: true,
-        },
-        {
-          title: "Panel Kancelarii",
-          desc: "System do obsługi klientów kancelarii (sprawy, dokumenty, komunikacja).",
-          tags: ["Laravel", "Livewire", "Docker"],
-          img: "/portfolio/panel-kancelaria.jpg",
-          newTech: false,
-        },
-      ].map((p) => (
-        <article key={p.title} className="card group">
-          {/* ZDJĘCIE */}
-          <div className="relative overflow-hidden rounded-xl">
-            <Image
-              src={p.img}
-              alt={p.title}
-              width={800}
-              height={600}
-              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            />
-            {p.newTech && (
-              <span className="badge">Nowa technologia</span>
-            )}
-          </div>
+    <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+      {// 1) Dane projektów – dodaj href
+[
+  {
+    title: "CASN Laravel",
+    href: "https://casn.pl", // <— NOWE
+    desc: "Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting.",
+    tags: ["Laravel", "PHP", "Blade", "Github", "Bootstrap"],
+    img: "/images/logo.jpg",
+    isLogo: true,
+    newTech: false,
+  },
+  {
+    title: "CASN Next.js",
+    href: "https://casnnext.example.com",
+    desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
+    tags: ["Next.js", "Prisma", "MySQL", "Typescript", "Markdown", "Github"],
+    img: "/images/logo.jpg",
+    isLogo: true,
+    newTech: false,
+  },
+  {
+    title: "Mazowieści",
+    href: "https://mazowiesci.pl",
+    desc:
+      "Przeprowadziłem pełną migrację serwisu informacyjnego z WIX do WordPress. Zautomatyzowałem ekstrakcję artykułów z pomocą Python (Scrapy) i zaimportowałem treści do bazy danych WordPress. Stworzyłem niestandardowe skrypty PHP do integracji danych, wdrożyłem politykę optymalizacji SEO, przebudowałem menu i system tagów. Zoptymalizowałem szybkość strony i poprawiłem jej pozycję w Google.",
+    tags: ["Python (Scrapy)", "WordPress", "PHP", "HTML", "CSS", "REST API", "SEO"],
+    img: "/images/mazo.png",
+    isLogo: true,
+    newTech: false,
+  },
+  {
+    title: "Strona Wizytówka",
+    href: "https://twoj-link-do-wizytowki.example.com",
+    desc: "One-pager w Next.js z Tailwind i Sass.",
+    tags: ["Next.js", "Tailwind", "Sass"],
+    img: "/images/PP-2-JPG-01.webp",
+    isLogo: true,
+    newTech: false,
+  },
+  {
+    title: "Fundacja Służba Niepodległej",
+    href: "https://twoj-link-android.example.com",
+    desc: "Administrowałem i rozwijałem stronę fundacji opartą na WordPress. Wdrażałem nowe podstrony, strategię treści SEO.",
+    tags: ["WordPress", "PHP", "CSS", "HTML", "Google Search Console", "SEO"],
+    img: "/images/logo-sluzba-niepodleglej.png",
+    isLogo: true,
+    newTech: false,
+  },
 
-          {/* TYTUŁ + OPIS */}
-          <h3 className="card-title group-hover:text-indigo-700">{p.title}</h3>
-          <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
+      ].map((p) => {
+  const imgClasses = p.isLogo ? "object-contain bg-white p-6" : "object-cover";
+  return (
+<article key={p.title} className="card group flex flex-col h-full text-center">
+  {/* MEDIA: stała wysokość = równe karty */}
+  <div className="relative overflow-hidden rounded-xl h-64 sm:h-72 lg:h-80">
+    <Image
+      src={p.img}
+      alt={p.title}
+      fill
+      className={`${imgClasses} transition-transform duration-500 group-hover:scale-[1.02]`}
+      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+    />
+    {p.newTech && <span className="badge">Nowa technologia</span>}
+  </div>
 
-          {/* TECHNOLOGIE */}
-          <div className="mt-4">
-            <div className="tech-label">Technologie</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {p.tags.map((t) => (
-                <span key={t} className="chip">{t}</span>
-              ))}
-            </div>
-          </div>
-        </article>
+  {/* TYTUŁ */}
+<h3 className="mt-4 text-lg font-bold">
+  <a
+    href={p.href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group/link underline-offset-4 hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-sm"
+  >
+    {p.title}
+  </a>
+</h3>
+
+  {/* OPIS */}
+<p className="mt-2 text-sm text-slate-600">
+  {p.desc}
+</p>
+  {/* TECHNOLOGIE */}
+  <div className="mt-4">
+    <div className="font-semibold text-slate-800">Technologie</div>
+    <div className="mt-2 flex flex-wrap justify-center gap-2">
+      {p.tags.map((t) => (
+        <span key={t} className="chip">{t}</span>
       ))}
     </div>
   </div>
+</article>
+
+
+        );
+      })}
+    </div>
+  </div>
 </section>
+
+
 
 
         {/* ABOUT */}
@@ -132,8 +176,15 @@ export default function OnePager() {
   <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
     
     {/* Avatar */}
-    <div className="lg:col-span-2">
-      <div className="avatar" />
+    <div className="lg:col-span-2 flex justify-center">
+      <Image
+        src="/portfolio/ai-offline.jpg"   // ścieżka względem public/
+        alt="Przemysław Pietrzak"
+        width={240}                 // docelowa szerokość
+        height={240}                // docelowa wysokość
+        className="rounded-full shadow-lg object-cover"
+        priority                    // szybsze ładowanie
+      />
     </div>
 
     {/* Tekst */}
@@ -180,9 +231,8 @@ export default function OnePager() {
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} Przemysław Pietrzak</p>
           <div className="flex items-center gap-4">
-            <a className="link" href="#">GitHub</a>
-            <a className="link" href="#">LinkedIn</a>
-            <a className="link" href="#">E-mail</a>
+            <a className="link" href="https://github.com/przemekp95">GitHub</a>
+            <a className="link" href="https://www.linkedin.com/in/przemyslaw-pietrzak/">LinkedIn</a>
           </div>
         </div>
       </footer>

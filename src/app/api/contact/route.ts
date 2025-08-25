@@ -1,35 +1,72 @@
-import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+// app/api/contact/route.ts
+import { NextRequest } from "next/server";
 
-export async function POST(req: Request) {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs"; // weryfikacja captcha + e-mail poza Edge jest prostsza
+
+type Body = {
+  name?: string | null;
+  email?: string | null;
+  message?: string | null;
+  captchaToken?: string | null;
+  website?: string | null; // honeypot (jeśli przesyłasz z frontu)
+};
+
+export async function POST(req: NextRequest) {
   try {
-    const { name, email, message } = await req.json();
+    const body = (await req.json()) as Body;
 
-    if (!name || !email || !message) {
-      return NextResponse.json({ ok: false, error: "Missing fields" }, { status: 400 });
+    // Honeypot
+    if (body.website) {
+      return Response.json({ ok: true }, { status: 200 });
     }
 
-    // konfiguracja transportu SMTP (Zoho)
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.eu",
-      port: 465,
-      secure: true, // SSL/TLS
-      auth: {
-        user: process.env.ZOHO_USER, // np. contact@pplegalsolutions.pl
-        pass: process.env.ZOHO_PASS, // hasło aplikacyjne / IMAP/SMTP
-      },
+    // Walidacje podstawowe
+    if (!body.name || !body.email || !body.message) {
+      return Response.json({ ok: false, error: "Missing fields" }, { status: 400 });
+    }
+
+    // 1) Weryfikacja hCaptcha
+    if (!body.captchaToken) {
+      return Response.json({ ok: false, error: "Missing captcha token" }, { status: 400 });
+    }
+
+    const secret = process.env.HCAPTCHA_SECRET;
+    if (!secret) {
+      return Response.json({ ok: false, error: "Server captcha misconfig" }, { status: 500 });
+    }
+
+    const verifyRes = await fetch("https://hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret,
+        response: body.captchaToken,
+      }),
+      // opcjonalnie: next: { revalidate: 0 }
     });
 
-    await transporter.sendMail({
-      from: `"Formularz kontaktowy" <${process.env.ZOHO_USER}>`,
-      to: "p.pietrzak@sluzbaniepodleglej.pl", // odbiorca
-      subject: `Nowa wiadomość od ${name}`,
-      text: `Email: ${email}\n\nWiadomość:\n${message}`,
-    });
+    const verifyJson = await verifyRes.json() as {
+      success: boolean;
+      "error-codes"?: string[];
+      hostname?: string;
+      challenge_ts?: string;
+      score?: number;
+    };
 
-    return NextResponse.json({ ok: true });
+    if (!verifyJson.success) {
+      return Response.json(
+        { ok: false, error: `Captcha failed${verifyJson["error-codes"] ? `: ${verifyJson["error-codes"].join(", ")}` : ""}` },
+        { status: 400 }
+      );
+    }
+
+    // 2) …wyślij e-mail (EmailJS / nodemailer / API zewn.)
+    // PRZYKŁAD (pseudo):
+    // await sendEmail({ name: body.name, email: body.email, message: body.message });
+
+    return Response.json({ ok: true }, { status: 200 });
   } catch (err: any) {
-    console.error("Mail error:", err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    return Response.json({ ok: false, error: err?.message || "Server error" }, { status: 500 });
   }
 }

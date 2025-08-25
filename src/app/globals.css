@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* Płynne przewijanie globalnie */
+html { scroll-behavior: smooth; }
+
+/* Szacunek dla osób z reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Kompensacja sticky headera — dostosuj 96px do realnej wysokości */
+section[id], [data-anchor] {
+  scroll-margin-top: 96px;
+}
