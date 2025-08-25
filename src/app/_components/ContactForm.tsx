@@ -44,10 +44,12 @@ export default function ContactForm() {
       hcaptchaRef.current?.resetCaptcha();
       setStatus("sent");
       setTimeout(() => setStatus("idle"), 5000);
-    } catch (err: any) {
-      setStatus("error");
-      setErrText(err?.message || "Unknown error");
-    }
+    } catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : "Unknown error";
+  setStatus("error");
+  setErrText(msg);
+}
+
   };
 
   return (

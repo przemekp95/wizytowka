@@ -1,5 +1,6 @@
 // app/api/contact/route.ts
 import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs"; // weryfikacja captcha + e-mail poza Edge jest prostsza
@@ -66,7 +67,8 @@ export async function POST(req: NextRequest) {
     // await sendEmail({ name: body.name, email: body.email, message: body.message });
 
     return Response.json({ ok: true }, { status: 200 });
-  } catch (err: any) {
-    return Response.json({ ok: false, error: err?.message || "Server error" }, { status: 500 });
-  }
+  } catch (err: unknown) {
+  const msg = err instanceof Error ? err.message : "Unexpected server error";
+  return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+}
 }
