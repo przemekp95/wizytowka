@@ -5,6 +5,7 @@ PLIK: styles/custom.scss (importowany w komponencie)
 @use "sass:color";
 @use "./variables" as *;
 @use "./mixins" as *;
+@use "tailwindcss";   
 
 
 /* --- Tekst/brand/linki --- */
@@ -12,19 +13,21 @@ PLIK: styles/custom.scss (importowany w komponencie)
 .link { @apply text-slate-700 hover:text-indigo-600 transition-colors; }
 
 /* --- Przyciski --- */
-.btn { 
-  @include btn-base; 
-  @apply border border-slate-300 bg-white text-slate-900 hover:bg-slate-50;
+.btn {
+  @include btn-base;
+  @apply inline-flex items-center justify-center
+         rounded-lg
+         border border-slate-300
+         px-5 py-3                 /* <-- 1.25rem x .75rem */
+         font-medium shadow-sm
+         transition-colors
+         bg-white text-slate-900 hover:bg-slate-50
+         focus:outline-none focus:border-indigo-500;
 }
+.btn-ghost { @extend .btn; @apply bg-transparent hover:bg-slate-100; }
 .btn-primary {
-  @extend .btn;
-  background: $primary;
-  color: #fff;
+  @extend .btn; background: $primary; color:#fff;
   &:hover { background: $primary-500; }
-}
-.btn-ghost { 
-  @extend .btn; 
-  @apply bg-transparent hover:bg-slate-100;
 }
 
 /* --- Nagłówki/sekcje --- */

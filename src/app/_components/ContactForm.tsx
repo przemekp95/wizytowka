@@ -1,106 +1,151 @@
 'use client';
 
-import { useRef, useState } from "react";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
+import { useEffect, useRef, useState } from 'react';
 
-type Status = "idle" | "sending" | "sent" | "error";
+type HCaptchaSize = 'invisible' | 'normal' | 'compact';
+type HCaptchaTheme = 'light' | 'dark';
+type HCaptchaRenderOptions = {
+  sitekey: string;
+  size?: HCaptchaSize;
+  theme?: HCaptchaTheme;
+  callback?: (token: string) => void;
+  'error-callback'?: () => void;
+  'expired-callback'?: () => void;
+};
 
-export default function ContactForm() {
-  const [status, setStatus] = useState<Status>("idle");
-  const [errText, setErrText] = useState("");
-  const hcaptchaRef = useRef<HCaptcha>(null);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus("sending");
-    setErrText("");
-
-    // zamiast wysyłać od razu → odpal captcha
-    hcaptchaRef.current?.execute();
-  };
-
-  const handleVerify = async (token: string) => {
-    try {
-      // zbierz dane z formularza
-      const form = document.querySelector("form") as HTMLFormElement;
-      const fd = new FormData(form);
-
-      const payload = {
-        name: fd.get("name"),
-        email: fd.get("email"),
-        message: fd.get("message"),
-        captchaToken: token,
-      };
-
-      const r = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await r.json();
-      if (!r.ok || !data.ok) throw new Error(data?.error || "Email send failed");
-
-      form.reset();
-      hcaptchaRef.current?.resetCaptcha();
-      setStatus("sent");
-      setTimeout(() => setStatus("idle"), 5000);
-    } catch (err: unknown) {
-  const msg = err instanceof Error ? err.message : "Unknown error";
-  setStatus("error");
-  setErrText(msg);
+declare global {
+  interface Window {
+    hcaptcha?: {
+      render: (el: string | HTMLElement, opts: HCaptchaRenderOptions) => number;
+      execute: (id?: number) => void;
+      reset: (id?: number) => void;
+    };
+  }
 }
 
-  };
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+
+const CAPTCHA_ENABLED = process.env.NEXT_PUBLIC_CAPTCHA_ENABLED === '1';
+const SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!; // używane tylko gdy CAPTCHA_ENABLED
+
+export default function ContactForm() {
+  const [status, setStatus] = useState<Status>('idle');
+  const [err, setErr] = useState('');
+  const widgetIdRef = useRef<number | null>(null);
+  const resolverRef = useRef<((t: string) => void) | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scriptReady, setScriptReady] = useState(!CAPTCHA_ENABLED); // jeśli captcha off → od razu "ready"
+
+  // Ładuj skrypt hCaptcha tylko gdy włączona
+  useEffect(() => {
+    if (!CAPTCHA_ENABLED) return;
+    if (window.hcaptcha) {
+      setScriptReady(true);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://js.hcaptcha.com/1/api.js?hl=pl';
+    s.async = true;
+    s.defer = true;
+    s.onload = () => setScriptReady(true);
+    document.head.appendChild(s);
+  }, []);
+
+  // Renderuj widget tylko gdy włączona
+  useEffect(() => {
+    if (!CAPTCHA_ENABLED) return;
+    if (!scriptReady || !containerRef.current || !window.hcaptcha) return;
+    if (widgetIdRef.current !== null) return;
+    widgetIdRef.current = window.hcaptcha.render(containerRef.current, {
+      sitekey: SITEKEY,
+      size: 'invisible',
+      callback: (token: string) => {
+        resolverRef.current?.(token);
+        resolverRef.current = null;
+      },
+      'error-callback': () => {
+        setErr('Captcha error');
+        setStatus('error');
+      },
+    });
+  }, [scriptReady]);
+
+  function getCaptchaToken(): Promise<string | null> {
+    if (!CAPTCHA_ENABLED) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      resolverRef.current = resolve;
+      if (window.hcaptcha && widgetIdRef.current !== null) {
+        window.hcaptcha.execute(widgetIdRef.current);
+      }
+    });
+  }
+
+const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const form = e.currentTarget; // <— ZŁAPIEMY REFERENCJĘ NA STARcie
+  setStatus('sending');
+  setErr('');
+
+  try {
+    const fd = new FormData(form);
+    const token = await getCaptchaToken();
+
+    const r = await fetch('/contact.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: fd.get('name'),
+        email: fd.get('email'),
+        message: fd.get('message'),
+        ...(CAPTCHA_ENABLED ? { captchaToken: token } : {}),
+        website: '',
+      }),
+    });
+
+    const data: { ok?: boolean; error?: string } = await r.json();
+    if (!r.ok || !data?.ok) throw new Error(data?.error || 'Send failed');
+
+    setStatus('sent');
+    form.reset(); // <— UŻYWAMY ZŁAPANEJ REFERENCJI
+    if (CAPTCHA_ENABLED && window.hcaptcha && widgetIdRef.current !== null) {
+      window.hcaptcha.reset(widgetIdRef.current);
+    }
+    setTimeout(() => setStatus('idle'), 4000);
+  } catch (er: unknown) {
+    setErr(er instanceof Error ? er.message : 'Błąd');
+    setStatus('error');
+  }
+};
+
 
   return (
-    <form className="contact-card" onSubmit={handleSubmit} noValidate>
-      {/* hCaptcha (invisible) */}
-      <HCaptcha
-        ref={hcaptchaRef}
-        sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
-        size="invisible"
-        onVerify={handleVerify}
-        onError={() => {
-          setStatus("error");
-          setErrText("Captcha error");
-        }}
-      />
+    <form onSubmit={onSubmit} className="space-y-4">
+      {/* Kontener dla hCaptcha tylko gdy włączona */}
+      {CAPTCHA_ENABLED && <div ref={containerRef} className="hidden" />}
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="field-floating">
-          <input id="name" name="name" type="text" placeholder="Imię i nazwisko" className="input-floating peer border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required />
-          <label htmlFor="name" className="label-floating"></label>
-        </div>
-        <div className="field-floating">
-          <input id="email" name="email" type="email" placeholder="E-mail" className="input-floating peer border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required />
-          <label htmlFor="email" className="label-floating"></label>
-        </div>
+      {/* honeypot */}
+      <div className="hidden">
+        <input type="text" name="website" autoComplete="off" />
       </div>
 
-      <div className="field-floating mt-6">
-        <textarea id="message" name="message" placeholder="Wiadomość" rows={6} className="input-floating peer resize-none w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required />
-        <label htmlFor="message" className="label-floating"></label>
-      </div>
+      <input name="name" required placeholder="Imię i nazwisko" className="w-full border rounded px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
+      <input name="email" type="email" required placeholder="E-mail" className="w-full border rounded px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
+      <textarea name="message" required placeholder="Wiadomość" className="w-full border rounded px-3 py-2 h-32 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
 
-      <div className="flex flex-col items-center">
-        <button
-          type="submit"
-          disabled={status === "sending"}
-          className="mt-8 w-full sm:w-auto rounded-xl px-6 py-3 font-semibold text-white bg-black shadow-lg transition duration-200 hover:bg-slate-800 hover:scale-105 disabled:opacity-50"
-        >
-          {status === "sending" ? "Wysyłanie…" : "Wyślij wiadomość"}
-        </button>
+<div className="text-center mt-6">
 
-        <p className="mt-4 text-sm" aria-live="polite" role="status">
-          {status === "sent" && <span className="text-green-600">✅ Wiadomość wysłana!</span>}
-          {status === "error" && (
-            <span className="text-red-600">
-              ❌ Błąd – spróbuj ponownie.
-              <span className="block text-xs opacity-70 mt-1">{errText}</span>
-            </span>
-          )}
-        </p>
-      </div>
+      <button
+        type="submit"
+        disabled={status === 'sending' || !scriptReady}
+        className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+      >
+        {status === 'sending' ? 'Wysyłanie…' : 'Wyślij'}
+      </button>
+</div>
+
+      {status === 'error' && <p className="text-red-600">{err}</p>}
+      {status === 'sent' && <p className="text-green-600">Wiadomość wysłana!</p>}
     </form>
   );
 }
