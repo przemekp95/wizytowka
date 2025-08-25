@@ -1,0 +1,46 @@
+/* =============================================================
+PLIK: styles/custom.scss (importowany w komponencie)
+============================================================= */
+
+@use "sass:color";
+@import "./variables";
+@import "./mixins";
+
+
+.brand { @apply font-bold; }
+.link { @apply hover:text-indigo-600; }
+
+
+.btn { @include btn-base; border: 1px solid theme("colors.slate.300"); }
+.btn-primary {
+@extend .btn;
+background: $primary;
+color: #fff;
+&:hover { background: $primary-500; }
+}
+.btn-ghost { @extend .btn; background: transparent; }
+
+
+.section-title { @apply text-3xl font-bold tracking-tight; }
+
+
+.card { @include card; }
+.card-title { @apply mt-4 text-lg font-semibold; }
+.thumb {
+aspect-ratio: 16/9;
+border-radius: $radius-2xl;
+background: linear-gradient(135deg, #eef2ff, #fae8ff);
+display: grid; place-items: center; color: $text-muted; font-size: .9rem;
+}
+
+
+.avatar { height: 20rem; border-radius: 1rem; background: linear-gradient(135deg,#c7d2fe,#f5d0fe); }
+.bullet { @apply flex items-center gap-2 text-sm; }
+.bullet::before { content: ""; width: .375rem; height: .375rem; border-radius: 9999px; background: $primary-600; display: inline-block; }
+
+
+.gradient-surface { background: linear-gradient(180deg,#eef2ff, #ffffff 40%, #ffffff); }
+
+
+.label { @apply block text-sm font-medium text-slate-700; }
+.input, .textarea { @apply mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500; }
