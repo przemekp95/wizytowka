@@ -3,7 +3,6 @@
 import "@/styles/custom.scss";
 import { motion } from "framer-motion";
 import Header from "@/app/_components/Header";
-import "@/styles/custom.scss";
 import Image from "next/image";
 
 
@@ -26,7 +25,18 @@ export default function OnePager() {
           <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-2xl bg-indigo-200/60 blur-xl" />
           <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
-            <div>
+          <div className="relative">
+            <div className="aspect-[4/3] rounded-2xl bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+              <Image
+                src="/images/ja.jpeg"
+                alt="Przemysław Pietrzak"
+                fill
+                className="object-cover object-top"
+                priority
+              />
+            </div>
+             </div>
+     <div>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -49,96 +59,120 @@ export default function OnePager() {
               </div>
             </div>
 
-          <div className="relative">
-            <div className="aspect-[4/3] rounded-2xl bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
-              <Image
-                src="/images/ja.jpeg"
-                alt="Przemysław Pietrzak"
-                fill
-                className="object-cover object-top"
-                priority
-              />
-            </div>
-          </div>
+
           </div>
         </section>
-        {/* PORTFOLIO */}
-        <section id="portfolio" className="py-20 md:py-28">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 className="section-title">Portfolio</h2>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  title: "AI Offline Stack",
-                  desc: "Ollama + Whisper + WebUI; prywatne przetwarzanie lokalne.",
-                  tags: ["Docker", "LLM", "Whisper"],
-                  link: "#",
-                },
-                {
-                  title: "CASN Next.js",
-                  desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
-                  tags: ["Next.js", "Prisma", "MySQL"],
-                  link: "#",
-                },
-                {
-                  title: "Panel Kancelarii",
-                  desc: "System do obsługi klientów kancelarii (sprawy, dokumenty, komunikacja).",
-                  tags: ["Laravel", "Livewire", "Docker"],
-                  link: "#",
-                },
-              ].map((p, i) => (
-                <motion.a
-                  key={p.title}
-                  href={p.link}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="card group"
-                >
-                  <div className="thumb">Podgląd</div>
-                  <h3 className="card-title group-hover:text-indigo-700">{p.title}</h3>
-                  <p className="mt-1 text-sm text-slate-600">{p.desc}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {p.tags.map((t) => (
-                      <span key={t} className="chip">{t}</span>
-                    ))}
-                  </div>
-                </motion.a>
+
+{/* PORTFOLIO */}
+<section id="portfolio" className="py-20 md:py-28">
+  <div className="mx-auto max-w-6xl px-4">
+    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Portfolio</h2>
+
+    <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {[
+        {
+          title: "AI Offline Stack",
+          desc: "Ollama + Whisper + WebUI; prywatne przetwarzanie lokalne.",
+          tags: ["Docker", "LLM", "Whisper"],
+          img: "/portfolio/ai-offline.jpg",
+          newTech: false,
+        },
+        {
+          title: "CASN Next.js",
+          desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
+          tags: ["Next.js", "Prisma", "MySQL"],
+          img: "/portfolio/casn-next.jpg",
+          newTech: true,
+        },
+        {
+          title: "Panel Kancelarii",
+          desc: "System do obsługi klientów kancelarii (sprawy, dokumenty, komunikacja).",
+          tags: ["Laravel", "Livewire", "Docker"],
+          img: "/portfolio/panel-kancelaria.jpg",
+          newTech: false,
+        },
+      ].map((p) => (
+        <article key={p.title} className="card group">
+          {/* ZDJĘCIE */}
+          <div className="relative overflow-hidden rounded-xl">
+            <Image
+              src={p.img}
+              alt={p.title}
+              width={800}
+              height={600}
+              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+            {p.newTech && (
+              <span className="badge">Nowa technologia</span>
+            )}
+          </div>
+
+          {/* TYTUŁ + OPIS */}
+          <h3 className="card-title group-hover:text-indigo-700">{p.title}</h3>
+          <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
+
+          {/* TECHNOLOGIE */}
+          <div className="mt-4">
+            <div className="tech-label">Technologie</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {p.tags.map((t) => (
+                <span key={t} className="chip">{t}</span>
               ))}
             </div>
           </div>
-        </section>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
 
         {/* ABOUT */}
-        <section id="about" className="bg-slate-50">
-          <div className="mx-auto max-w-6xl px-4 py-20 md:py-28 grid gap-10 lg:grid-cols-5 lg:items-center">
-            <div className="lg:col-span-2">
-              <div className="avatar" />
-            </div>
-            <div className="lg:col-span-3">
-              <h2 className="section-title">O mnie</h2>
-              <p className="mt-4 text-slate-700 leading-7">
-                Jestem prawnikiem specjalizującym się w prawie UE i prawach człowieka oraz developerem budującym nowoczesne aplikacje webowe. 
-                Łączę analityczne podejście z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker oraz integracje z modelami AI.
-              </p>
-              <ul className="mt-8 grid gap-3 sm:grid-cols-2 text-sm text-slate-700">
-                {["Next.js / React", "Laravel / PHP", "Prisma / SQL", "Docker / CI"].map((i) => (
-                  <li key={i} className="bullet">{i}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
+<section id="about" className="bg-slate-50">
+  <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
+    
+    {/* Avatar */}
+    <div className="lg:col-span-2">
+      <div className="avatar" />
+    </div>
+
+    {/* Tekst */}
+    <div className="lg:col-span-3">
+      <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">O mnie</h2>
+      <p className="mt-3 text-slate-700 leading-relaxed">
+        Jestem prawnikiem specjalizującym się w prawie UE i prawach człowieka oraz
+        developerem budującym nowoczesne aplikacje webowe. Łączę analityczne podejście
+        z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker oraz integracje z modelami AI.
+      </p>
+
+      {/* Stack */}
+      <div className="mt-8">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Stack technologiczny
+        </h3>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          {["Next.js / React", "Laravel / PHP", "Prisma / SQL", "Docker / CI"].map((tech) => (
+            <li key={tech} className="bullet">{tech}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 
         {/* CONTACT */}
 
-        <section id="contact" className="py-20 md:py-28">
-          <div className="mx-auto max-w-3xl px-4">
-            <h2 className="section-title">Kontakt</h2>
-            <ContactForm />
-          </div>
-        </section>
+<section id="contact" className="py-24 bg-gradient-to-b from-white to-slate-50">
+  <div className="mx-auto max-w-6xl px-4">
+    <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">Kontakt</h2>
+    <p className="mt-2 text-center text-slate-600">Napisz wiadomość – odpowiem możliwie szybko.</p>
+
+    <div className="mt-10 flex justify-center">
+      <ContactForm />
+    </div>
+  </div>
+</section>
       </main>
 
       {/* FOOTER */}
