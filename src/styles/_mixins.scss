@@ -4,7 +4,7 @@ PLIK: styles/_mixins.scss
 @use "./variables" as *;
 
 @mixin card {
-border: 1px solid theme("colors.slate.200");
+border: 1px solid #e2e8f0;
 border-radius: $radius-2xl;
 background: #fff;
 padding: 1.25rem;

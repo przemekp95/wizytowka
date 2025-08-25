@@ -54,7 +54,7 @@ export default function OnePager() {
                 Buduję nowoczesne aplikacje webowe (Next.js, Laravel) i systemy AI offline. Łączę warsztat prawniczy z technologią.
               </motion.p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <a href="#portfolio" className="btn btn-primary border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Zobacz projekty</a>
+                <a href="#portfolio" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Zobacz projekty</a>
                 <a href="#contact" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Skontaktuj się</a>
               </div>
             </div>
@@ -73,8 +73,8 @@ export default function OnePager() {
 [
   {
     title: "CASN Laravel",
-    href: "https://casn.pl", // <— NOWE
-    desc: "Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting.",
+    href: "https://casn.przemyslaw-pietrzak.pl", // <— NOWE
+    desc: "Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting. (link prowadzi do zdjętej wersji strony)",
     tags: ["Laravel", "PHP", "Blade", "Github", "Bootstrap"],
     img: "/images/logo.jpg",
     isLogo: true,
@@ -82,7 +82,7 @@ export default function OnePager() {
   },
   {
     title: "CASN Next.js",
-    href: "https://casnnext.example.com",
+    href: "https://casn.pl",
     desc: "Migracja strony think-tanku z Laravel na Next.js 15 App Router.",
     tags: ["Next.js", "Prisma", "MySQL", "Typescript", "Markdown", "Github"],
     img: "/images/logo.jpg",
@@ -101,7 +101,7 @@ export default function OnePager() {
   },
   {
     title: "Strona Wizytówka",
-    href: "https://twoj-link-do-wizytowki.example.com",
+    href: "https://przemyslaw-pietrzak.pl",
     desc: "One-pager w Next.js z Tailwind i Sass.",
     tags: ["Next.js", "Tailwind", "Sass"],
     img: "/images/PP-2-JPG-01.webp",
@@ -110,7 +110,7 @@ export default function OnePager() {
   },
   {
     title: "Fundacja Służba Niepodległej",
-    href: "https://twoj-link-android.example.com",
+    href: "https://sluzbaniepodleglej.pl",
     desc: "Administrowałem i rozwijałem stronę fundacji opartą na WordPress. Wdrażałem nowe podstrony, strategię treści SEO.",
     tags: ["WordPress", "PHP", "CSS", "HTML", "Google Search Console", "SEO"],
     img: "/images/logo-sluzba-niepodleglej.png",
@@ -191,9 +191,8 @@ export default function OnePager() {
     <div className="lg:col-span-3">
       <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">O mnie</h2>
       <p className="mt-3 text-slate-700 leading-relaxed">
-        Jestem prawnikiem specjalizującym się w prawie UE i prawach człowieka oraz
-        developerem budującym nowoczesne aplikacje webowe. Łączę analityczne podejście
-        z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker oraz integracje z modelami AI.
+        Jestem developerem budującym nowoczesne aplikacje webowe. Łączę analityczne podejście
+        z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker.
       </p>
 
       {/* Stack */}
