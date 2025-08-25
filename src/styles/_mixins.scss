@@ -1,6 +1,7 @@
 /* =============================================================
 PLIK: styles/_mixins.scss
 ============================================================= */
+@use "./variables" as *;
 
 @mixin card {
 border: 1px solid theme("colors.slate.200");

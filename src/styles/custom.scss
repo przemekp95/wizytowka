@@ -3,8 +3,9 @@ PLIK: styles/custom.scss (importowany w komponencie)
 ============================================================= */
 
 @use "sass:color";
-@import "./variables";
-@import "./mixins";
+@use "./variables" as *;
+@use "./mixins" as *;
+
 
 /* --- Tekst/brand/linki --- */
 .brand { @apply font-bold; }
@@ -110,3 +111,107 @@ PLIK: styles/custom.scss (importowany w komponencie)
 /* (opcjonalnie) drobna korekta klikalnego obszaru */
 .site-header .nav-link,
 .site-header .nav-btn { @apply leading-none; }
+
+
+
+
+/* Karty portfolio */
+.card-media {
+  @apply relative overflow-hidden rounded-xl;
+}
+.card-media .img {
+  @apply w-full h-auto object-cover transition-transform duration-500;
+}
+.card-media:hover .img {
+  @apply scale-105;
+}
+
+/* Badge "Nowa technologia" */
+.badge {
+  @apply absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-semibold;
+  @apply bg-indigo-600 text-white shadow;
+}
+
+
+/* Sekcja "O mnie" */
+
+
+.stack-title {
+  @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
+}
+
+
+/* === KARTA FORMULARZA === */
+.contact-card {
+  @apply w-full max-w-xl mx-auto bg-white 
+         rounded-2xl border border-slate-200 shadow-md 
+         p-8 grid gap-6;
+}
+
+/* Floating labels */
+.field-floating { @apply relative; }
+
+.input-floating {
+  @apply w-full rounded-xl border border-slate-300 bg-white 
+         px-4 py-3 text-slate-900 shadow-sm outline-none transition
+         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+         placeholder-transparent;
+}
+
+.label-floating {
+  @apply absolute left-3 top-3 px-1 text-slate-500 text-sm pointer-events-none
+         transition-all bg-white;
+  transform-origin: left top;
+}
+
+.peer:focus ~ .label-floating,
+.peer:not(:placeholder-shown) ~ .label-floating {
+  @apply text-xs text-indigo-600;
+  transform: translateY(-0.9rem) scale(0.95);
+}
+
+/* === Przycisk wysyłki === */
+
+
+
+.btn-primary {
+  @apply mt-8 w-full sm:w-auto 
+         inline-flex items-center justify-center
+         rounded-xl px-6 py-3 font-semibold text-white
+         bg-indigo-600 shadow-lg
+         transition-all duration-200 ease-out
+         focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+
+  /* Hover – jaśniejszy i lekko podbity */
+  &:hover {
+    @apply bg-indigo-700 scale-105 shadow-xl;
+  }
+
+  /* Active – wciśnięty */
+  &:active {
+    @apply bg-indigo-800 scale-95 shadow-md;
+  }
+
+  /* Animacja lekkiego podjazdu przy wejściu na ekran */
+  animation: fadeInUp 0.4s ease both;
+}
+
+/* Kluczowe klatki */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Autofill fix */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: #0f172a;
+  transition: background-color 9999s ease-in-out 0s;
+}
