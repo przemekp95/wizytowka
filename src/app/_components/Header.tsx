@@ -24,7 +24,6 @@ export default function Header() {
         <div className="hidden sm:flex items-center gap-6 text-sm">
           <a className={scrolled ? "text-slate-800 hover:text-black" : "text-slate-100 hover:text-white"} href="#portfolio">Portfolio</a>
           <a className={scrolled ? "text-slate-800 hover:text-black" : "text-slate-100 hover:text-white"} href="#about">O mnie</a>
-          <a className={scrolled ? "text-slate-800 hover:text-black" : "text-slate-100 hover:text-white"} href="#contact">Kontakt</a>
         </div>
         <a
           href="#contact"
