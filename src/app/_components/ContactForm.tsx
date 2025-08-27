@@ -1,151 +1,126 @@
-'use client';
+"use client";
+import { useRef, useState, type FormEvent } from "react";
 
-import { useEffect, useRef, useState } from 'react';
+type Status = "idle" | "sending" | "sent" | "error";
 
-type HCaptchaSize = 'invisible' | 'normal' | 'compact';
-type HCaptchaTheme = 'light' | 'dark';
-type HCaptchaRenderOptions = {
-  sitekey: string;
-  size?: HCaptchaSize;
-  theme?: HCaptchaTheme;
-  callback?: (token: string) => void;
-  'error-callback'?: () => void;
-  'expired-callback'?: () => void;
-};
+export default function ContactSection() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [err, setErr] = useState("");
+  const formRef = useRef<HTMLFormElement | null>(null);
 
-declare global {
-  interface Window {
-    hcaptcha?: {
-      render: (el: string | HTMLElement, opts: HCaptchaRenderOptions) => number;
-      execute: (id?: number) => void;
-      reset: (id?: number) => void;
-    };
-  }
-}
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!formRef.current || status === "sending") return;
 
-type Status = 'idle' | 'sending' | 'sent' | 'error';
+    setStatus("sending");
+    setErr("");
 
-const CAPTCHA_ENABLED = process.env.NEXT_PUBLIC_CAPTCHA_ENABLED === '1';
-const SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!; // używane tylko gdy CAPTCHA_ENABLED
+    try {
+      const fd = new FormData(formRef.current);
 
-export default function ContactForm() {
-  const [status, setStatus] = useState<Status>('idle');
-  const [err, setErr] = useState('');
-  const widgetIdRef = useRef<number | null>(null);
-  const resolverRef = useRef<((t: string) => void) | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scriptReady, setScriptReady] = useState(!CAPTCHA_ENABLED); // jeśli captcha off → od razu "ready"
-
-  // Ładuj skrypt hCaptcha tylko gdy włączona
-  useEffect(() => {
-    if (!CAPTCHA_ENABLED) return;
-    if (window.hcaptcha) {
-      setScriptReady(true);
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = 'https://js.hcaptcha.com/1/api.js?hl=pl';
-    s.async = true;
-    s.defer = true;
-    s.onload = () => setScriptReady(true);
-    document.head.appendChild(s);
-  }, []);
-
-  // Renderuj widget tylko gdy włączona
-  useEffect(() => {
-    if (!CAPTCHA_ENABLED) return;
-    if (!scriptReady || !containerRef.current || !window.hcaptcha) return;
-    if (widgetIdRef.current !== null) return;
-    widgetIdRef.current = window.hcaptcha.render(containerRef.current, {
-      sitekey: SITEKEY,
-      size: 'invisible',
-      callback: (token: string) => {
-        resolverRef.current?.(token);
-        resolverRef.current = null;
-      },
-      'error-callback': () => {
-        setErr('Captcha error');
-        setStatus('error');
-      },
-    });
-  }, [scriptReady]);
-
-  function getCaptchaToken(): Promise<string | null> {
-    if (!CAPTCHA_ENABLED) return Promise.resolve(null);
-    return new Promise((resolve) => {
-      resolverRef.current = resolve;
-      if (window.hcaptcha && widgetIdRef.current !== null) {
-        window.hcaptcha.execute(widgetIdRef.current);
+      // honeypot
+      const website = String(fd.get("website") ?? "");
+      if (website.trim() !== "") {
+        setStatus("sent");
+        formRef.current.reset();
+        return;
       }
-    });
-  }
 
-const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+      const payload = {
+        name: String(fd.get("name") ?? "").trim(),
+        email: String(fd.get("email") ?? "").trim(),
+        message: String(fd.get("message") ?? "").trim(),
+        website: "",
+      };
 
-  const form = e.currentTarget; // <— ZŁAPIEMY REFERENCJĘ NA STARcie
-  setStatus('sending');
-  setErr('');
+      if (!payload.name || !payload.email || !payload.message) {
+        throw new Error("Uzupełnij wszystkie pola.");
+      }
 
-  try {
-    const fd = new FormData(form);
-    const token = await getCaptchaToken();
+      const r = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
 
-    const r = await fetch('/contact.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: fd.get('name'),
-        email: fd.get('email'),
-        message: fd.get('message'),
-        ...(CAPTCHA_ENABLED ? { captchaToken: token } : {}),
-        website: '',
-      }),
-    });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j?.ok === false) {
+        throw new Error(j?.error || "Błąd wysyłki");
+      }
 
-    const data: { ok?: boolean; error?: string } = await r.json();
-    if (!r.ok || !data?.ok) throw new Error(data?.error || 'Send failed');
-
-    setStatus('sent');
-    form.reset(); // <— UŻYWAMY ZŁAPANEJ REFERENCJI
-    if (CAPTCHA_ENABLED && window.hcaptcha && widgetIdRef.current !== null) {
-      window.hcaptcha.reset(widgetIdRef.current);
+      setStatus("sent");
+      formRef.current.reset();
+    } catch (e) {
+      setStatus("error");
+      setErr(e instanceof Error ? e.message : "Nieznany błąd");
+    } finally {
+      setTimeout(() => setStatus("idle"), 1500);
     }
-    setTimeout(() => setStatus('idle'), 4000);
-  } catch (er: unknown) {
-    setErr(er instanceof Error ? er.message : 'Błąd');
-    setStatus('error');
-  }
-};
-
+  };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {/* Kontener dla hCaptcha tylko gdy włączona */}
-      {CAPTCHA_ENABLED && <div ref={containerRef} className="hidden" />}
-
-      {/* honeypot */}
-      <div className="hidden">
-        <input type="text" name="website" autoComplete="off" />
+    <form
+      ref={formRef}
+      className="w-full max-w-xl space-y-4"
+      onSubmit={onSubmit}
+      action="/api/contact"   // fallback gdy JS się nie załaduje
+      method="POST"
+      noValidate
+      aria-busy={status === "sending"}
+    >
+      <div>
+        <label className="block text-sm font-medium">Imię i nazwisko</label>
+        <input
+          name="name"
+          required
+          autoComplete="name"
+          className="w-full border rounded-lg px-3 py-2"
+        />
       </div>
 
-      <input name="name" required placeholder="Imię i nazwisko" className="w-full border rounded px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
-      <input name="email" type="email" required placeholder="E-mail" className="w-full border rounded px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
-      <textarea name="message" required placeholder="Wiadomość" className="w-full border rounded px-3 py-2 h-32 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500" />
+      <div>
+        <label className="block text-sm font-medium">E-mail</label>
+        <input
+          type="email"
+          name="email"
+          required
+          autoComplete="email"
+          className="w-full border rounded-lg px-3 py-2"
+        />
+      </div>
 
-<div className="text-center mt-6">
+      <div>
+        <label className="block text-sm font-medium">Wiadomość</label>
+        <textarea
+          name="message"
+          rows={5}
+          required
+          maxLength={5000}
+          className="w-full border rounded-lg px-3 py-2 resize-none"
+        />
+      </div>
+
+      {/* honeypot (ukryte pole dla botów) */}
+      <input
+        type="text"
+        name="website"
+        className="hidden"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
       <button
         type="submit"
-        disabled={status === 'sending' || !scriptReady}
-        className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+        disabled={status === "sending"}
+        className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
       >
-        {status === 'sending' ? 'Wysyłanie…' : 'Wyślij'}
+        {status === "sending" ? "Wysyłanie..." : "Wyślij"}
       </button>
-</div>
 
-      {status === 'error' && <p className="text-red-600">{err}</p>}
-      {status === 'sent' && <p className="text-green-600">Wiadomość wysłana!</p>}
+      {status === "error" && <p className="text-sm text-red-600">{err}</p>}
+      {status === "sent" && <p className="text-sm text-green-700">Wiadomość wysłana ✅</p>}
     </form>
   );
 }
