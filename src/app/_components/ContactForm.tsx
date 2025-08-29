@@ -70,8 +70,11 @@ export default function ContactSection() {
       aria-busy={status === 'sending'}
     >
       <div>
-        <label className="block text-sm font-medium">Imię i nazwisko</label>
+        <label className="block text-sm font-medium" htmlFor="name">
+          Imię i nazwisko
+        </label>
         <input
+          id="name"
           name="name"
           required
           autoComplete="name"
@@ -80,9 +83,12 @@ export default function ContactSection() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">E-mail</label>
+        <label className="block text-sm font-medium" htmlFor="email">
+          E-mail
+        </label>
         <input
           type="email"
+          id="email"
           name="email"
           required
           autoComplete="email"
@@ -91,8 +97,11 @@ export default function ContactSection() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Wiadomość</label>
+        <label className="block text-sm font-medium" htmlFor="message">
+          Wiadomość
+        </label>
         <textarea
+          id="message"
           name="message"
           rows={5}
           required
