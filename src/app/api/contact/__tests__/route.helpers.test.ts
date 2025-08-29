@@ -10,8 +10,8 @@ describe('isValidEmail', () => {
     expect(isValidEmail('plainaddress')).toBe(false);
     expect(isValidEmail('missing@domain')).toBe(false);
     expect(isValidEmail('user@@double.at')).toBe(false);
-    // @ts-expect-error
-    expect(isValidEmail(123)).toBe(false);
+
+    expect(isValidEmail(123 as any)).toBe(false);
   });
 });
 

@@ -4,8 +4,8 @@ import ContactForm from '../ContactForm';
 
 beforeAll(() => {
   // Podmiana fetch dla testów
-  // @ts-ignore
-  global.fetch = jest.fn();
+
+  (global as any).fetch = jest.fn();
 });
 afterEach(() => {
   jest.resetAllMocks();
