@@ -76,7 +76,7 @@ export default function OnePager() {
               {[
                 {
                   title: 'CASN Laravel',
-                  href: 'https://casn.przemyslaw-pietrzak.pl',
+                  href: 'https://casn.pietrzakprzemyslaw.pl',
                   desc: 'Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting. (link prowadzi do zdjętej wersji strony)',
                   tags: ['Laravel', 'PHP', 'Blade', 'Github', 'Bootstrap'],
                   img: '/images/logo.jpg',
@@ -103,7 +103,7 @@ export default function OnePager() {
                 },
                 {
                   title: 'Strona Wizytówka',
-                  href: 'https://przemyslaw-pietrzak.pl',
+                  href: 'https://pietrzakprzemyslaw.pl',
                   desc: 'One-pager w Next.js z Tailwind i Sass.',
                   tags: ['Next.js', 'Tailwind', 'Sass'],
                   img: '/images/PP-2-JPG-01.webp',
