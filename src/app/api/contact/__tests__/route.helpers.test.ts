@@ -11,7 +11,7 @@ describe('isValidEmail', () => {
     expect(isValidEmail('missing@domain')).toBe(false);
     expect(isValidEmail('user@@double.at')).toBe(false);
 
-    expect(isValidEmail(123 as any)).toBe(false);
+    expect(isValidEmail(123)).toBe(false);
   });
 });
 
