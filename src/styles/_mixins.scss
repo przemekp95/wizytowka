@@ -1,18 +1,18 @@
 /* =============================================================
 PLIK: styles/_mixins.scss
 ============================================================= */
-@use "./variables" as *;
+@use './variables' as *;
 
 @mixin card {
-border: 1px solid #e2e8f0;
-border-radius: $radius-2xl;
-background: #fff;
-padding: 1.25rem;
-box-shadow: $shadow;
+  border: 1px solid #e2e8f0;
+  border-radius: $radius-2xl;
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: $shadow;
 }
 @mixin btn-base {
-border-radius: $radius-2xl;
-font-weight: 600;
-padding: 0.75rem 1.25rem;
-transition: .2s ease;
+  border-radius: $radius-2xl;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  transition: 0.2s ease;
 }
