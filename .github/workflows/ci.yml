@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint (ESLint) & Prettier check
+      - name: Lint (ESLint & Prettier check)
         run: |
           npm run lint
           npm run format:check
@@ -36,14 +36,8 @@ jobs:
         run: npm run build
 
       - name: E2E tests (Cypress)
-        env:
-          NODE_ENV: production
-        run: |
-          npm start &> /dev/null &
-          n=0
-          until [ $n -ge 10 ]; do
-            curl -fsS http://localhost:3000 && break
-            n=$((n+1))
-            sleep 3
-          done
-          npm run cypress:run
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm start
+          wait-on: 'http://localhost:3000'
+          browser: chrome
