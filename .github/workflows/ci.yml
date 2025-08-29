@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint & Prettier check)
+        run: |
+          npm run lint
+          npm run format:check
+
+      - name: Unit tests (Jest)
+        run: npm test
+
+      - name: Build (Next.js)
+        env:
+          NEXT_PUBLIC_HCAPTCHA_SITEKEY: test_sitekey
+        run: npm run build
+
+      - name: E2E tests (Cypress)
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm start
+          wait-on: 'http://localhost:3000'
+          browser: chrome

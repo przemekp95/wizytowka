@@ -2,15 +2,18 @@
 PLIK: styles/custom.scss (importowany w komponencie)
 ============================================================= */
 
-@use "sass:color";
-@use "./variables" as *;
-@use "./mixins" as *;
-@use "tailwindcss";   
-
+@use 'sass:color';
+@use './variables' as *;
+@use './mixins' as *;
+@use 'tailwindcss';
 
 /* --- Tekst/brand/linki --- */
-.brand { @apply font-bold; }
-.link { @apply text-slate-700 hover:text-indigo-600 transition-colors; }
+.brand {
+  @apply font-bold;
+}
+.link {
+  @apply text-slate-700 hover:text-indigo-600 transition-colors;
+}
 
 /* --- Przyciski --- */
 .btn {
@@ -24,28 +27,41 @@ PLIK: styles/custom.scss (importowany w komponencie)
          bg-white text-slate-900 hover:bg-slate-50
          focus:outline-none focus:border-indigo-500;
 }
-.btn-ghost { @extend .btn; @apply bg-transparent hover:bg-slate-100; }
+.btn-ghost {
+  @extend .btn;
+  @apply bg-transparent hover:bg-slate-100;
+}
 .btn-primary {
-  @extend .btn; background: $primary; color:#fff;
-  &:hover { background: $primary-500; }
+  @extend .btn;
+  background: $primary;
+  color: #fff;
+  &:hover {
+    background: $primary-500;
+  }
 }
 
 /* --- Nagłówki/sekcje --- */
-.section-title { @apply text-3xl md:text-4xl font-extrabold tracking-tight; }
+.section-title {
+  @apply text-3xl md:text-4xl font-extrabold tracking-tight;
+}
 
 /* --- Karty/miniatury --- */
-.card { 
-  @include card; 
+.card {
+  @include card;
   @apply transition-transform hover:-translate-y-0.5;
 }
-.card-title { @apply mt-4 text-lg font-semibold; }
+.card-title {
+  @apply mt-4 text-lg font-semibold;
+}
 
 .thumb {
   aspect-ratio: 16/9;
   border-radius: $radius-2xl;
   background: linear-gradient(135deg, #eef2ff, #fae8ff);
-  display: grid; place-items: center;
-  color: $text-muted; font-size: .9rem;
+  display: grid;
+  place-items: center;
+  color: $text-muted;
+  font-size: 0.9rem;
 }
 
 /* --- Chip/tag (do listy technologii) --- */
@@ -54,16 +70,34 @@ PLIK: styles/custom.scss (importowany w komponencie)
 }
 
 /* --- Avatar/wyliczenia --- */
-.avatar { height: 20rem; border-radius: 1rem; background: linear-gradient(135deg,#c7d2fe,#f5d0fe); }
-.bullet { @apply flex items-center gap-2 text-sm; }
-.bullet::before { content: ""; width: .375rem; height: .375rem; border-radius: 9999px; background: $primary-600; display: inline-block; }
+.avatar {
+  height: 20rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #c7d2fe, #f5d0fe);
+}
+.bullet {
+  @apply flex items-center gap-2 text-sm;
+}
+.bullet::before {
+  content: '';
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: $primary-600;
+  display: inline-block;
+}
 
 /* --- Tła/gradienty --- */
-.gradient-surface { background: linear-gradient(180deg,#eef2ff, #ffffff 40%, #ffffff); }
+.gradient-surface {
+  background: linear-gradient(180deg, #eef2ff, #ffffff 40%, #ffffff);
+}
 
 /* --- Formularz --- */
-.label { @apply block text-sm font-medium text-slate-700; }
-.input, .textarea { 
+.label {
+  @apply block text-sm font-medium text-slate-700;
+}
+.input,
+.textarea {
   @apply mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 outline-none 
          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white;
 }
@@ -71,25 +105,30 @@ PLIK: styles/custom.scss (importowany w komponencie)
 /* --- (opcjonalnie) rytm pionowy sekcji, gdy nie używasz utility w JSX --- */
 /* .section { @apply py-20 md:py-28; } */
 
-
 /* HEADER BASE — bez pozycjonowania (to masz w TSX) */
 .site-header {
   @apply transition-colors duration-300; /* żadnego fixed/sticky/z-index tutaj */
   height: 3.5rem; /* = h-14, pasuje do nav */
   background: #0f172a; /* slate-900 */
 
-  .brand { @apply text-white text-xl font-bold tracking-tight; }
+  .brand {
+    @apply text-white text-xl font-bold tracking-tight;
+  }
 
-  .nav-link { 
+  .nav-link {
     @apply text-slate-100 hover:text-white transition-colors;
   }
 
   .nav-btn {
     @apply px-4 py-2 rounded-xl font-semibold transition-colors;
-    background: white; 
+    background: white;
     color: black;
-    &:hover { @apply bg-slate-200; }
-    &:focus-visible { @apply outline-none ring-2 ring-offset-2 ring-slate-300; }
+    &:hover {
+      @apply bg-slate-200;
+    }
+    &:focus-visible {
+      @apply outline-none ring-2 ring-offset-2 ring-slate-300;
+    }
   }
 }
 
@@ -97,26 +136,31 @@ PLIK: styles/custom.scss (importowany w komponencie)
 .site-header.scrolled {
   @apply bg-white border-b shadow-sm;
 
-  .brand { @apply text-slate-900; }
+  .brand {
+    @apply text-slate-900;
+  }
 
-  .nav-link { 
+  .nav-link {
     @apply text-slate-800 hover:text-black;
   }
 
   .nav-btn {
-    background: black; 
+    background: black;
     color: white;
-    &:hover { background: #1e293b; } /* slate-800 */
-    &:focus-visible { @apply outline-none ring-2 ring-offset-2 ring-slate-400; }
+    &:hover {
+      background: #1e293b;
+    } /* slate-800 */
+    &:focus-visible {
+      @apply outline-none ring-2 ring-offset-2 ring-slate-400;
+    }
   }
 }
 
 /* (opcjonalnie) drobna korekta klikalnego obszaru */
 .site-header .nav-link,
-.site-header .nav-btn { @apply leading-none; }
-
-
-
+.site-header .nav-btn {
+  @apply leading-none;
+}
 
 /* Karty portfolio */
 .card-media {
@@ -135,14 +179,11 @@ PLIK: styles/custom.scss (importowany w komponencie)
   @apply bg-indigo-600 text-white shadow;
 }
 
-
 /* Sekcja "O mnie" */
-
 
 .stack-title {
   @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
 }
-
 
 /* === KARTA FORMULARZA === */
 .contact-card {
@@ -152,7 +193,9 @@ PLIK: styles/custom.scss (importowany w komponencie)
 }
 
 /* Floating labels */
-.field-floating { @apply relative; }
+.field-floating {
+  @apply relative;
+}
 
 .input-floating {
   @apply w-full rounded-xl border border-slate-300 bg-white 
@@ -174,8 +217,6 @@ PLIK: styles/custom.scss (importowany w komponencie)
 }
 
 /* === Przycisk wysyłki === */
-
-
 
 .btn-primary {
   @apply mt-8 w-full sm:w-auto 
@@ -210,7 +251,6 @@ PLIK: styles/custom.scss (importowany w komponencie)
     transform: translateY(0);
   }
 }
-
 
 /* Autofill fix */
 input:-webkit-autofill,
