@@ -133,4 +133,4 @@ export async function GET() {
   return Response.json({ ok: false, error: 'Method Not Allowed' }, { status: 405 });
 }
 
-export { isValidEmail, rateLimit, POST };
+export { isValidEmail, rateLimit };

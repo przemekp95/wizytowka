@@ -16,7 +16,7 @@ describe('Formularz kontaktowy', () => {
     // Stub backendu
     cy.intercept('POST', '/api/contact', {
       statusCode: 200,
-      body: { ok: true }
+      body: { ok: true },
     }).as('sendMail');
 
     // Wyślij
