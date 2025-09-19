@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  packages: write          # push do GHCR
+  packages: write
   id-token: write
 
 concurrency:
@@ -17,8 +17,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/wizytowka-backend
-  IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/wizytowka-frontend
+  IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/wizytowka-backend-ci
+  IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/wizytowka-frontend-ci
   KUSTOMIZE_DIR: k8s
 
 jobs:
@@ -32,8 +32,7 @@ jobs:
           POSTGRES_DB: wizytowka
           POSTGRES_USER: wiz
           POSTGRES_PASSWORD: wiz
-        ports:
-          - 5432:5432
+        ports: [5432:5432]
         options: >-
           --health-cmd="pg_isready -U wiz -d wizytowka"
           --health-interval=10s
@@ -42,8 +41,7 @@ jobs:
 
       mongo:
         image: mongo:7
-        ports:
-          - 27017:27017
+        ports: [27017:27017]
         options: >-
           --health-cmd="mongosh --quiet --eval 'db.adminCommand({ ping: 1 })' || exit 1"
           --health-interval=10s
@@ -54,7 +52,6 @@ jobs:
       DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
       MONGODB_URI: mongodb://localhost:27017
       MONGODB_DB: wizytowka
-
       NODE_ENV: test
       SMTP_HOST: localhost
       SMTP_PORT: 25
@@ -69,7 +66,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # pnpm zgodny z package.json ("packageManager"); bez wymuszania wersji
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -87,7 +83,7 @@ jobs:
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
 
-      - name: Wait for Postgres & Mongo to be ready
+      - name: Wait for Postgres & Mongo
         run: |
           for i in {1..60}; do
             (nc -z localhost 5432) && (nc -z localhost 27017) && break
@@ -133,7 +129,6 @@ jobs:
           echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
 
-      # --- Build & push to GHCR ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -150,6 +145,8 @@ jobs:
           context: ./backend
           push: true
           provenance: false
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
           tags: |
             ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_SHA }}
@@ -160,11 +157,12 @@ jobs:
           context: ./frontend
           push: true
           provenance: false
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
           tags: |
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
 
-      # --- kubectl apply -k ---
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
