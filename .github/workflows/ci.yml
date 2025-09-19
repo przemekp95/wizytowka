@@ -56,16 +56,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Najpierw pnpm (żeby cache='pnpm' w setup-node nie wywalił się szukając pnpm)
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            **/pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: true
+      - name: Install dependencies (workspace)
+        run: pnpm install --frozen-lockfile
 
       # ---- Prisma (backend) ----
       - name: Prisma generate
