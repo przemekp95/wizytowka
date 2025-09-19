@@ -2,7 +2,7 @@
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(path.startsWith('/api') ? path : `/api${path}`, {
     ...init,
-    credentials: 'include',                    // ważne dla cookies/JWT
+    credentials: 'include', // ważne dla cookies/JWT
     headers: { 'Content-Type': 'application/json', ...(init.headers || {}) },
     cache: 'no-store',
   });

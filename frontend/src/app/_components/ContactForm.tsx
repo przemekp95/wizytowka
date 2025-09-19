@@ -3,7 +3,7 @@ import { useRef, useState, type FormEvent } from 'react';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
 
 export default function ContactSection() {
   const [status, setStatus] = useState<Status>('idle');
@@ -20,7 +20,7 @@ export default function ContactSection() {
     try {
       const fd = new FormData(formRef.current);
 
-      // honeypot — jeśli wypełnione, udaj sukces (nie wysyłaj)
+      // honeypot
       const website = String(fd.get('website') ?? '');
       if (website.trim() !== '') {
         setStatus('sent');
@@ -28,27 +28,38 @@ export default function ContactSection() {
         return;
       }
 
-      const payload = {
+      const input = {
         name: String(fd.get('name') ?? '').trim(),
         email: String(fd.get('email') ?? '').trim(),
         message: String(fd.get('message') ?? '').trim(),
-        // NIE wysyłamy website — backend ma forbidNonWhitelisted
+        hcaptchaToken: '', // ⬅️ zostawiamy placeholder, integracja później
       };
 
-      if (!payload.name || !payload.email || !payload.message) {
+      if (!input.name || !input.email || !input.message) {
         throw new Error('Uzupełnij wszystkie pola.');
       }
 
-      const r = await fetch(`${API}/contact`, {
+      // GraphQL mutation
+      const query = `
+        mutation SendContact($input: ContactMessageInput!) {
+          sendContact(input: $input) {
+            ok
+            error
+          }
+        }
+      `;
+
+      const r = await fetch(GQL_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ query, variables: { input } }),
         cache: 'no-store',
       });
 
       const j = await r.json().catch(() => ({}));
-      if (!r.ok || j?.ok === false) {
-        throw new Error(j?.message || j?.error || 'Błąd wysyłki');
+
+      if (!r.ok || j?.errors || j?.data?.sendContact?.ok === false) {
+        throw new Error(j?.data?.sendContact?.error || j?.errors?.[0]?.message || 'Błąd wysyłki');
       }
 
       setStatus('sent');
@@ -66,30 +77,70 @@ export default function ContactSection() {
       ref={formRef}
       className="w-full max-w-xl space-y-4"
       onSubmit={onSubmit}
-      action={`${API}/contact`} // fallback bez JS do NEST, nie do Next API
-      method="POST"
       noValidate
       aria-busy={status === 'sending'}
+      suppressHydrationWarning
     >
       <div>
-        <label className="block text-sm font-medium" htmlFor="name">Imię i nazwisko</label>
-        <input id="name" name="name" required autoComplete="name" className="w-full border rounded-lg px-3 py-2" />
+        <label className="block text-sm font-medium" htmlFor="name">
+          Imię i nazwisko
+        </label>
+        <input
+          id="name"
+          name="name"
+          required
+          autoComplete="name"
+          className="w-full border rounded-lg px-3 py-2"
+          suppressHydrationWarning
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium" htmlFor="email">E-mail</label>
-        <input type="email" id="email" name="email" required autoComplete="email" className="w-full border rounded-lg px-3 py-2" />
+        <label className="block text-sm font-medium" htmlFor="email">
+          E-mail
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          autoComplete="email"
+          className="w-full border rounded-lg px-3 py-2"
+          suppressHydrationWarning
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium" htmlFor="message">Wiadomość</label>
-        <textarea id="message" name="message" rows={5} required maxLength={5000} className="w-full border rounded-lg px-3 py-2 resize-none" />
+        <label className="block text-sm font-medium" htmlFor="message">
+          Wiadomość
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          rows={5}
+          required
+          maxLength={5000}
+          className="w-full border rounded-lg px-3 py-2 resize-none"
+          suppressHydrationWarning
+        />
       </div>
 
       {/* honeypot */}
-      <input type="text" name="website" className="hidden" autoComplete="off" tabIndex={-1} aria-hidden="true" />
+      <input
+        type="text"
+        name="website"
+        className="hidden"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        suppressHydrationWarning
+      />
 
-      <button type="submit" disabled={status === 'sending'} className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border">
+      <button
+        type="submit"
+        disabled={status === 'sending'}
+        className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
+      >
         {status === 'sending' ? 'Wysyłanie...' : 'Wyślij'}
       </button>
 

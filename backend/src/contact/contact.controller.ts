@@ -15,13 +15,13 @@ export class ContactController {
   constructor(private readonly contact: ContactService) {}
 
   @Post()
-  @HttpCode(HttpStatus.ACCEPTED) // jeśli wolisz 200, zmień na HttpStatus.OK
+  @HttpCode(HttpStatus.ACCEPTED)
   async send(@Body() dto: ContactDto, @Req() req: Request) {
     const ip =
       (req.headers['x-forwarded-for'] as string | undefined)
         ?.split(',')[0]
         ?.trim() || req.ip;
-    const requestId = (req as any).requestId as string | undefined;
+    const requestId = req.requestId;
 
     const { messageId } = await this.contact.sendMail({
       ...dto,
