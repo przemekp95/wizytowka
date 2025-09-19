@@ -8,10 +8,18 @@ on:
 
 permissions:
   contents: read
+  packages: write          # push do GHCR
+  id-token: write
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BACKEND: ghcr.io/przemekp95/wizytowka-backend
+  IMAGE_FRONTEND: ghcr.io/przemekp95/wizytowka-frontend
+  KUSTOMIZE_DIR: k8s
 
 jobs:
   test:
@@ -33,10 +41,8 @@ jobs:
           --health-retries=10
 
     env:
-      # Backend użyje tego DSN w krokach prisma/testów
       DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
       NODE_ENV: test
-      # Minimalny SMTP stub (żeby testy nie wybuchały jeśli dotykają maila)
       SMTP_HOST: localhost
       SMTP_PORT: 25
       SMTP_SECURE: false
@@ -54,6 +60,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -84,18 +91,75 @@ jobs:
       - name: Frontend tests
         run: pnpm -F frontend test
 
+  build_and_deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: [test]
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-# services:
-#   postgres:
-#     image: postgres:16
-#     env:
-#       POSTGRES_DB: wizytowka
-#       POSTGRES_USER: wiz
-#       POSTGRES_PASSWORD: wiz
-#     ports: [5432:5432]
-#     options: >-
-#       --health-cmd="pg_isready -U wiz -d wizytowka"
-#       --health-interval=10s
-#       --health-timeout=5s
-#       --health-retries=5
+      - name: Set image tags
+        id: meta
+        run: |
+          echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
+
+      # --- Build & push to GHCR ---
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_LATEST }}
+            ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_SHA }}
+
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
+            ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
+
+      # --- kubectl apply -k ---
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
+        run: |
+          echo "${KUBE_CONFIG}" | base64 -d > $HOME/.kube/config
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+      # (Opcjonalnie) upewnij się, że SA ma imagePullSecret do GHCR
+      - name: Ensure imagePullSecret on default SA
+        run: |
+          kubectl -n wiz get secret ghcr-creds >/dev/null 2>&1 || kubectl -n wiz create secret docker-registry ghcr-creds \
+            --docker-server=ghcr.io \
+            --docker-username="${{ github.actor }}" \
+            --docker-password="${{ secrets.GITHUB_TOKEN }}" \
+            --docker-email="none@example.com" || true
+          kubectl -n wiz patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr-creds"}]}' || true
+
+      # Używamy kustomize; newTag=latest jest w k8s/kustomization.yaml
+      - name: Deploy with Kustomize
+        run: |
+          kubectl -n wiz apply -k ${{ env.KUSTOMIZE_DIR }}
+          kubectl -n wiz rollout status deploy/backend
+          kubectl -n wiz rollout status deploy/frontend

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request from 'supertest';              // ⬅️ to
+import request from 'supertest'; // ⬅️ to
 import { AppModule } from '../src/app.module';
 
 describe('App HTTP (e2e)', () => {
@@ -20,6 +20,9 @@ describe('App HTTP (e2e)', () => {
   });
 
   it('GET / -> Hello World!', async () => {
-    await request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
+    await request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect('Hello World!');
   });
 });

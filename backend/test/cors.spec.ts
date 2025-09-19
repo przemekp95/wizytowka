@@ -9,7 +9,9 @@ describe('CORS', () => {
   const ORIGIN = 'http://localhost:3001';
 
   beforeAll(async () => {
-    const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const mod = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = mod.createNestApplication();
     // ważne: konfiguracja z main.ts (CORS/helmet) powinna tu też być, np. przez bootstrap helper
     await app.init();
