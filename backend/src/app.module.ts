@@ -14,7 +14,9 @@ import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
-// import { ProjectModule } from './project/project.module'; // jeśli używasz modułu Project z canvasa
+
+// ✅ Prisma (global)
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -38,6 +40,9 @@ import { join } from 'path';
         res,
       }),
     }),
+
+    // ✅ Globalny provider Prisma
+    PrismaModule,
 
     ContactModule,
     // ProjectModule,

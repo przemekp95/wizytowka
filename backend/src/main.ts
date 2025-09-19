@@ -21,7 +21,7 @@ async function bootstrap() {
   // CORS_ORIGINS=https://twoja-domena.pl,https://twoj-frontend.vercel.app
   const envOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean);
 
   const allowedOrigins = new Set<string>([

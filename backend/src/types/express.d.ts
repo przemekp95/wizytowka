@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import 'express';
 
 declare module 'express-serve-static-core' {
   interface Request {
