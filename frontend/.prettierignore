@@ -4,3 +4,16 @@ dist
 coverage
 cypress/videos
 cypress/screenshots
+
+
+node_modules/
+dist/
+.build/
+.next/
+coverage/
+playwright-report/
+test-results/
+
+
+/frontend/playwright-report/
+/frontend/test-results/

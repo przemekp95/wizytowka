@@ -1,15 +1,16 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ContactForm from '../ContactForm';
+import ContactForm from '@/app/_components/ContactForm';
+import { vi } from 'vitest';
 
 beforeAll(() => {
   // Podmiana fetch dla testów
-
-  const g = globalThis as unknown as { fetch: jest.Mock };
-  g.fetch = jest.fn();
+  const g = globalThis as unknown as { fetch: ReturnType<typeof vi.fn> };
+  g.fetch = vi.fn();
 });
+
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.restoreAllMocks();
 });
 
 test('walidacja pól - pokazuje błąd dla pustego formularza', async () => {
@@ -27,7 +28,7 @@ test('sukces wysyłki - pokazuje komunikat i czyści dane', async () => {
   await userEvent.type(screen.getByLabelText(/E-mail/i), 'jan@test.pl');
   await userEvent.type(screen.getByLabelText(/Wiadomość/i), 'Treść wiadomości testowej');
 
-  (global.fetch as jest.Mock).mockResolvedValue({
+  (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
     ok: true,
     json: async () => ({ ok: true }),
   });

@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": false,
 
     // 👇 dodaj to
-    "types": ["node", "express"],
+    "types": ["node", "express", "jest"],
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": ["src", "src/types", "src/types/global.d.ts"]
