@@ -5,6 +5,7 @@ on:
   pull_request:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -54,6 +55,7 @@ jobs:
       DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
       MONGODB_URI: mongodb://localhost:27017
       MONGODB_DB: wizytowka
+
       NODE_ENV: test
       SMTP_HOST: localhost
       SMTP_PORT: 25
@@ -68,6 +70,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # pnpm: wersja pobierana z package.json ("packageManager")
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -121,7 +124,7 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     env:
-      # (opcjonalnie) ustaw, jeśli kubeconfig nie ma current-context
+      # ustaw, jeśli kubeconfig ma wiele kontekstów
       KUBE_CONTEXT: ${{ secrets.KUBE_CONTEXT }}
 
     steps:
@@ -201,11 +204,17 @@ jobs:
           echo ">>> cluster-info"
           kubectl cluster-info
 
-      - name: Deploy with Kustomize
-        env:
-          KUBECONFIG: ${{ env.KUBECONFIG }}
+      - name: Ensure imagePullSecret on default SA
         run: |
-          # Walidację OpenAPI wyłączamy (czasem clustery blokują /openapi)
+          kubectl -n wiz get secret ghcr-creds >/dev/null 2>&1 || kubectl -n wiz create secret docker-registry ghcr-creds \
+            --docker-server=ghcr.io \
+            --docker-username="${{ github.repository_owner }}" \
+            --docker-password="${{ secrets.GITHUB_TOKEN }}" \
+            --docker-email="none@example.com" || true
+          kubectl -n wiz patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr-creds"}]}' || true
+
+      - name: Deploy with Kustomize
+        run: |
           kubectl -n wiz apply -k ${{ env.KUSTOMIZE_DIR }} --validate=false
           kubectl -n wiz rollout status deploy/backend
           kubectl -n wiz rollout status deploy/frontend
