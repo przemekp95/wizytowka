@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  packages: write
+  packages: write          # push do GHCR
   id-token: write
 
 concurrency:
@@ -17,8 +17,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ghcr.io/przemekp95/wizytowka-backend
-  IMAGE_FRONTEND: ghcr.io/przemekp95/wizytowka-frontend
+  IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/wizytowka-backend
+  IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/wizytowka-frontend
   KUSTOMIZE_DIR: k8s
 
 jobs:
@@ -69,10 +69,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # pnpm zgodny z package.json ("packageManager"); bez wymuszania wersji
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          # bez 'version' – akcja weźmie wersję z package.json (packageManager)
           run_install: false
 
       - name: Setup Node
@@ -91,8 +91,7 @@ jobs:
         run: |
           for i in {1..60}; do
             (nc -z localhost 5432) && (nc -z localhost 27017) && break
-            echo "Waiting for DBs... ($i/60)"
-            sleep 2
+            echo "Waiting for DBs... ($i/60)"; sleep 2
           done
 
       # ---- Prisma (backend) ----
@@ -134,6 +133,7 @@ jobs:
           echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
 
+      # --- Build & push to GHCR ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -141,7 +141,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Backend
@@ -149,6 +149,7 @@ jobs:
         with:
           context: ./backend
           push: true
+          provenance: false
           tags: |
             ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_BACKEND }}:${{ steps.meta.outputs.TAG_SHA }}
@@ -158,10 +159,12 @@ jobs:
         with:
           context: ./frontend
           push: true
+          provenance: false
           tags: |
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
 
+      # --- kubectl apply -k ---
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
@@ -176,7 +179,7 @@ jobs:
         run: |
           kubectl -n wiz get secret ghcr-creds >/dev/null 2>&1 || kubectl -n wiz create secret docker-registry ghcr-creds \
             --docker-server=ghcr.io \
-            --docker-username="${{ github.actor }}" \
+            --docker-username="${{ github.repository_owner }}" \
             --docker-password="${{ secrets.GITHUB_TOKEN }}" \
             --docker-email="none@example.com" || true
           kubectl -n wiz patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr-creds"}]}' || true
