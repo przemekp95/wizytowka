@@ -32,7 +32,8 @@ jobs:
           POSTGRES_DB: wizytowka
           POSTGRES_USER: wiz
           POSTGRES_PASSWORD: wiz
-        ports: [5432:5432]
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd="pg_isready -U wiz -d wizytowka"
           --health-interval=10s
@@ -41,7 +42,8 @@ jobs:
 
       mongo:
         image: mongo:7
-        ports: [27017:27017]
+        ports:
+          - 27017:27017
         options: >-
           --health-cmd="mongosh --quiet --eval 'db.adminCommand({ ping: 1 })' || exit 1"
           --health-interval=10s
@@ -52,6 +54,7 @@ jobs:
       DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
       MONGODB_URI: mongodb://localhost:27017
       MONGODB_DB: wizytowka
+
       NODE_ENV: test
       SMTP_HOST: localhost
       SMTP_PORT: 25
@@ -66,6 +69,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # pnpm: wersja brana z package.json (packageManager)
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -129,6 +133,7 @@ jobs:
           echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
 
+      # --- Build & push to GHCR ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -163,15 +168,22 @@ jobs:
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
 
+      # --- kubectl apply -k ---
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: latest
 
       - name: Configure kubeconfig
-        run: echo "${KUBE_CONFIG}" | base64 -d > $HOME/.kube/config
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # base64 kubeconfig lub plaintext
+        run: |
+          mkdir -p "$HOME/.kube"
+          # jeśli KUBE_CONFIG jest base64:
+          echo "$KUBE_CONFIG" | base64 --decode > "$HOME/.kube/config" 2>/dev/null || echo "$KUBE_CONFIG" > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl version --client
+          kubectl config get-contexts || true
 
       - name: Ensure imagePullSecret on default SA
         run: |
