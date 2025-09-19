@@ -1,16 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { ContactService } from './contact.service';
+import { PrismaService } from '../prisma/prisma.service';
 import nodemailer from 'nodemailer';
 
 jest.mock('nodemailer', () => {
-  const sendMail = jest.fn().mockResolvedValue({
-    messageId: 'test-id',
-    accepted: ['to@example.com'],
-    rejected: [],
-  });
-  const createTransport = jest.fn(() => ({ sendMail }));
-
-  // ważne: eksportujemy zarówno top-level `createTransport`, jak i `default`
+  const createTransport = jest.fn(); // implementacja będzie ustawiana w beforeEach
   return {
     __esModule: true,
     default: { createTransport },
@@ -21,15 +15,43 @@ jest.mock('nodemailer', () => {
 describe('ContactService', () => {
   let service: ContactService;
 
+  let sendMailMock: jest.Mock;
+  let prismaMock: PrismaService;
+
   beforeEach(async () => {
+    // ENV do maila
     process.env.SMTP_HOST = 'smtp.test.local';
     process.env.SMTP_FROM = 'from@test.local';
     process.env.SMTP_TO = 'to@test.local';
     process.env.SMTP_PORT = '465';
     process.env.SMTP_SECURE = 'true';
 
+    // WAŻNE: najpierw wyczyść, potem przypnij implementacje mocków
+    jest.clearAllMocks();
+
+    // Mock transportera + sendMail
+    sendMailMock = jest.fn().mockResolvedValue({
+      messageId: 'test-id',
+      accepted: ['to@example.com'],
+      rejected: [],
+    });
+    const createTransport =
+      (nodemailer as any).createTransport ??
+      (nodemailer as any).default.createTransport;
+    createTransport.mockReturnValue({ sendMail: sendMailMock });
+
+    // Mock Prisma
+    prismaMock = {
+      contactMessage: {
+        create: jest.fn().mockResolvedValue({ id: 'saved-123' }),
+      },
+    } as unknown as PrismaService;
+
     const moduleRef = await Test.createTestingModule({
-      providers: [ContactService],
+      providers: [
+        ContactService,
+        { provide: PrismaService, useValue: prismaMock },
+      ],
     }).compile();
 
     service = moduleRef.get(ContactService);
@@ -44,7 +66,7 @@ describe('ContactService', () => {
     jest.resetAllMocks();
   });
 
-  it('wysyła e-mail przez transporter i zwraca messageId', async () => {
+  it('sendMail: wysyła e-mail i zwraca messageId', async () => {
     const res = await service.sendMail({
       name: 'Jan',
       email: 'jan@test.local',
@@ -55,18 +77,12 @@ describe('ContactService', () => {
 
     expect(res).toEqual({ messageId: 'test-id' });
 
-    // UWAGA: bez `.default` — tak działa import w tym środowisku
-    const mockedCreate =
+    const createTransport =
       (nodemailer as any).createTransport ??
       (nodemailer as any).default?.createTransport;
 
-    expect(mockedCreate).toHaveBeenCalled();
-
-    const transporter = mockedCreate.mock.results[0].value as {
-      sendMail: jest.Mock;
-    };
-
-    expect(transporter.sendMail).toHaveBeenCalledWith(
+    expect(createTransport).toHaveBeenCalled();
+    expect(sendMailMock).toHaveBeenCalledWith(
       expect.objectContaining({
         from: 'from@test.local',
         to: 'to@test.local',
@@ -78,7 +94,32 @@ describe('ContactService', () => {
     );
   });
 
-  it('rzuca błąd przy braku wymaganej konfiguracji SMTP', async () => {
+  it('createAndNotify: zwraca savedId i messageId', async () => {
+    const res = await service.createAndNotify({
+      name: 'Ala',
+      email: 'ala@test.local',
+      message: 'Hej',
+    });
+
+    expect(res.ok).toBe(true);
+    expect(res.savedId).toBe('saved-123');
+    expect(res.messageId).toBe('test-id');
+
+    expect(
+      (prismaMock.contactMessage.create as any),
+    ).toHaveBeenCalledWith({
+      data: {
+        name: 'Ala',
+        email: 'ala@test.local',
+        message: 'Hej',
+        ip: null,
+      },
+      select: { id: true },
+    });
+    expect(sendMailMock).toHaveBeenCalled();
+  });
+
+  it('sendMail: rzuca błąd przy braku wymaganej konfiguracji SMTP', async () => {
     delete process.env.SMTP_HOST;
 
     await expect(
