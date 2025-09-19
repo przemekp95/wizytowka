@@ -1,4 +1,5 @@
 /* pnpm tsx scripts/seed-portfolio.ts */
+import 'dotenv/config'; // <-- wczyta backend/.env
 import { MongoClient } from 'mongodb';
 
 const items = [
@@ -26,15 +27,7 @@ const items = [
     title: 'Mazowieści',
     href: 'https://mazowiesci.pl',
     desc: 'Migracja z WIX do WordPress, import treści, SEO...',
-    tags: [
-      'Python (Scrapy)',
-      'WordPress',
-      'PHP',
-      'HTML',
-      'CSS',
-      'REST API',
-      'SEO',
-    ],
+    tags: ['Python (Scrapy)', 'WordPress', 'PHP', 'HTML', 'CSS', 'REST API', 'SEO'],
     img: '/images/mazo.png',
     isLogo: true,
     newTech: false,
@@ -63,10 +56,20 @@ const items = [
 ];
 
 (async () => {
-  const client = new MongoClient(process.env.MONGODB_URI!);
+  const uri =
+    process.env.MONGODB_URI ??
+    'mongodb://root:root@localhost:27017/?authSource=admin';
+  const dbName = process.env.MONGODB_DB ?? 'wizytowka';
+
+  if (!uri.startsWith('mongodb')) {
+    throw new Error('Brak poprawnego MONGODB_URI w .env');
+  }
+
+  const client = new MongoClient(uri);
   await client.connect();
-  const db = client.db(process.env.MONGODB_DB || 'wizytowka');
+  const db = client.db(dbName);
   const col = db.collection('portfolio_items');
+
   const now = new Date();
   await col.deleteMany({});
   await col.insertMany(
@@ -79,6 +82,7 @@ const items = [
       updatedAt: now,
     })),
   );
+
   await client.close();
   console.log('Seed OK');
 })();

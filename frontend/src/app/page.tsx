@@ -6,12 +6,43 @@ import Image from 'next/image';
 import Header from '@/app/_components/Header';
 
 // Użyj serwerowej wersji formularza (statyczny HTML + widoczna hCaptcha)
-import ContactForm from '@/app/_components/ContactForm'; // patrz poprzednie moje msg
+import ContactForm from '@/app/_components/ContactForm';
 
 export const dynamic = 'force-static';
-export const revalidate = false;
+// ISR: odśwież dane z API co 5 minut
+export const revalidate = 300;
 
-export default function OnePager() {
+type PortfolioItem = {
+  _id: string;
+  title: string;
+  slug: string;
+  href: string;
+  desc: string;
+  tags: string[];
+  img: string;
+  isLogo?: boolean;
+  newTech?: boolean;
+};
+
+async function fetchPortfolio(): Promise<PortfolioItem[]> {
+  // Jeśli masz osobny origin dla backendu w dev/prod, ustaw:
+  // NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 (przykład)
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  try {
+    const res = await fetch(`${base}/api/portfolio`, {
+      next: { revalidate },
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { ok: boolean; items: PortfolioItem[] };
+    return data?.items ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function OnePager() {
+  const items = await fetchPortfolio();
+
   return (
     <>
       {/* NAV */}
@@ -65,7 +96,7 @@ export default function OnePager() {
           </div>
         </section>
 
-        {/* PORTFOLIO — bez zmian istotnych dla SSG */}
+        {/* PORTFOLIO — teraz z API */}
         <section id="portfolio" className="py-20 md:py-28">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">
@@ -73,56 +104,16 @@ export default function OnePager() {
             </h2>
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
-              {[
-                {
-                  title: 'CASN Laravel',
-                  href: 'https://casn.pietrzakprzemyslaw.pl',
-                  desc: 'Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting. (link prowadzi do zdjętej wersji strony)',
-                  tags: ['Laravel', 'PHP', 'Blade', 'Github', 'Bootstrap'],
-                  img: '/images/logo.jpg',
-                  isLogo: true,
-                  newTech: false,
-                },
-                {
-                  title: 'CASN Next.js',
-                  href: 'https://casn.pl',
-                  desc: 'Migracja strony think-tanku z Laravel na Next.js 15 App Router.',
-                  tags: ['Next.js', 'Prisma', 'MySQL', 'Typescript', 'Markdown', 'Github'],
-                  img: '/images/logo.jpg',
-                  isLogo: true,
-                  newTech: false,
-                },
-                {
-                  title: 'Mazowieści',
-                  href: 'https://mazowiesci.pl',
-                  desc: 'Przeprowadziłem pełną migrację serwisu informacyjnego z WIX do WordPress. Zautomatyzowałem ekstrakcję artykułów z pomocą Python (Scrapy) i zaimportowałem treści do bazy danych WordPress. Stworzyłem niestandardowe skrypty PHP do integracji danych, wdrożyłem politykę optymalizacji SEO, przebudowałem menu i system tagów. Zoptymalizowałem szybkość strony i poprawiłem jej pozycję w Google.',
-                  tags: ['Python (Scrapy)', 'WordPress', 'PHP', 'HTML', 'CSS', 'REST API', 'SEO'],
-                  img: '/images/mazo.png',
-                  isLogo: true,
-                  newTech: false,
-                },
-                {
-                  title: 'Strona Wizytówka',
-                  href: 'https://pietrzakprzemyslaw.pl',
-                  desc: 'One-pager w Next.js z Tailwind i Sass.',
-                  tags: ['Next.js', 'Tailwind', 'Sass'],
-                  img: '/images/PP-2-JPG-01.webp',
-                  isLogo: true,
-                  newTech: false,
-                },
-                {
-                  title: 'Fundacja Służba Niepodległej',
-                  href: 'https://sluzbaniepodleglej.pl',
-                  desc: 'Administrowałem i rozwijałem stronę fundacji opartą na WordPress. Wdrażałem nowe podstrony, strategię treści SEO.',
-                  tags: ['WordPress', 'PHP', 'CSS', 'HTML', 'Google Search Console', 'SEO'],
-                  img: '/images/logo-sluzba-niepodleglej.png',
-                  isLogo: true,
-                  newTech: false,
-                },
-              ].map((p) => {
+              {items.length === 0 && (
+                <p className="col-span-full text-center text-slate-500">
+                  Brak pozycji do wyświetlenia.
+                </p>
+              )}
+
+              {items.map((p) => {
                 const imgClasses = p.isLogo ? 'object-contain bg-white p-6' : 'object-cover';
                 return (
-                  <article key={p.title} className="card group flex flex-col h-full text-center">
+                  <article key={p._id} className="card group flex flex-col h-full text-center">
                     <div className="relative overflow-hidden rounded-xl h-64 sm:h-72 lg:h-80">
                       <Image
                         src={p.img}
@@ -147,7 +138,7 @@ export default function OnePager() {
                     <div className="mt-4">
                       <div className="font-semibold text-slate-800">Technologie</div>
                       <div className="mt-2 flex flex-wrap justify-center gap-2">
-                        {p.tags.map((t) => (
+                        {p.tags?.map((t) => (
                           <span key={t} className="chip">
                             {t}
                           </span>
