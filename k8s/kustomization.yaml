@@ -1,0 +1,14 @@
+resources:
+  - backend.yaml
+  - frontend.yaml
+  - ingress.yaml
+# postgres opcjonalnie:
+#  - postgres.yaml
+
+images:
+  - name: ghcr.io/przemekp95/wizytowka-backend
+    newName: ghcr.io/przemekp95/wizytowka-backend
+    newTag: latest
+  - name: ghcr.io/przemekp95/wizytowka-frontend
+    newName: ghcr.io/przemekp95/wizytowka-frontend
+    newTag: latest

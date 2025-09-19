@@ -105,9 +105,7 @@ describe('ContactService', () => {
     expect(res.savedId).toBe('saved-123');
     expect(res.messageId).toBe('test-id');
 
-    expect(
-      (prismaMock.contactMessage.create as any),
-    ).toHaveBeenCalledWith({
+    expect(prismaMock.contactMessage.create as any).toHaveBeenCalledWith({
       data: {
         name: 'Ala',
         email: 'ala@test.local',
