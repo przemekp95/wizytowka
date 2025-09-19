@@ -8,13 +8,15 @@
     "start": "next start",
     "export": "next export",
     "lint": "eslint . && pnpm run format:check",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@apollo/client": "^3.13.0",
@@ -31,6 +33,9 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/client-preset": "^4.2.1",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -41,18 +46,21 @@
     "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.8",
-    "@graphql-codegen/cli": "^5.0.3",
-    "@graphql-codegen/client-preset": "^4.2.1",
+    "@vitejs/plugin-react": "^5.0.3",
     "cypress": "^15.0.0",
     "eslint": "^9.18.0",
     "eslint-config-next": "15.5.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vitest": "^0.5.4",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.1.1",
     "jest-environment-jsdom": "^30.1.1",
+    "jsdom": "^27.0.0",
+    "msw": "^2.11.2",
     "prettier": "^3.6.2",
     "sass": "^1.90.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }
