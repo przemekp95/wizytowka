@@ -29,10 +29,18 @@ export class ContactAdminController {
       take,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, email: true, message: true, ip: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        message: true,
+        ip: true,
+        createdAt: true,
+      },
     });
 
-    const nextCursor = items.length === take ? items[items.length - 1].id : undefined;
+    const nextCursor =
+      items.length === take ? items[items.length - 1].id : undefined;
 
     return { items, nextCursor };
   }

@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   postgres:
     image: postgres:16
@@ -15,6 +16,30 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d wizytowka"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
+
+  # (opcjonalnie) podgląd maili w dev: http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: wiz-mailhog
+    profiles: ["dev-mail"]
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+
+  # (opcjonalnie) podgląd DB przez przeglądarkę: http://localhost:5050
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: wiz-pgadmin
+    profiles: ["admin"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata: {}
