@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  packages: write          # push do GHCR
+  packages: write
   id-token: write
 
 concurrency:
@@ -40,8 +40,21 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.adminCommand({ ping: 1 })' || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
       DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
+      MONGODB_URI: mongodb://localhost:27017
+      MONGODB_DB: wizytowka
+
       NODE_ENV: test
       SMTP_HOST: localhost
       SMTP_PORT: 25
@@ -56,24 +69,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Najpierw pnpm (żeby cache='pnpm' w setup-node nie wywalił się szukając pnpm)
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          # bez 'version' – akcja weźmie wersję z package.json (packageManager)
           run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
             **/pnpm-lock.yaml
 
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
+
+      - name: Wait for Postgres & Mongo to be ready
+        run: |
+          for i in {1..60}; do
+            (nc -z localhost 5432) && (nc -z localhost 27017) && break
+            echo "Waiting for DBs... ($i/60)"
+            sleep 2
+          done
 
       # ---- Prisma (backend) ----
       - name: Prisma generate
@@ -114,7 +134,6 @@ jobs:
           echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
 
-      # --- Build & push to GHCR ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -143,19 +162,16 @@ jobs:
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
 
-      # --- kubectl apply -k ---
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: 'latest'
+          version: latest
 
       - name: Configure kubeconfig
-        run: |
-          echo "${KUBE_CONFIG}" | base64 -d > $HOME/.kube/config
+        run: echo "${KUBE_CONFIG}" | base64 -d > $HOME/.kube/config
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
-      # (Opcjonalnie) upewnij się, że SA ma imagePullSecret do GHCR
       - name: Ensure imagePullSecret on default SA
         run: |
           kubectl -n wiz get secret ghcr-creds >/dev/null 2>&1 || kubectl -n wiz create secret docker-registry ghcr-creds \
@@ -165,7 +181,6 @@ jobs:
             --docker-email="none@example.com" || true
           kubectl -n wiz patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr-creds"}]}' || true
 
-      # Używamy kustomize; newTag=latest jest w k8s/kustomization.yaml
       - name: Deploy with Kustomize
         run: |
           kubectl -n wiz apply -k ${{ env.KUSTOMIZE_DIR }}
