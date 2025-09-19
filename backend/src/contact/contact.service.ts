@@ -1,20 +1,27 @@
-import { Injectable, Logger } from '@nestjs/common';
-import nodemailer from 'nodemailer';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 
-function toBool(v: any) {
-  const s = String(v ?? '').toLowerCase();
-  return s === 'true' || s === '1' || s === 'yes' || s === 'ssl';
+import { Injectable, Logger } from '@nestjs/common';
+import nodemailer, { Transporter } from 'nodemailer';
+
+function toBool(v: unknown): boolean {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v === 1;
+  if (typeof v === 'string') {
+    const s = v.toLowerCase().trim();
+    return s === 'true' || s === '1' || s === 'yes' || s === 'ssl';
+  }
+  return false;
 }
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
-  private transporter = nodemailer.createTransport(
+  private transporter: Transporter = nodemailer.createTransport(
     {
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT ?? 465),
-      secure: toBool(process.env.SMTP_SECURE ?? true), // 465 → SSL
+      secure: toBool(process.env.SMTP_SECURE ?? true),
       auth:
         process.env.SMTP_USER && process.env.SMTP_PASS
           ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
@@ -35,7 +42,8 @@ export class ContactService {
     message: string;
     ip?: string;
     requestId?: string;
-  }) {
+    hcaptchaToken?: string;
+  }): Promise<{ messageId: string }> {
     const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
     const to = process.env.SMTP_TO || process.env.SMTP_USER || '';
 
@@ -43,14 +51,14 @@ export class ContactService {
       throw new Error('Brak konfiguracji SMTP (HOST/FROM/TO)');
     }
 
-    const lines = [
+    const lines: string[] = [
       `Imię i nazwisko: ${params.name}`,
       `E-mail: ${params.email}`,
-      params.ip ? `IP: ${params.ip}` : undefined,
-      params.requestId ? `Request-Id: ${params.requestId}` : undefined,
+      params.ip ? `IP: ${params.ip}` : '',
+      params.requestId ? `Request-Id: ${params.requestId}` : '',
       '---',
       params.message,
-    ].filter(Boolean) as string[];
+    ].filter(Boolean);
 
     const plain = lines.join('\n');
 

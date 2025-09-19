@@ -1,36 +1,16 @@
 {
-  "name": "wizytowka",
-  "version": "0.1.0",
+  "name": "wizytowka-monorepo",
   "private": true,
+  "packageManager": "pnpm@9.12.2",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "export": "next export",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@emailjs/browser": "^4.4.1",
-    "@hcaptcha/react-hcaptcha": "^1.12.1",
-    "framer-motion": "^12.23.12",
-    "hcaptcha": "^0.2.0",
-    "next": "15.5.0",
-    "nodemailer": "^7.0.5",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "zod": "^4.1.1"
+    "preinstall": "node -e \"if(!/pnpm/.test(process.env.npm_execpath||'')){console.error('✖ Użyj pnpm');process.exit(1)}\"",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "start": "pnpm -r start",
+    "lint": "pnpm -r lint",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20.19.11",
-    "@types/nodemailer": "^7.0.1",
-    "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.8",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.0",
-    "sass": "^1.90.0",
-    "tailwindcss": "^4",
-    "typescript": "^5.9.2"
+    "husky": "^9.1.7"
   }
 }

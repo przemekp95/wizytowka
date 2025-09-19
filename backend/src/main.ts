@@ -1,4 +1,5 @@
-// main.ts
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
+
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -10,8 +11,16 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(helmet()); // bezpieczne nagłówki
-  app.use(cookieParser()); // czytanie/zapisywanie cookies (JWT)
+  const isProd = process.env.NODE_ENV === 'production';
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProd ? undefined : false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
+  app.use(cookieParser());
   app.use(new RequestIdMiddleware().use);
 
   app.enableCors({
@@ -20,8 +29,8 @@ async function bootstrap() {
     ),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization'],
-    exposedHeaders: ['Set-Cookie'], // przydatne gdy chcesz widzieć Set-Cookie po stronie frontu
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie'],
   });
 
   app.setGlobalPrefix('api');
@@ -34,9 +43,9 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(Number(process.env.PORT) || 4000);
-  console.log(
-    `API running on http://localhost:${process.env.PORT || 4000}/api`,
-  );
+  const port = Number(process.env.PORT) || 4000;
+  await app.listen(port);
+  console.log(`REST   → http://localhost:${port}/api`);
+  console.log(`GraphQL→ http://localhost:${port}/graphql`);
 }
 void bootstrap();

@@ -1,0 +1,23 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input ContactMessageInput {
+  email: String!
+  hcaptchaToken: String
+  message: String!
+  name: String!
+}
+
+type ContactResult {
+  error: String
+  ok: Boolean!
+}
+
+type Mutation {
+  sendContact(input: ContactMessageInput!): ContactResult!
+}
+
+type Query {
+  hello: String!
+}
