@@ -2,6 +2,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import nodemailer, { Transporter } from 'nodemailer';
+import { PrismaService } from '../prisma/prisma.service';
 
 function toBool(v: unknown): boolean {
   if (typeof v === 'boolean') return v;
@@ -13,10 +14,22 @@ function toBool(v: unknown): boolean {
   return false;
 }
 
+export type CreateContactInput = {
+  name: string;
+  email: string;
+  message: string;
+  ip?: string;
+  requestId?: string;
+  hcaptchaToken?: string;
+};
+
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
+  constructor(private readonly prisma: PrismaService) {}
+
+  // Jednorazowa konfiguracja transportu SMTP
   private transporter: Transporter = nodemailer.createTransport(
     {
       host: process.env.SMTP_HOST,
@@ -36,14 +49,7 @@ export class ContactService {
     },
   );
 
-  async sendMail(params: {
-    name: string;
-    email: string;
-    message: string;
-    ip?: string;
-    requestId?: string;
-    hcaptchaToken?: string;
-  }): Promise<{ messageId: string }> {
+  async sendMail(params: CreateContactInput): Promise<{ messageId: string }> {
     const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
     const to = process.env.SMTP_TO || process.env.SMTP_USER || '';
 
@@ -60,14 +66,12 @@ export class ContactService {
       params.message,
     ].filter(Boolean);
 
-    const plain = lines.join('\n');
-
     const info = await this.transporter.sendMail({
       from,
       to,
       replyTo: params.email,
       subject: `Wiadomość ze strony – ${params.name}`,
-      text: plain,
+      text: lines.join('\n'),
       headers: { 'X-Request-Id': params.requestId ?? '' },
     });
 
@@ -78,5 +82,48 @@ export class ContactService {
     );
 
     return { messageId: info.messageId };
+  }
+
+  /**
+   * Zapis w bazie + wysyłka maila.
+   * Błędy zapisu NIE blokują maila.
+   * Błędy maila NIE powodują 500 — logujemy i nadal zwracamy 202.
+   */
+  async createAndNotify(params: CreateContactInput): Promise<{
+    ok: true;
+    messageId?: string;
+    savedId?: string;
+  }> {
+    let savedId: string | undefined;
+
+    // 1) Zapis do DB (best-effort)
+    try {
+      const saved = await this.prisma.contactMessage.create({
+        data: {
+          name: params.name,
+          email: params.email,
+          message: params.message,
+          ip: params.ip ?? null,
+        },
+        select: { id: true },
+      });
+      savedId = saved.id;
+    } catch (e) {
+      this.logger.warn(
+        `DB save failed, continuing. requestId=${params.requestId} reason=${(e as Error).message}`,
+      );
+    }
+
+    // 2) Wysyłka maila (best-effort)
+    try {
+      const { messageId } = await this.sendMail(params);
+      return { ok: true, messageId, savedId };
+    } catch (e) {
+      this.logger.error(
+        `Mail send failed. requestId=${params.requestId} reason=${(e as Error).message}`,
+      );
+      // nadal 202 — klient nie utknie przez błąd SMTP
+      return { ok: true, savedId };
+    }
   }
 }

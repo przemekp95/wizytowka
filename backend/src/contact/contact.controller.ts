@@ -21,13 +21,15 @@ export class ContactController {
       (req.headers['x-forwarded-for'] as string | undefined)
         ?.split(',')[0]
         ?.trim() || req.ip;
-    const requestId = req.requestId;
+    const requestId = req.requestId; // już typowane ✅
 
-    const { messageId } = await this.contact.sendMail({
+    const result = await this.contact.createAndNotify({
       ...dto,
       ip,
       requestId,
     });
-    return { ok: true, messageId };
+
+    // Zwracamy messageId + (opcjonalnie) id zapisanego rekordu
+    return result;
   }
 }

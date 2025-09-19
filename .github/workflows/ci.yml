@@ -4,7 +4,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -16,6 +16,36 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: wizytowka
+          POSTGRES_USER: wiz
+          POSTGRES_PASSWORD: wiz
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U wiz -d wizytowka"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      # Backend użyje tego DSN w krokach prisma/testów
+      DATABASE_URL: postgresql://wiz:wiz@localhost:5432/wizytowka?schema=public
+      NODE_ENV: test
+      # Minimalny SMTP stub (żeby testy nie wybuchały jeśli dotykają maila)
+      SMTP_HOST: localhost
+      SMTP_PORT: 25
+      SMTP_SECURE: false
+      SMTP_FROM: test@example.com
+      SMTP_TO: test@example.com
+      ADMIN_TOKEN: test-token
+      FRONTEND_URL: http://localhost:3000
+      PORT: 3000
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,30 +54,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # ⬇️ usuń cache: pnpm – to on powodował błąd
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: true   # robi pnpm install w monorepo (na podstawie pnpm-workspace.yaml)
+          run_install: true
 
-      # --- Lint ---
+      # ---- Prisma (backend) ----
+      - name: Prisma generate
+        run: pnpm -F backend exec prisma generate
+
+      - name: Prisma migrate deploy
+        run: pnpm -F backend exec prisma migrate deploy
+
+      # ---- Lint ----
       - name: Lint backend
         run: pnpm -F backend lint
 
       - name: Lint frontend
         run: pnpm -F frontend lint || true
 
-      # --- Testy backend ---
+      # ---- Tests ----
       - name: Unit tests (backend)
         run: pnpm -F backend test
 
       - name: E2E tests (backend)
         run: pnpm -F backend test:e2e
 
-      # --- Testy frontend ---
-      - name: Frontend tests (RTL/Vitest)
+      - name: Frontend tests
         run: pnpm -F frontend test
+
 
 
 # services:
