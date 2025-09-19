@@ -29,7 +29,6 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
           run_install: true   # robi pnpm install w monorepo (na podstawie pnpm-workspace.yaml)
 
       # --- Lint ---
