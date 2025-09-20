@@ -15,6 +15,9 @@ export type PortfolioItem = {
   status?: 'draft' | 'published';
   createdAt?: Date;
   updatedAt?: Date;
+
+  // ✅ dodatkowe pole
+  repoUrl?: string;
 };
 
 @Injectable()
@@ -31,7 +34,7 @@ export class PortfolioService implements OnModuleInit {
     await col.createIndex({ status: 1, order: 1 });
   }
 
-  listPublished() {
+  async listPublished(): Promise<PortfolioItem[]> {
     return this.db
       .collection<PortfolioItem>('portfolio_items')
       .find({ status: 'published' })

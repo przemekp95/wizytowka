@@ -1,12 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
-import { PortfolioService } from './portfolio.service';
+import { PortfolioService, PortfolioItem } from './portfolio.service';
 
-@Controller('portfolio')
+@Controller('api/portfolio')
 export class PortfolioController {
-  constructor(private readonly svc: PortfolioService) {}
+  constructor(private readonly service: PortfolioService) {}
+
   @Get()
-  async list() {
-    const items = await this.svc.listPublished();
+  async list(): Promise<{ ok: true; items: PortfolioItem[] }> {
+    const items = await this.service.listPublished();
+
+    // ✅ po staremu, tylko teraz elementy mogą mieć repoUrl
     return { ok: true, items };
   }
 }
