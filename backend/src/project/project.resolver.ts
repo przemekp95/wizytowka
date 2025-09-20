@@ -9,27 +9,27 @@ export class ProjectResolver {
   constructor(private readonly service: ProjectService) {}
 
   @Query(() => [Project], { name: 'projects' })
-  projects(): Project[] {
+  projects(): Promise<Project[]> {
     return this.service.findAll();
   }
 
   @Query(() => Project, { name: 'project', nullable: true })
-  project(@Args('id', { type: () => ID }) id: string): Project | undefined {
+  project(@Args('id', { type: () => ID }) id: string): Promise<Project | null> {
     return this.service.findOne(id);
   }
 
   @Mutation(() => Project)
-  createProject(@Args('input') input: CreateProjectInput): Project {
+  createProject(@Args('input') input: CreateProjectInput): Promise<Project> {
     return this.service.create(input);
   }
 
   @Mutation(() => Project)
-  updateProject(@Args('input') input: UpdateProjectInput): Project {
+  updateProject(@Args('input') input: UpdateProjectInput): Promise<Project> {
     return this.service.update(input);
   }
 
   @Mutation(() => ID)
-  removeProject(@Args('id', { type: () => ID }) id: string): string {
+  removeProject(@Args('id', { type: () => ID }) id: string): Promise<string> {
     return this.service.remove(id);
   }
 }
