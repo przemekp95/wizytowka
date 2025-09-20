@@ -148,7 +148,6 @@ export default function ContactSection() {
 
       {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
       {status === 'sent' && <p className="text-sm text-green-700">Wiadomość wysłana ✅</p>}
-
     </form>
   );
 }
