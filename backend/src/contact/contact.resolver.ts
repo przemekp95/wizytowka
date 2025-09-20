@@ -22,13 +22,16 @@ export class ContactResolver {
           ?.trim() || req.ip;
       const requestId = req.requestId;
 
-      await this.contactService.sendMail({
+      const result = await this.contactService.createAndNotify({
         ...input,
         ip,
         requestId,
       });
 
-      return { ok: true };
+      return {
+        ok: result.ok,
+        error: undefined,
+      };
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
       return { ok: false, error: msg };
