@@ -190,9 +190,9 @@ export default async function OnePager() {
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">O mnie</h2>
               <p className="mt-3 text-slate-700 leading-relaxed text-justify">
                 Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe
-                w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz
-                danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API,
-                wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na
+                w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma
+                oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL
+                API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na
                 Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z
                 usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React
                 Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.
@@ -204,10 +204,10 @@ export default async function OnePager() {
                 </h3>
                 <ul className="mt-4 space-y-3">
                   <li className="bullet">
-                    <strong>Frontend:</strong> Next.js / React / Tailwind
+                    <strong>Frontend:</strong> Next.js / React / Tailwind / JavaScript, TypeScript
                   </li>
                   <li className="bullet">
-                    <strong>Backend:</strong> Laravel / Symfony / PHP, Node / NestJS
+                    <strong>Backend:</strong> Laravel / Symfony / PHP, Node / NestJS (Typescript)
                   </li>
                   <li className="bullet">
                     <strong>Bazy danych:</strong> Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL
