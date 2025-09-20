@@ -17,30 +17,28 @@ export class ProjectService {
     },
   ];
 
-  async findAll(): Promise<Project[]> {
+  findAll(): Project[] {
     return this.projects;
   }
 
-  async findOne(id: string): Promise<Project | null> {
-    return this.projects.find((p) => p.id === id) ?? null;
+  findOne(id: string): Project | undefined {
+    return this.projects.find((p) => p.id === id);
   }
 
-  async create(input: CreateProjectInput): Promise<Project> {
+  create(input: CreateProjectInput): Project {
     const project: Project = { id: randomUUID(), ...input };
     this.projects.unshift(project);
     return project;
   }
 
-  async update(input: UpdateProjectInput): Promise<Project> {
+  update(input: UpdateProjectInput): Project {
     const idx = this.projects.findIndex((p) => p.id === input.id);
-    if (idx === -1) {
-      throw new Error('Project not found');
-    }
+    if (idx === -1) throw new Error('Project not found');
     this.projects[idx] = { ...this.projects[idx], ...input };
     return this.projects[idx];
   }
 
-  async remove(id: string): Promise<string> {
+  remove(id: string): string {
     this.projects = this.projects.filter((p) => p.id !== id);
     return id;
   }
