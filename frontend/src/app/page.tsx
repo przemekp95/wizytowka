@@ -76,7 +76,8 @@ export default async function OnePager() {
                 Next.js &amp; PHP Web Developer
               </h1>
               <p className="mt-5 max-w-prose text-lg text-slate-600 fade-up-delayed">
-                Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.
+                Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania
+                oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3 fade-up-delayed2">
                 <a
@@ -187,29 +188,35 @@ export default async function OnePager() {
             </div>
             <div className="lg:col-span-3">
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">O mnie</h2>
-<p className="mt-3 text-slate-700 leading-relaxed text-justify">
-  Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js i Laravel, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.
-</p>
+              <p className="mt-3 text-slate-700 leading-relaxed text-justify">
+                Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe
+                w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz
+                danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API,
+                wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na
+                Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z
+                usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React
+                Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.
+              </p>
 
               <div className="mt-8">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Stack technologiczny
                 </h3>
-<ul className="mt-4 space-y-3">
-  <li className="bullet">
-    <strong>Frontend:</strong> Next.js / React / Tailwind
-  </li>
-  <li className="bullet">
-    <strong>Backend:</strong> Laravel / PHP, Node / NestJS
-  </li>
-  <li className="bullet">
-    <strong>Bazy danych:</strong> Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL
-  </li>
-  <li className="bullet">
-    <strong>DevOps:</strong> Docker / GitHub Actions / Kubernetes / Passenger (Cyber_Folks) / Render / Vercel
-  </li>
-</ul>
-
+                <ul className="mt-4 space-y-3">
+                  <li className="bullet">
+                    <strong>Frontend:</strong> Next.js / React / Tailwind
+                  </li>
+                  <li className="bullet">
+                    <strong>Backend:</strong> Laravel / Symfony / PHP, Node / NestJS
+                  </li>
+                  <li className="bullet">
+                    <strong>Bazy danych:</strong> Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL
+                  </li>
+                  <li className="bullet">
+                    <strong>DevOps:</strong> Docker / GitHub Actions / Kubernetes / Passenger
+                    (Cyber_Folks) / Render / Vercel
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
