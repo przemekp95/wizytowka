@@ -1,12 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import { PortfolioService } from './portfolio.service';
+import { PortfolioService, PortfolioDTO } from './portfolio.service';
 
-@Controller('portfolio')
+@Controller('api/portfolio') // jeśli masz globalPrefix('api'), zmień na tylko 'portfolio'
 export class PortfolioController {
-  constructor(private readonly svc: PortfolioService) {}
+  constructor(private readonly service: PortfolioService) {}
+
   @Get()
-  async list() {
-    const items = await this.svc.listPublished();
+  async list(): Promise<{ ok: true; items: PortfolioDTO[] }> {
+    const items = await this.service.listPublished();
     return { ok: true, items };
   }
 }
