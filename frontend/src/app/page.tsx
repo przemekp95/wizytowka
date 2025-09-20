@@ -204,7 +204,8 @@ export default async function OnePager() {
                 </h3>
                 <ul className="mt-4 space-y-3">
                   <li className="bullet">
-                    <strong>Frontend:</strong> Next.js / React / Tailwind / SCSS / JavaScript, TypeScript
+                    <strong>Frontend:</strong> Next.js / React / Tailwind / SCSS / JavaScript,
+                    TypeScript
                   </li>
                   <li className="bullet">
                     <strong>Backend:</strong> Laravel / Symfony / PHP, Node / NestJS (Typescript)
@@ -246,7 +247,7 @@ export default async function OnePager() {
             <a className="link" href="https://github.com/przemekp95">
               GitHub
             </a>
-            <a className="link" href="https://www.linkedin.com/in/przemyslaw-pietrzak/">
+            <a className="link" href="https://www.linkedin.com/in/przempietrzak/">
               LinkedIn
             </a>
           </div>
