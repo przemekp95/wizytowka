@@ -15,6 +15,8 @@ export type PortfolioItem = {
   status?: 'draft' | 'published';
   createdAt?: Date;
   updatedAt?: Date;
+
+  repoUrl?: string; // <— nowy, opcjonalny
 };
 
 @Injectable()

@@ -22,6 +22,7 @@ type PortfolioItem = {
   img: string;
   isLogo?: boolean;
   newTech?: boolean;
+  repoUrl?: string | null; // <— NOWE
 };
 
 async function fetchPortfolio(): Promise<PortfolioItem[]> {
@@ -135,6 +136,26 @@ export default async function OnePager() {
                       </a>
                     </h3>
                     <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
+
+                    {/* === REPOZYTORIUM (opcjonalnie) === */}
+                    {p.repoUrl?.trim() && (
+                      <div className="mt-4">
+                        <div className="text-xs uppercase tracking-wide text-slate-500">
+                          Repozytorium
+                        </div>
+                        <a
+                          href={p.repoUrl!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium underline underline-offset-4 hover:no-underline break-all"
+                          aria-label={`Repozytorium ${p.title}`}
+                        >
+                          {p.repoUrl}
+                        </a>
+                      </div>
+                    )}
+                    {/* === /REPOZYTORIUM === */}
+
                     <div className="mt-4">
                       <div className="font-semibold text-slate-800">Technologie</div>
                       <div className="mt-2 flex flex-wrap justify-center gap-2">
