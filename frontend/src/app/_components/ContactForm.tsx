@@ -136,16 +136,19 @@ export default function ContactSection() {
         suppressHydrationWarning
       />
 
-      <button
-        type="submit"
-        disabled={status === 'sending'}
-        className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
-      >
-        {status === 'sending' ? 'Wysyłanie...' : 'Wyślij'}
-      </button>
+      <div className="flex justify-center">
+        <button
+          type="submit"
+          disabled={status === 'sending'}
+          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
+        >
+          {status === 'sending' ? 'Wysyłanie...' : 'Wyślij'}
+        </button>
+      </div>
 
       {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
       {status === 'sent' && <p className="text-sm text-green-700">Wiadomość wysłana ✅</p>}
+
     </form>
   );
 }
