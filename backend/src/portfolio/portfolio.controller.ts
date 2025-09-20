@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { PortfolioService, PortfolioItem } from './portfolio.service';
 
-@Controller('api/portfolio')
+@Controller('portfolio')
 export class PortfolioController {
   constructor(private readonly service: PortfolioService) {}
 
