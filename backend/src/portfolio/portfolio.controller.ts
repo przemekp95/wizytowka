@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { PortfolioService, PortfolioDTO } from './portfolio.service';
 
-@Controller('api/portfolio') // jeśli masz globalPrefix('api'), zmień na tylko 'portfolio'
+@Controller('portfolio') // jeśli masz globalPrefix('api'), zmień na tylko 'portfolio'
 export class PortfolioController {
   constructor(private readonly service: PortfolioService) {}
 
