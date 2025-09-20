@@ -1,22 +1,46 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class Project {
+export class PortfolioGQL {
   @Field(() => ID)
-  id!: string;
+  id!: string; // mapujemy z _id (ObjectId → string)
 
   @Field()
   title!: string;
 
-  @Field({ nullable: true })
-  description?: string;
+  @Field()
+  slug!: string;
+
+  @Field()
+  href!: string;
+
+  @Field()
+  desc!: string;
+
+  @Field(() => [String])
+  tags!: string[];
+
+  @Field()
+  img!: string;
 
   @Field({ nullable: true })
-  link?: string;
+  isLogo?: boolean;
 
   @Field({ nullable: true })
-  repo?: string;
+  newTech?: boolean;
 
-  @Field(() => [String], { nullable: 'itemsAndList' })
-  tags?: string[];
+  @Field({ nullable: true })
+  repoUrl?: string; // <— kluczowe pole
+
+  @Field({ nullable: true })
+  order?: number;
+
+  @Field({ nullable: true })
+  status?: 'draft' | 'published';
+
+  @Field({ nullable: true })
+  createdAt?: Date;
+
+  @Field({ nullable: true })
+  updatedAt?: Date;
 }

@@ -6,7 +6,7 @@ const items = [
   {
     title: 'CASN Laravel',
     href: 'https://casn.pietrzakprzemyslaw.pl',
-    desc: 'Stworzyłem aplikację webową...',
+    desc: 'Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting. (link prowadzi do zdjętej wersji strony)',
     tags: ['Laravel', 'PHP', 'Blade', 'Github', 'Bootstrap'],
     img: '/images/logo.jpg',
     isLogo: true,
@@ -16,7 +16,7 @@ const items = [
   {
     title: 'CASN Next.js',
     href: 'https://casn.pl',
-    desc: 'Migracja strony think-tanku...',
+    desc: 'Migracja strony think-tanku z Laravel na Next.js 15 App Router.',
     tags: ['Next.js', 'Prisma', 'MySQL', 'Typescript', 'Markdown', 'Github'],
     img: '/images/logo.jpg',
     isLogo: true,
@@ -26,7 +26,7 @@ const items = [
   {
     title: 'Mazowieści',
     href: 'https://mazowiesci.pl',
-    desc: 'Migracja z WIX do WordPress, import treści, SEO...',
+    desc: 'Przeprowadziłem pełną migrację serwisu informacyjnego z WIX do WordPress. Zautomatyzowałem ekstrakcję artykułów z pomocą Python (Scrapy) i zaimportowałem treści do bazy danych WordPress. Stworzyłem niestandardowe skrypty PHP do integracji danych, wdrożyłem politykę optymalizacji SEO, przebudowałem menu i system tagów. Zoptymalizowałem szybkość strony i poprawiłem jej pozycję w Google.',
     tags: ['Python (Scrapy)', 'WordPress', 'PHP', 'HTML', 'CSS', 'REST API', 'SEO'],
     img: '/images/mazo.png',
     isLogo: true,
@@ -46,7 +46,7 @@ const items = [
   {
     title: 'Fundacja Służba Niepodległej',
     href: 'https://sluzbaniepodleglej.pl',
-    desc: 'Administrowanie i rozwój strony (WordPress, SEO)...',
+    desc: 'Administrowałem i rozwijałem stronę fundacji opartą na WordPress. Wdrażałem nowe podstrony, strategię treści SEO.',
     tags: ['WordPress', 'PHP', 'CSS', 'HTML', 'Google Search Console', 'SEO'],
     img: '/images/logo-sluzba-niepodleglej.png',
     isLogo: true,
