@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Strona główna",
+    "portfolio": "Portfolio",
+    "about": "O mnie",
+    "contact": "Kontakt",
+    "contactMe": "Napisz do mnie"
+  },
+  "hero": {
+    "title": "Next.js & PHP Web Developer",
+    "description": "Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.",
+    "viewProjects": "Zobacz projekty",
+    "contactMe": "Skontaktuj się"
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "noItems": "Brak pozycji do wyświetlenia.",
+    "newTech": "Nowa technologia",
+    "repository": "Repozytorium",
+    "technologies": "Technologie"
+  },
+  "about": {
+    "title": "O mnie",
+    "description": "Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.",
+    "techStack": "Stack technologiczny",
+    "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
+    "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
+    "databases": "Bazy danych: Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL",
+    "devops": "DevOps: Docker / GitHub Actions / Kubernetes / Passenger (Cyber_Folks) / Render / Vercel"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "description": "Napisz wiadomość – odpowiem możliwie szybko.",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "message": "Wiadomość",
+    "send": "Wyślij",
+    "sending": "Wysyłanie...",
+    "success": "Wiadomość wysłana ✅",
+    "error": "Uzupełnij wszystkie pola.",
+    "sendError": "Błąd wysyłki",
+    "unknownError": "Nieznany błąd"
+  },
+  "footer": {
+    "copyright": "© {year} Przemysław Pietrzak",
+    "github": "GitHub",
+    "linkedin": "LinkedIn"
+  },
+  "language": {
+    "polish": "Polski",
+    "english": "English"
+  }
+}

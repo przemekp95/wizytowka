@@ -13,8 +13,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Wizytówka IT - Przemysław Pietrzak',
-  description: 'PHP & Next.js Web Developer',
+  title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+  description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+  keywords: 'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
+  authors: [{ name: 'Przemysław Pietrzak' }],
+  creator: 'Przemysław Pietrzak',
+  publisher: 'Przemysław Pietrzak',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://przemyslawpietrzak.pl'),
+  alternates: {
+    canonical: 'https://przemyslawpietrzak.pl',
+  },
+  openGraph: {
+    title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+    description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    url: 'https://przemyslawpietrzak.pl',
+    siteName: 'Przemysław Pietrzak',
+    locale: 'pl_PL',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+    description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    creator: '@przemekp95',
+  },
+  verification: {
+    google: 'google-site-verification-code',
+  },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -28,8 +69,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

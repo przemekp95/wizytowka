@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const BACKEND = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/config.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
