@@ -11,6 +11,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { PortfolioModule } from './portfolio/portfolio.module';
+import { PortfolioApiController } from './portfolio/portfolio.controller';
 
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -49,7 +50,12 @@ import { PrismaModule } from './prisma/prisma.module';
     // ProjectModule,
     PortfolioModule,
   ],
-  controllers: [AppController, HealthController, LinksController],
+  controllers: [
+    AppController,
+    HealthController,
+    LinksController,
+    PortfolioApiController,
+  ],
   providers: [
     AppService,
     HelloResolver,

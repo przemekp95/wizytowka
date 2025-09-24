@@ -1,10 +1,35 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import LanguageSwitcher from './LanguageSwitcher';
+
+// Funkcja do ładowania tłumaczeń
+async function loadTranslations(locale: string, section: string) {
+  try {
+    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
+    const sectionData = messages[section] || {};
+    return sectionData;
+  } catch {
+    return {};
+  }
+}
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadNavTranslations = async () => {
+      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
+      const navTranslations = await loadTranslations(locale, 'nav');
+      setTranslations(navTranslations);
+      setLoading(false);
+    };
+
+    loadNavTranslations();
+
+    // Inicjalizacja scroll effect po załadowaniu tłumaczeń
     const el = headerRef.current;
     if (!el) return;
 
@@ -18,26 +43,31 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const t = (key: string) => translations[key] || key;
+
   return (
     <header ref={headerRef} className="site-header sticky top-0 z-40">
       <nav className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-        <a className="brand" href="#home">
+        <Link className="brand" href="/">
           Przemysław Pietrzak
-        </a>
+        </Link>
         <div className="hidden sm:flex items-center gap-6 text-sm">
-          <a className="nav-link" href="#portfolio">
-            Portfolio
-          </a>
-          <a className="nav-link" href="#about">
-            O mnie
-          </a>
-          <a className="nav-link" href="#contact">
-            Kontakt
-          </a>
+          <Link className="nav-link" href="/#portfolio">
+            {t('portfolio')}
+          </Link>
+          <Link className="nav-link" href="/#about">
+            {t('about')}
+          </Link>
+          <Link className="nav-link" href="/#contact">
+            {t('contact')}
+          </Link>
         </div>
-        <a className="nav-btn" href="#contact">
-          Napisz do mnie
-        </a>
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <Link className="nav-btn" href="/#contact">
+            {t('contactMe')}
+          </Link>
+        </div>
       </nav>
     </header>
   );

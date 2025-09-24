@@ -4,9 +4,11 @@ import { MongoClient, Db } from 'mongodb';
 export type PortfolioItem = {
   _id: string;
   title: string;
+  title_en?: string;
   slug: string;
   href: string;
   desc: string;
+  desc_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;
@@ -15,8 +17,6 @@ export type PortfolioItem = {
   status?: 'draft' | 'published';
   createdAt?: Date;
   updatedAt?: Date;
-
-  // ✅ dodatkowe pole
   repoUrl?: string;
 };
 

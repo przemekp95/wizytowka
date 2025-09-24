@@ -1,14 +1,44 @@
 'use client';
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, useEffect } from 'react';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
 
+// Funkcja do ładowania tłumaczeń
+async function loadTranslations(locale: string, section: string) {
+  try {
+    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
+    const sectionData = messages[section] || {};
+    return sectionData;
+  } catch {
+    return {};
+  }
+}
+
 export default function ContactSection() {
   const [status, setStatus] = useState<Status>('idle');
   const [err, setErr] = useState('');
   const formRef = useRef<HTMLFormElement | null>(null);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadContactTranslations = async () => {
+      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
+      const contactTranslations = await loadTranslations(locale, 'contact');
+      setTranslations(contactTranslations);
+      setLoading(false);
+    };
+
+    loadContactTranslations();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const t = (key: string) => translations[key] || key;
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,7 +66,7 @@ export default function ContactSection() {
       };
 
       if (!input.name || !input.email || !input.message) {
-        throw new Error('Uzupełnij wszystkie pola.');
+        throw new Error(t('error'));
       }
 
       // GraphQL mutation
@@ -59,14 +89,14 @@ export default function ContactSection() {
       const j = await r.json().catch(() => ({}));
 
       if (!r.ok || j?.errors || j?.data?.sendContact?.ok === false) {
-        throw new Error(j?.data?.sendContact?.error || j?.errors?.[0]?.message || 'Błąd wysyłki');
+        throw new Error(j?.data?.sendContact?.error || j?.errors?.[0]?.message || t('sendError'));
       }
 
       setStatus('sent');
       formRef.current.reset();
     } catch (e) {
       setStatus('error');
-      setErr(e instanceof Error ? e.message : 'Nieznany błąd');
+      setErr(e instanceof Error ? e.message : t('unknownError'));
     } finally {
       setTimeout(() => setStatus('idle'), 1500);
     }
@@ -83,7 +113,7 @@ export default function ContactSection() {
     >
       <div>
         <label className="block text-sm font-medium" htmlFor="name">
-          Imię i nazwisko
+          {t('name')}
         </label>
         <input
           id="name"
@@ -97,7 +127,7 @@ export default function ContactSection() {
 
       <div>
         <label className="block text-sm font-medium" htmlFor="email">
-          E-mail
+          {t('email')}
         </label>
         <input
           type="email"
@@ -112,7 +142,7 @@ export default function ContactSection() {
 
       <div>
         <label className="block text-sm font-medium" htmlFor="message">
-          Wiadomość
+          {t('message')}
         </label>
         <textarea
           id="message"
@@ -142,12 +172,12 @@ export default function ContactSection() {
           disabled={status === 'sending'}
           className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
         >
-          {status === 'sending' ? 'Wysyłanie...' : 'Wyślij'}
+          {status === 'sending' ? t('sending') : t('send')}
         </button>
       </div>
 
       {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
-      {status === 'sent' && <p className="text-sm text-green-700">Wiadomość wysłana ✅</p>}
+      {status === 'sent' && <p className="text-sm text-green-700">{t('success')}</p>}
     </form>
   );
 }
