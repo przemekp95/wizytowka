@@ -47,14 +47,14 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
 async function getTranslations(locale: string) {
   try {
     const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
-    return (key: string, params?: any) => {
+    return (key: string, params?: Record<string, string | number>) => {
       const keys = key.split('.');
       let value = messages;
       for (const k of keys) {
         value = value?.[k];
       }
       if (typeof value === 'string' && params) {
-        return value.replace(/{(\w+)}/g, (match, param) => params[param] || match);
+        return value.replace(/{(\w+)}/g, (match, param) => String(params[param] || match));
       }
       return value || key;
     };
@@ -136,9 +136,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
               {items.length === 0 && (
-                <p className="col-span-full text-center text-slate-500">
-                  {t('portfolio.noItems')}
-                </p>
+                <p className="col-span-full text-center text-slate-500">{t('portfolio.noItems')}</p>
               )}
 
               {items.map((p) => {
@@ -191,7 +189,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                     {/* === /REPOZYTORIUM === */}
 
                     <div className="mt-4">
-                      <div className="font-semibold text-slate-800">{t('portfolio.technologies')}</div>
+                      <div className="font-semibold text-slate-800">
+                        {t('portfolio.technologies')}
+                      </div>
                       <div className="mt-2 flex flex-wrap justify-center gap-2">
                         {p.tags?.map((t) => (
                           <span key={t} className="chip">
@@ -221,7 +221,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               />
             </div>
             <div className="lg:col-span-3">
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">{t('about.title')}</h2>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                {t('about.title')}
+              </h2>
               <p className="mt-3 text-slate-700 leading-relaxed text-justify">
                 {t('about.description')}
               </p>
@@ -255,9 +257,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
             <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">
               {t('contact.title')}
             </h2>
-            <p className="mt-2 text-center text-slate-600">
-              {t('contact.description')}
-            </p>
+            <p className="mt-2 text-center text-slate-600">{t('contact.description')}</p>
             <div className="mt-10 flex justify-center">
               <ContactForm />
             </div>

@@ -17,19 +17,19 @@ async function loadTranslations(locale: string, section: string) {
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadNavTranslations = async () => {
       const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
       const navTranslations = await loadTranslations(locale, 'nav');
       setTranslations(navTranslations);
-      setLoading(false);
     };
 
     loadNavTranslations();
+  }, []);
 
-    // Inicjalizacja scroll effect po załadowaniu tłumaczeń
+  useEffect(() => {
+    // Inicjalizacja scroll effect
     const el = headerRef.current;
     if (!el) return;
 

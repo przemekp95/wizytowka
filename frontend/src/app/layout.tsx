@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
-  description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
-  keywords: 'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
+  description:
+    'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+  keywords:
+    'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
   authors: [{ name: 'Przemysław Pietrzak' }],
   creator: 'Przemysław Pietrzak',
   publisher: 'Przemysław Pietrzak',
@@ -30,7 +32,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
-    description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    description:
+      'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
     url: 'https://przemyslawpietrzak.pl',
     siteName: 'Przemysław Pietrzak',
     locale: 'pl_PL',
@@ -50,7 +53,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
-    description: 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    description:
+      'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
     creator: '@przemekp95',
   },
   verification: {
@@ -70,9 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }

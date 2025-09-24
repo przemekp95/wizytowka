@@ -42,8 +42,8 @@ export default function LanguageSwitcher() {
       const newPathname = pathname.startsWith('/pl')
         ? pathname.replace('/pl', `/${newLocale}`)
         : pathname.startsWith('/en')
-        ? pathname.replace('/en', `/${newLocale}`)
-        : `/${newLocale}${pathname}`;
+          ? pathname.replace('/en', `/${newLocale}`)
+          : `/${newLocale}${pathname}`;
 
       window.location.href = newPathname;
     });
