@@ -78,8 +78,14 @@ async function bootstrap() {
   );
 
   const port = Number(process.env.PORT) || 3000;
+  console.log(`🔧 Starting server on port ${port}...`);
+
   await app.listen(port);
-  console.log(`REST   → http://localhost:${port}/api`);
-  console.log(`GraphQL→ http://localhost:${port}/graphql`);
+  console.log(`✅ Server listening on port ${port}`);
+  console.log(`🌐 REST   → http://localhost:${port}/api`);
+  console.log(`🔗 GraphQL→ http://localhost:${port}/graphql`);
+  console.log(`💚 Health  → http://localhost:${port}/health`);
+  console.log(`📊 Ready   → http://localhost:${port}/health/ready`);
+  console.log(`🔄 Live    → http://localhost:${port}/health/live`);
 }
 void bootstrap();
