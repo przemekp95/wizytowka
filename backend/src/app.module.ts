@@ -12,6 +12,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { PortfolioApiController } from './portfolio/portfolio.controller';
+import { AwsModule } from './aws/aws.module';
 
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -49,6 +50,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ContactModule,
     // ProjectModule,
     PortfolioModule,
+    AwsModule,
   ],
   controllers: [
     AppController,
