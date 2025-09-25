@@ -6,5 +6,5 @@ import { IsString } from 'class-validator';
 export class UpdateProjectInput extends PartialType(CreateProjectInput) {
   @Field(() => ID)
   @IsString()
-  id!: string;
+  _id!: string;
 }
