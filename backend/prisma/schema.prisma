@@ -1,25 +1,43 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
 }
 
 model ContactMessage {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   name      String
   email     String
   message   String
   ip        String?
   createdAt DateTime @default(now())
 
-  @@index([createdAt])
+  @@map("contact_messages")
+}
+
+model PortfolioItem {
+  id        String   @id @default(cuid()) @map("_id")
+  title     String
+  titleEn   String?  @map("title_en")
+  slug      String   @unique
+  href      String?
+  desc      String?
+  descEn    String?  @map("desc_en")
+  tags      String[]
+  img       String?
+  isLogo    Boolean? @map("isLogo")
+  newTech   Boolean? @map("newTech")
+  repoUrl   String?  @map("repoUrl")
+  order     Int?
+  status    String   @default("published")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@map("portfolio_items")
 }

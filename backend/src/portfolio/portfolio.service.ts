@@ -2,6 +2,12 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { AwsService } from '../aws/aws.service';
 
+interface MulterFile {
+  originalname: string;
+  buffer: Buffer;
+  mimetype: string;
+}
+
 export type PortfolioItem = {
   _id: string;
   title: string;
@@ -29,15 +35,28 @@ export class PortfolioService implements OnModuleInit {
   constructor(private readonly awsService: AwsService) {}
 
   async onModuleInit() {
-    this.client = new MongoClient(process.env.MONGODB_URI!);
-    await this.client.connect();
-    this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
-    const col = this.db.collection<PortfolioItem>('portfolio_items');
-    await col.createIndex({ slug: 1 }, { unique: true });
-    await col.createIndex({ status: 1, order: 1 });
+    try {
+      this.client = new MongoClient(process.env.MONGODB_URI!);
+      await this.client.connect();
+      this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
+      const col = this.db.collection<PortfolioItem>('portfolio_items');
+      await col.createIndex({ slug: 1 }, { unique: true });
+      await col.createIndex({ status: 1, order: 1 });
+      console.log('✅ MongoDB connected successfully');
+    } catch (error) {
+      console.error(
+        '❌ MongoDB connection failed:',
+        error instanceof Error ? error.message : String(error),
+      );
+      console.log('⚠️  Running with mock data');
+    }
   }
 
   async listPublished(): Promise<PortfolioItem[]> {
+    if (!this.db) {
+      throw new Error('MongoDB not connected');
+    }
+
     return this.db
       .collection<PortfolioItem>('portfolio_items')
       .find({ status: 'published' })
@@ -47,7 +66,7 @@ export class PortfolioService implements OnModuleInit {
 
   async createPortfolioItem(
     itemData: Omit<PortfolioItem, '_id' | 'createdAt' | 'updatedAt'>,
-    imageFile?: any,
+    imageFile?: MulterFile,
   ): Promise<PortfolioItem> {
     let imageUrl = itemData.img;
 
@@ -63,17 +82,23 @@ export class PortfolioService implements OnModuleInit {
       updatedAt: new Date(),
     };
 
-    await this.db
-      .collection<PortfolioItem>('portfolio_items')
-      .insertOne(newItem);
+    if (this.db) {
+      await this.db
+        .collection<PortfolioItem>('portfolio_items')
+        .insertOne(newItem);
+    }
     return newItem;
   }
 
   async updatePortfolioItem(
     id: string,
     updateData: Partial<Omit<PortfolioItem, '_id' | 'createdAt'>>,
-    imageFile?: any,
+    imageFile?: MulterFile,
   ): Promise<PortfolioItem | null> {
+    if (!this.db) {
+      throw new Error('MongoDB not connected');
+    }
+
     let imageUrl = updateData.img;
 
     if (imageFile) {
@@ -109,6 +134,10 @@ export class PortfolioService implements OnModuleInit {
   }
 
   async deletePortfolioItem(id: string): Promise<boolean> {
+    if (!this.db) {
+      throw new Error('MongoDB not connected');
+    }
+
     const item = await this.db
       .collection<PortfolioItem>('portfolio_items')
       .findOne({ _id: id });
