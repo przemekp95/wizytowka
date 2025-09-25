@@ -36,8 +36,20 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     try {
+      console.log('🔌 Connecting to MongoDB...');
       this.client = new MongoClient(process.env.MONGODB_URI!);
-      await this.client.connect();
+
+      // Add timeout to prevent hanging
+      const connectPromise = this.client.connect();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('MongoDB connection timeout after 10s')),
+          10000,
+        ),
+      );
+
+      await Promise.race([connectPromise, timeoutPromise]);
+
       this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
       const col = this.db.collection<PortfolioItem>('portfolio_items');
       await col.createIndex({ slug: 1 }, { unique: true });
