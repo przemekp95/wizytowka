@@ -36,6 +36,10 @@ export class AwsService {
     const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
     try {
+      this.logger.log(
+        `Starting upload: ${fileName} (${file.buffer.length} bytes)`,
+      );
+
       const upload = new Upload({
         client: this.s3Client,
         params: {
@@ -47,7 +51,13 @@ export class AwsService {
         },
       });
 
-      await upload.done();
+      // Add timeout to prevent hanging
+      const uploadPromise = upload.done();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Upload timeout after 30s')), 30000),
+      );
+
+      await Promise.race([uploadPromise, timeoutPromise]);
       this.logger.log(`Image uploaded successfully: ${fileName}`);
       return `https://${this.bucketName}.s3.amazonaws.com/${fileName}`;
     } catch (error: unknown) {
