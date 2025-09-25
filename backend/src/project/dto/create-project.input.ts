@@ -12,17 +12,17 @@ export class CreateProjectInput {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  description?: string;
+  desc?: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsUrl()
-  link?: string;
+  href?: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsUrl()
-  repo?: string;
+  repoUrl?: string;
 
   @Field(() => [String], { nullable: 'itemsAndList' })
   @IsOptional()
