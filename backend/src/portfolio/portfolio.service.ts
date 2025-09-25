@@ -183,11 +183,11 @@ export class PortfolioService implements OnModuleInit {
         'logo.jpg': 'ja.jpeg',
         'mazo.png': 'mazo.png',
         'PP-2-JPG-01.webp': 'PP-2-JPG-01.webp',
-        'logo-sluzba-niepodleglej.png': 'logo-sluzba-niepodleglej.png'
+        'logo-sluzba-niepodleglej.png': 'logo-sluzba-niepodleglej.png',
       };
 
       const correctFilename = fileMapping[prefixMatch] || prefixMatch;
-      return `https://wizytowka.s3.eu-north-1.amazonaws.com/portfolio/${correctFilename}`;
+      return `https://wizytowka.s3.eu-north-1.amazonaws.com/${correctFilename}`;
     }
 
     // Fallback - return original URL if we can't parse it
