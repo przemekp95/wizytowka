@@ -10,8 +10,16 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  console.log('🚀 Starting NestJS application...');
+  console.log(`📍 NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`🔧 PORT: ${process.env.PORT || 3000}`);
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
   const isProd = process.env.NODE_ENV === 'production';
+
+  console.log('✅ NestJS app created successfully');
 
   // Proxy (X-Forwarded-For) -> req.ip poprawnie wykryje klienta za reverse proxy
   app.set('trust proxy', 1);

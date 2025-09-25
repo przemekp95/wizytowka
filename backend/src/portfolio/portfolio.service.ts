@@ -36,10 +36,16 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     try {
-      console.log('🔌 Connecting to MongoDB...');
+      console.log('🔌 PortfolioService: Starting MongoDB connection...');
+      console.log(
+        `📊 MONGODB_URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`,
+      );
+      console.log(`📊 MONGODB_DB: ${process.env.MONGODB_DB || 'wizytowka'}`);
+
       this.client = new MongoClient(process.env.MONGODB_URI!);
 
       // Add timeout to prevent hanging
+      console.log('⏰ PortfolioService: Attempting MongoDB connection...');
       const connectPromise = this.client.connect();
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
@@ -49,18 +55,27 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
       );
 
       await Promise.race([connectPromise, timeoutPromise]);
+      console.log('✅ PortfolioService: MongoDB connection established');
 
       this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
+      console.log('📁 PortfolioService: Database selected');
+
       const col = this.db.collection<PortfolioItem>('portfolio_items');
+      console.log('📋 PortfolioService: Creating indexes...');
+
       await col.createIndex({ slug: 1 }, { unique: true });
+      console.log('✅ PortfolioService: Slug index created');
+
       await col.createIndex({ status: 1, order: 1 });
-      console.log('✅ MongoDB connected successfully');
+      console.log('✅ PortfolioService: Status/Order index created');
+
+      console.log('✅ PortfolioService: MongoDB setup completed successfully');
     } catch (error) {
       console.error(
-        '❌ MongoDB connection failed:',
+        '❌ PortfolioService: MongoDB connection failed:',
         error instanceof Error ? error.message : String(error),
       );
-      console.log('⚠️  Running with mock data');
+      console.log('⚠️  PortfolioService: Running with mock data');
     }
   }
 
