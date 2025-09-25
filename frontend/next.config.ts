@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['wizytowka.s3.eu-north-1.amazonaws.com'],
     formats: ['image/webp', 'image/avif'],
-    unoptimized: false,
+    unoptimized: true,
   },
   async rewrites() {
     // Dzięki temu w kodzie frontu wywołujesz po prostu /api/...
