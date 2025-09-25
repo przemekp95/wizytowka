@@ -64,9 +64,9 @@ export class PortfolioService implements OnModuleInit {
       .toArray();
 
     // Convert AWS Console URLs to proper S3 URLs
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item,
-      img: this.convertAwsConsoleUrlToS3Url(item.img)
+      img: this.convertAwsConsoleUrlToS3Url(item.img),
     }));
   }
 
