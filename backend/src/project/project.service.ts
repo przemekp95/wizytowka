@@ -8,11 +8,11 @@ import { UpdateProjectInput } from './dto/update-project.input';
 export class ProjectService {
   private projects: Project[] = [
     {
-      id: 'p1',
+      _id: 'p1',
       title: 'Strona wizytówka',
-      description: 'Personal website built with Next.js + NestJS',
-      link: 'https://example.com',
-      repo: 'https://github.com/user/wizytowka',
+      desc: 'Personal website built with Next.js + NestJS',
+      href: 'https://example.com',
+      repoUrl: 'https://github.com/user/wizytowka',
       tags: ['nextjs', 'nestjs', 'graphql'],
     },
   ];
@@ -22,24 +22,24 @@ export class ProjectService {
   }
 
   findOne(id: string): Project | undefined {
-    return this.projects.find((p) => p.id === id);
+    return this.projects.find((p) => p._id === id);
   }
 
   create(input: CreateProjectInput): Project {
-    const project: Project = { id: randomUUID(), ...input };
+    const project: Project = { _id: randomUUID(), ...input };
     this.projects.unshift(project);
     return project;
   }
 
   update(input: UpdateProjectInput): Project {
-    const idx = this.projects.findIndex((p) => p.id === input.id);
+    const idx = this.projects.findIndex((p) => p._id === input._id);
     if (idx === -1) throw new Error('Project not found');
     this.projects[idx] = { ...this.projects[idx], ...input };
     return this.projects[idx];
   }
 
   remove(id: string): string {
-    this.projects = this.projects.filter((p) => p.id !== id);
+    this.projects = this.projects.filter((p) => p._id !== id);
     return id;
   }
 }

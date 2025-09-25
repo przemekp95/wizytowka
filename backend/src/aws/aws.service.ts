@@ -51,12 +51,10 @@ export class AwsService {
       this.logger.log(`Image uploaded successfully: ${fileName}`);
       return `https://${this.bucketName}.s3.amazonaws.com/${fileName}`;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : '';
-      this.logger.error(
-        `Error uploading image: ${errorMessage}`,
-        errorStack,
-      );
+      this.logger.error(`Error uploading image: ${errorMessage}`, errorStack);
       throw error;
     }
   }
@@ -72,12 +70,10 @@ export class AwsService {
       );
       this.logger.log(`Image deleted successfully: ${key}`);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : '';
-      this.logger.error(
-        `Error deleting image: ${errorMessage}`,
-        errorStack,
-      );
+      this.logger.error(`Error deleting image: ${errorMessage}`, errorStack);
       throw error;
     }
   }
