@@ -4,6 +4,7 @@ const BACKEND = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  trailingSlash: true,
   images: {
     domains: ['wizytowka.s3.eu-north-1.amazonaws.com'],
     formats: ['image/webp', 'image/avif'],
@@ -26,6 +27,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Ensure static files are served correctly
+  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : undefined,
 };
 
 export default nextConfig;
