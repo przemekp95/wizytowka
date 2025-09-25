@@ -154,6 +154,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                         fill
                         className={`${imgClasses} transition-transform duration-500 group-hover:scale-[1.02]`}
                         sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                        unoptimized
                       />
                       {p.newTech && <span className="badge">{t('portfolio.newTech')}</span>}
                     </div>
