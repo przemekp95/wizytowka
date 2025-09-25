@@ -4,7 +4,10 @@ const BACKEND = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  images: { unoptimized: true },
+  images: {
+    domains: ['wizytowka.s3.eu-north-1.amazonaws.com'],
+    formats: ['image/webp', 'image/avif'],
+  },
   async rewrites() {
     // Dzięki temu w kodzie frontu wywołujesz po prostu /api/...
     return [{ source: '/api/:path*', destination: `${BACKEND}/api/:path*` }];
