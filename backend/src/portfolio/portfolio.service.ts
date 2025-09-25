@@ -178,8 +178,16 @@ export class PortfolioService implements OnModuleInit {
     const prefixMatch = url.searchParams.get('prefix');
 
     if (prefixMatch) {
-      // Return proper S3 URL
-      return `https://wizytowka.s3.eu-north-1.amazonaws.com/portfolio/${prefixMatch}`;
+      // Map the filenames to correct S3 object names
+      const fileMapping: { [key: string]: string } = {
+        'logo.jpg': 'ja.jpeg',
+        'mazo.png': 'mazo.png',
+        'PP-2-JPG-01.webp': 'PP-2-JPG-01.webp',
+        'logo-sluzba-niepodleglej.png': 'logo-sluzba-niepodleglej.png'
+      };
+
+      const correctFilename = fileMapping[prefixMatch] || prefixMatch;
+      return `https://wizytowka.s3.eu-north-1.amazonaws.com/portfolio/${correctFilename}`;
     }
 
     // Fallback - return original URL if we can't parse it
