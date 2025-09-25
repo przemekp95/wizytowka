@@ -14,18 +14,26 @@ interface MulterFile {
 @Injectable()
 export class AwsService {
   private readonly logger = new Logger(AwsService.name);
-  private readonly s3Client: S3Client;
+  private s3Client: S3Client | null = null;
   private readonly bucketName: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.s3Client = new S3Client({
-      region: this.configService.get('aws.region'),
-      credentials: {
-        accessKeyId: this.configService.get('aws.accessKeyId')!,
-        secretAccessKey: this.configService.get('aws.secretAccessKey')!,
-      },
-    });
     this.bucketName = this.configService.get('aws.s3.bucketName')!;
+  }
+
+  private getS3Client(): S3Client {
+    if (!this.s3Client) {
+      this.logger.log('🔧 Initializing AWS S3 client...');
+      this.s3Client = new S3Client({
+        region: this.configService.get('aws.region'),
+        credentials: {
+          accessKeyId: this.configService.get('aws.accessKeyId')!,
+          secretAccessKey: this.configService.get('aws.secretAccessKey')!,
+        },
+      });
+      this.logger.log('✅ AWS S3 client initialized');
+    }
+    return this.s3Client;
   }
 
   async uploadImage(
@@ -41,7 +49,7 @@ export class AwsService {
       );
 
       const upload = new Upload({
-        client: this.s3Client,
+        client: this.getS3Client(),
         params: {
           Bucket: this.bucketName,
           Key: fileName,
@@ -72,7 +80,7 @@ export class AwsService {
   async deleteImage(imageUrl: string): Promise<void> {
     try {
       const key = imageUrl.split('/').slice(-2).join('/');
-      await this.s3Client.send(
+      await this.getS3Client().send(
         new DeleteObjectCommand({
           Bucket: this.bucketName,
           Key: key,
