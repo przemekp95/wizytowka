@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { AwsService } from '../aws/aws.service';
 
@@ -28,7 +28,7 @@ export type PortfolioItem = {
 };
 
 @Injectable()
-export class PortfolioService implements OnModuleInit {
+export class PortfolioService implements OnModuleInit, OnModuleDestroy {
   private client!: MongoClient;
   private db!: Db;
 
@@ -49,6 +49,13 @@ export class PortfolioService implements OnModuleInit {
         error instanceof Error ? error.message : String(error),
       );
       console.log('⚠️  Running with mock data');
+    }
+  }
+
+  async onModuleDestroy() {
+    if (this.client) {
+      await this.client.close();
+      console.log('🔌 MongoDB connection closed');
     }
   }
 
