@@ -57,17 +57,11 @@ export class PortfolioService implements OnModuleInit {
       throw new Error('MongoDB not connected');
     }
 
-    const items = await this.db
+    return this.db
       .collection<PortfolioItem>('portfolio_items')
       .find({ status: 'published' })
       .sort({ order: 1, createdAt: -1 })
       .toArray();
-
-    // Convert AWS Console URLs to proper S3 URLs
-    return items.map((item) => ({
-      ...item,
-      img: this.convertAwsConsoleUrlToS3Url(item.img),
-    }));
   }
 
   async createPortfolioItem(
@@ -161,36 +155,5 @@ export class PortfolioService implements OnModuleInit {
 
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
-  }
-
-  private convertAwsConsoleUrlToS3Url(awsConsoleUrl: string): string {
-    // If it's already a proper S3 URL, return as is
-    if (
-      awsConsoleUrl.includes('.s3.') &&
-      !awsConsoleUrl.includes('console.aws.amazon.com')
-    ) {
-      return awsConsoleUrl;
-    }
-
-    // Extract filename from AWS Console URL
-    // Example: https://eu-north-1.console.aws.amazon.com/s3/object/wizytowka?region=eu-north-1&bucketType=general&prefix=logo.jpg
-    const url = new URL(awsConsoleUrl);
-    const prefixMatch = url.searchParams.get('prefix');
-
-    if (prefixMatch) {
-      // Map the filenames to correct S3 object names
-      const fileMapping: { [key: string]: string } = {
-        'logo.jpg': 'ja.jpeg',
-        'mazo.png': 'mazo.png',
-        'PP-2-JPG-01.webp': 'PP-2-JPG-01.webp',
-        'logo-sluzba-niepodleglej.png': 'logo-sluzba-niepodleglej.png',
-      };
-
-      const correctFilename = fileMapping[prefixMatch] || prefixMatch;
-      return `https://wizytowka.s3.eu-north-1.amazonaws.com/${correctFilename}`;
-    }
-
-    // Fallback - return original URL if we can't parse it
-    return awsConsoleUrl;
   }
 }
