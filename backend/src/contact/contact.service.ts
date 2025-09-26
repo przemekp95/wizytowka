@@ -4,6 +4,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import nodemailer, { Transporter } from 'nodemailer';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface RetryOptions {
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+}
+
 function toBool(v: unknown): boolean {
   if (typeof v === 'boolean') return v;
   if (typeof v === 'number') return v === 1;
@@ -29,7 +35,7 @@ export class ContactService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  // Jednorazowa konfiguracja transportu SMTP
+  // Jednorazowa konfiguracja transportu SMTP z zwiększonymi timeout'ami
   private transporter: Transporter = nodemailer.createTransport(
     {
       host: process.env.SMTP_HOST,
@@ -39,15 +45,66 @@ export class ContactService {
         process.env.SMTP_USER && process.env.SMTP_PASS
           ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
           : undefined,
-      connectionTimeout: 15_000,
-      greetingTimeout: 15_000,
-      socketTimeout: 20_000,
+      // Zwiększone timeout'y dla środowiska Render
+      connectionTimeout: 30_000, // 30s zamiast 15s
+      greetingTimeout: 30_000, // 30s zamiast 15s
+      socketTimeout: 60_000, // 60s zamiast 20s
+      // Dodatkowe opcje dla lepszej niezawodności
+      pool: true, // Użyj connection pool
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 1000,
+      rateLimit: 5,
     },
     {
       logger: toBool(process.env.SMTP_DEBUG ?? false),
       debug: toBool(process.env.SMTP_DEBUG ?? false),
     },
   );
+
+  /**
+   * Utility method do obsługi retry z wykładniczym backoff'em
+   */
+  private async retryWithBackoff<T>(
+    operation: () => Promise<T>,
+    options: RetryOptions,
+    requestId?: string,
+  ): Promise<T> {
+    let lastError: Error;
+
+    for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          this.logger.warn(
+            `Retry attempt ${attempt}/${options.maxRetries} for requestId=${requestId}`,
+          );
+        }
+
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+
+        if (attempt === options.maxRetries) {
+          break; // Ostatnia próba, nie czekamy więcej
+        }
+
+        // Oblicz delay z wykładniczym backoff'em
+        const delay = Math.min(
+          options.baseDelay * Math.pow(2, attempt),
+          options.maxDelay,
+        );
+
+        this.logger.warn(
+          `Email send failed (attempt ${attempt + 1}), retrying in ${delay}ms. ` +
+            `Error: ${(error as Error).message} requestId=${requestId}`,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError!;
+  }
 
   async sendMail(params: CreateContactInput): Promise<{ messageId: string }> {
     const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
@@ -66,22 +123,36 @@ export class ContactService {
       params.message,
     ].filter(Boolean);
 
-    const info = await this.transporter.sendMail({
-      from,
-      to,
-      replyTo: params.email,
-      subject: `Wiadomość ze strony – ${params.name}`,
-      text: lines.join('\n'),
-      headers: { 'X-Request-Id': params.requestId ?? '' },
-    });
+    const retryOptions: RetryOptions = {
+      maxRetries: 3,
+      baseDelay: 1000, // 1 sekunda
+      maxDelay: 10000, // 10 sekund max
+    };
 
-    this.logger.log(
-      `Mail sent: messageId=${info.messageId} accepted=${JSON.stringify(
-        info.accepted,
-      )} rejected=${JSON.stringify(info.rejected)} req=${params.requestId}`,
+    const result = await this.retryWithBackoff(
+      async () => {
+        const info = await this.transporter.sendMail({
+          from,
+          to,
+          replyTo: params.email,
+          subject: `Wiadomość ze strony – ${params.name}`,
+          text: lines.join('\n'),
+          headers: { 'X-Request-Id': params.requestId ?? '' },
+        });
+
+        this.logger.log(
+          `Mail sent successfully: messageId=${info.messageId} ` +
+            `accepted=${JSON.stringify(info.accepted)} ` +
+            `rejected=${JSON.stringify(info.rejected)} req=${params.requestId}`,
+        );
+
+        return { messageId: info.messageId };
+      },
+      retryOptions,
+      params.requestId,
     );
 
-    return { messageId: info.messageId };
+    return result;
   }
 
   /**
