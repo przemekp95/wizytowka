@@ -70,7 +70,6 @@ export default function LanguageSwitcher() {
         aria-label="Switch to Polish"
       >
         <span className="text-lg">🇵🇱</span>
-        <span className="text-sm font-medium">{t('polish')}</span>
       </button>
 
       <button
@@ -84,7 +83,6 @@ export default function LanguageSwitcher() {
         aria-label="Switch to English"
       >
         <span className="text-lg">🇬🇧</span>
-        <span className="text-sm font-medium">{t('english')}</span>
       </button>
     </div>
   );
