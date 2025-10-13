@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
   description:
-    'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
   keywords:
     'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
   authors: [{ name: 'Przemysław Pietrzak' }],
@@ -33,10 +33,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
     description:
-      'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+      'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
     url: 'https://przemyslawpietrzak.pl',
     siteName: 'Przemysław Pietrzak',
-    locale: 'pl_PL',
+    locale: 'en_US',
     type: 'website',
   },
   robots: {
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
     description:
-      'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+      'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
     creator: '@przemekp95',
   },
   verification: {

@@ -22,7 +22,7 @@ export default function LanguageSwitcher() {
 
   useEffect(() => {
     const loadLanguageTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
+      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'en';
       const languageTranslations = await loadTranslations(locale, 'language');
       setTranslations(languageTranslations);
       setLoading(false);
@@ -52,7 +52,7 @@ export default function LanguageSwitcher() {
   const getCurrentLocale = () => {
     if (pathname.startsWith('/pl')) return 'pl';
     if (pathname.startsWith('/en')) return 'en';
-    return 'pl';
+    return 'en';
   };
 
   const currentLocale = getCurrentLocale();
