@@ -20,7 +20,7 @@ export default function Header() {
 
   useEffect(() => {
     const loadNavTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
+      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'en';
       const navTranslations = await loadTranslations(locale, 'nav');
       setTranslations(navTranslations);
     };
