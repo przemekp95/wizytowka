@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             id="Defs_1" targetNamespace="https://example.com/bpmn">
+  <process id="Process_Example" isExecutable="false">
+    <startEvent id="StartEvent_1" name="Start"/>
+    <task id="Task_1" name="Zadanie"/>
+    <exclusiveGateway id="Gateway_1" name="OK?"/>
+    <task id="Task_2" name="Ścieżka TAK"/>
+    <endEvent id="EndEvent_1" name="Koniec"/>
+    <sequenceFlow id="flow1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+    <sequenceFlow id="flow2" sourceRef="Task_1" targetRef="Gateway_1"/>
+    <sequenceFlow id="flow3" sourceRef="Gateway_1" targetRef="Task_2" name="Tak"/>
+    <sequenceFlow id="flow4" sourceRef="Task_2" targetRef="EndEvent_1"/>
+  </process>
+</definitions>
