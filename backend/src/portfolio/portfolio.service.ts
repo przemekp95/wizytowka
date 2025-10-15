@@ -44,7 +44,6 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
 
       this.client = new MongoClient(process.env.MONGODB_URI!);
 
-      // Add timeout to prevent hanging
       console.log('⏰ PortfolioService: Attempting MongoDB connection...');
       const connectPromise = this.client.connect();
       const timeoutPromise = new Promise<never>((_, reject) =>
@@ -136,7 +135,6 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
     let imageUrl = updateData.img;
 
     if (imageFile) {
-      // Delete old image if exists
       const existingItem = await this.db
         .collection<PortfolioItem>('portfolio_items')
         .findOne({ _id: id });

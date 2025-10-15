@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import LanguageSwitcher from './LanguageSwitcher';
 
-// Funkcja do ładowania tłumaczeń
 async function loadTranslations(locale: string, section: string) {
   try {
     const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -29,7 +28,6 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    // Inicjalizacja scroll effect
     const el = headerRef.current;
     if (!el) return;
 

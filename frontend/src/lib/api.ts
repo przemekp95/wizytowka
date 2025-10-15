@@ -1,4 +1,3 @@
-// src/lib/api.ts
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(path.startsWith('/api') ? path : `/api${path}`, {
     ...init,

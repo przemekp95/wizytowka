@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
-
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -21,12 +19,8 @@ async function bootstrap() {
 
   console.log('✅ NestJS app created successfully');
 
-  // Proxy (X-Forwarded-For) -> req.ip poprawnie wykryje klienta za reverse proxy
   app.set('trust proxy', 1);
 
-  // --- CORS (ustaw przed Helmet) ---
-  // CORS_ORIGINS: lista po przecinku, np.
-  // CORS_ORIGINS=https://twoja-domena.pl,https://twoj-frontend.vercel.app
   const envOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((s) => s.trim())
@@ -41,7 +35,6 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, cb) => {
-      // Brak origin (curl/Postman) -> pozwól
       if (!origin) return cb(null, true);
       if (allowedOrigins.has(origin)) return cb(null, true);
       return cb(new Error(`CORS blocked for origin: ${origin}`), false);
@@ -53,7 +46,6 @@ async function bootstrap() {
     maxAge: 600, // cache preflight
   });
 
-  // --- Bezpieczne nagłówki (w dev wyłączamy CSP by ułatwić HMR i local assets) ---
   app.use(
     helmet({
       contentSecurityPolicy: isProd ? undefined : false,
@@ -64,10 +56,8 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(new RequestIdMiddleware().use);
 
-  // Prefiks tylko dla REST (GraphQL nadal pod /graphql)
   app.setGlobalPrefix('api');
 
-  // Walidacja
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

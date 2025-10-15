@@ -19,7 +19,6 @@ export function rateLimit(ip: string): { ok: boolean; retryAfter?: number } {
   }
 
   if (now - entry.firstRequest > RATE_LIMIT_WINDOW) {
-    // reset okna czasowego
     requests.set(ip, { count: 1, firstRequest: now });
     return { ok: true };
   }

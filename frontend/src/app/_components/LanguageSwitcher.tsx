@@ -1,41 +1,11 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useTransition, useEffect, useState } from 'react';
-
-// Funkcja do ładowania tłumaczeń
-async function loadTranslations(locale: string, section: string) {
-  try {
-    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
-    const sectionData = messages[section] || {};
-    return sectionData;
-  } catch {
-    return {};
-  }
-}
+import { useTransition } from 'react';
 
 export default function LanguageSwitcher() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadLanguageTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'en';
-      const languageTranslations = await loadTranslations(locale, 'language');
-      setTranslations(languageTranslations);
-      setLoading(false);
-    };
-
-    loadLanguageTranslations();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const t = (key: string) => translations[key] || key;
 
   const switchLanguage = (newLocale: string) => {
     startTransition(() => {

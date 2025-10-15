@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: Request, res: Response, next: NextFunction): void {
     const existing = req.header('X-Request-Id');
     const id = existing || randomUUID();
     req.requestId = id;

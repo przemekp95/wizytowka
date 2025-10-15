@@ -19,17 +19,14 @@ describe('ContactService', () => {
   let prismaMock: PrismaService;
 
   beforeEach(async () => {
-    // ENV do maila
     process.env.SMTP_HOST = 'smtp.test.local';
     process.env.SMTP_FROM = 'from@test.local';
     process.env.SMTP_TO = 'to@test.local';
     process.env.SMTP_PORT = '465';
     process.env.SMTP_SECURE = 'true';
 
-    // WAŻNE: najpierw wyczyść, potem przypnij implementacje mocków
     jest.clearAllMocks();
 
-    // Mock transportera + sendMail
     sendMailMock = jest.fn().mockResolvedValue({
       messageId: 'test-id',
       accepted: ['to@example.com'],
@@ -40,7 +37,6 @@ describe('ContactService', () => {
       (nodemailer as any).default.createTransport;
     createTransport.mockReturnValue({ sendMail: sendMailMock });
 
-    // Mock Prisma
     prismaMock = {
       contactMessage: {
         create: jest.fn().mockResolvedValue({ id: 'saved-123' }),
