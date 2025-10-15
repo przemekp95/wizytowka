@@ -27,7 +27,7 @@ export class ContactController {
       ...dto,
       ip,
       requestId,
-    });
+    } as any);
 
     return result;
   }

@@ -2,6 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import { useTransition } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 export default function LanguageSwitcher() {
   const pathname = usePathname();
@@ -25,35 +32,41 @@ export default function LanguageSwitcher() {
     return 'en';
   };
 
+  const getLocaleInfo = (locale: string) => {
+    return locale === 'pl'
+      ? { flag: '🇵🇱', name: 'Polski' }
+      : { flag: '🇬🇧', name: 'English' };
+  };
+
   const currentLocale = getCurrentLocale();
+  const currentLocaleInfo = getLocaleInfo(currentLocale);
+  const otherLocale = currentLocale === 'pl' ? 'en' : 'pl';
+  const otherLocaleInfo = getLocaleInfo(otherLocale);
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => switchLanguage('pl')}
-        disabled={isPending || currentLocale === 'pl'}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-          currentLocale === 'pl'
-            ? 'bg-indigo-100 text-indigo-700 cursor-default'
-            : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-        } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-        aria-label="Switch to Polish"
-      >
-        <span className="text-lg">🇵🇱</span>
-      </button>
-
-      <button
-        onClick={() => switchLanguage('en')}
-        disabled={isPending || currentLocale === 'en'}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-          currentLocale === 'en'
-            ? 'bg-indigo-100 text-indigo-700 cursor-default'
-            : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-        } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-        aria-label="Switch to English"
-      >
-        <span className="text-lg">🇬🇧</span>
-      </button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isPending}
+          className="gap-2"
+          aria-label={`Current language: ${currentLocaleInfo.name}`}
+        >
+          <span className="text-base">{currentLocaleInfo.flag}</span>
+          <span className="hidden sm:inline">{currentLocaleInfo.name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => switchLanguage(otherLocale)}
+          disabled={isPending}
+          className="gap-2 cursor-pointer"
+        >
+          <span className="text-base">{otherLocaleInfo.flag}</span>
+          <span>{otherLocaleInfo.name}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
