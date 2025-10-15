@@ -18,7 +18,6 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 
-// ✅ Prisma (global)
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -30,7 +29,6 @@ import { PrismaModule } from './prisma/prisma.module';
 
     ThrottlerModule.forRoot([{ ttl: 60, limit: 20 }]),
 
-    // 🚀 GraphQL (code-first)
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
@@ -44,11 +42,9 @@ import { PrismaModule } from './prisma/prisma.module';
       }),
     }),
 
-    // ✅ Globalny provider Prisma
     PrismaModule,
 
     ContactModule,
-    // ProjectModule,
     PortfolioModule,
     AwsModule,
   ],

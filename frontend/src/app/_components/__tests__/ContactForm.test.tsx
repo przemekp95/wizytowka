@@ -1,11 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, beforeAll, afterEach, describe, it, expect } from 'vitest';
-// Upewnij się, że ścieżka zgadza się z Twoją strukturą:
 import ContactSection from '@/app/_components/ContactForm';
 
 beforeAll(() => {
-  // Najbezpieczniej szpiegować fetch:
   vi.spyOn(globalThis, 'fetch');
 });
 
@@ -35,17 +33,14 @@ describe('ContactSection', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /wyślij/i }));
 
-    // Komunikat sukcesu
     const successMsg = await screen.findByText(/Wiadomość wysłana/i);
     expect(successMsg).toBeInTheDocument();
 
-    // Pola wyczyszczone
     expect(screen.getByLabelText(/Imię i nazwisko/i)).toHaveValue('');
     expect(screen.getByLabelText(/E-mail/i)).toHaveValue('');
     expect(screen.getByLabelText(/Wiadomość/i)).toHaveValue('');
   });
 
-  // DODATKOWY test błędu (GraphQL)
   it('błąd wysyłki - renderuje komunikat błędu z backendu', async () => {
     (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,

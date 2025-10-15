@@ -13,7 +13,6 @@ describe('isValidEmail', () => {
     expect(isValidEmail('missing@domain')).toBe(false);
     expect(isValidEmail('user@@double.at')).toBe(false);
 
-    // @ts-expect-error – celowo podajemy zły typ
     expect(isValidEmail(123)).toBe(false);
   });
 });

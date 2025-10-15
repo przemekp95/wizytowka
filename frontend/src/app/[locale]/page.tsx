@@ -2,14 +2,11 @@ import '@/styles/custom.scss';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-// Header może pozostać client componentem, server strona może go normalnie użyć
 import Header from '@/app/_components/Header';
 
-// Użyj serwerowej wersji formularza (statyczny HTML + widoczna hCaptcha)
 import ContactForm from '@/app/_components/ContactForm';
 
 export const dynamic = 'force-static';
-// ISR: odśwież dane z API co 5 minut
 export const revalidate = 300;
 
 type PortfolioItem = {
@@ -28,8 +25,6 @@ type PortfolioItem = {
 };
 
 async function fetchPortfolio(): Promise<PortfolioItem[]> {
-  // Jeśli masz osobny origin dla backendu w dev/prod, ustaw:
-  // NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 (przykład)
   const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
   try {
     const res = await fetch(`${base}/api/portfolio`, {
@@ -43,7 +38,6 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
   }
 }
 
-// Funkcja do ładowania tłumaczeń (tylko dla strony server-side)
 async function getTranslations(locale: string) {
   try {
     const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -67,7 +61,6 @@ async function getTranslations(locale: string) {
 export default async function OnePager({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
-  // Sprawdź czy locale jest prawidłowy
   if (!['pl', 'en'].includes(locale)) {
     notFound();
   }
@@ -141,7 +134,6 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
               {items.map((p) => {
                 const imgClasses = p.isLogo ? 'object-contain bg-white p-6' : 'object-cover';
-                // Użyj tłumaczeń jeśli dostępne, inaczej użyj domyślnych (polskich)
                 const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
                 const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
 

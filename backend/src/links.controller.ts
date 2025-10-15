@@ -19,7 +19,6 @@ export class LinksController {
     return LINKS;
   }
 
-  // redirect: /api/links/r/:slug  → 302
   @Get('r/:slug')
   redirect(@Param('slug') slug: string, @Res() res: Response) {
     const found = LINKS.find((l) => l.slug === slug);

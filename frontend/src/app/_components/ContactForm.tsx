@@ -5,7 +5,6 @@ type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
 
-// Funkcja do ładowania tłumaczeń
 async function loadTranslations(locale: string, section: string) {
   try {
     const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
@@ -50,7 +49,6 @@ export default function ContactSection() {
     try {
       const fd = new FormData(formRef.current);
 
-      // honeypot
       const website = String(fd.get('website') ?? '');
       if (website.trim() !== '') {
         setStatus('sent');
@@ -69,7 +67,6 @@ export default function ContactSection() {
         throw new Error(t('error'));
       }
 
-      // GraphQL mutation
       const query = `
         mutation SendContact($input: ContactMessageInput!) {
           sendContact(input: $input) {

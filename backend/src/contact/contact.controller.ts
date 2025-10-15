@@ -29,7 +29,6 @@ export class ContactController {
       requestId,
     });
 
-    // Zwracamy messageId + (opcjonalnie) id zapisanego rekordu
     return result;
   }
 }

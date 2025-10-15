@@ -59,7 +59,6 @@ export class AwsService {
         },
       });
 
-      // Add timeout to prevent hanging
       const uploadPromise = upload.done();
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Upload timeout after 30s')), 30000),
