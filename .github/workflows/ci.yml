@@ -119,13 +119,10 @@ jobs:
       - name: Frontend tests
         run: pnpm -F frontend test
 
-  build_and_deploy:
+  build_and_push:
     if: github.ref == 'refs/heads/main'
     needs: [test]
     runs-on: ubuntu-latest
-    env:
-      # ustaw, jeśli kubeconfig ma wiele kontekstów
-      KUBE_CONTEXT: ${{ secrets.KUBE_CONTEXT }}
 
     steps:
       - name: Checkout
@@ -171,50 +168,3 @@ jobs:
           tags: |
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_LATEST }}
             ${{ env.IMAGE_FRONTEND }}:${{ steps.meta.outputs.TAG_SHA }}
-
-      # --- kubectl apply -k ---
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: latest
-
-      - name: Configure kubeconfig
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }} # base64 LUB plaintext kubeconfig
-        run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.kube"
-          # Spróbuj zdekodować base64; jeśli się nie powiedzie, przyjmij plaintext
-          if echo "$KUBE_CONFIG" | base64 -d >/dev/null 2>&1; then
-            echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
-          else
-            echo "$KUBE_CONFIG" > "$HOME/.kube/config"
-          fi
-          chmod 600 "$HOME/.kube/config"
-          echo "KUBECONFIG=$HOME/.kube/config" >> "$GITHUB_ENV"
-
-          echo ">>> kubectl config get-contexts"
-          kubectl config get-contexts || true
-
-          if [ -n "${KUBE_CONTEXT:-}" ]; then
-            echo ">>> using context: $KUBE_CONTEXT"
-            kubectl config use-context "$KUBE_CONTEXT"
-          fi
-
-          echo ">>> cluster-info"
-          kubectl cluster-info
-
-      - name: Ensure imagePullSecret on default SA
-        run: |
-          kubectl -n wiz get secret ghcr-creds >/dev/null 2>&1 || kubectl -n wiz create secret docker-registry ghcr-creds \
-            --docker-server=ghcr.io \
-            --docker-username="${{ github.repository_owner }}" \
-            --docker-password="${{ secrets.GITHUB_TOKEN }}" \
-            --docker-email="none@example.com" || true
-          kubectl -n wiz patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr-creds"}]}' || true
-
-      - name: Deploy with Kustomize
-        run: |
-          kubectl -n wiz apply -k ${{ env.KUSTOMIZE_DIR }} --validate=false
-          kubectl -n wiz rollout status deploy/backend
-          kubectl -n wiz rollout status deploy/frontend

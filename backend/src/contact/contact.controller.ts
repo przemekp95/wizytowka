@@ -24,10 +24,12 @@ export class ContactController {
     const requestId = req.requestId; // już typowane ✅
 
     const result = await this.contact.createAndNotify({
-      ...dto,
+      name: dto.name,
+      email: dto.email,
+      message: dto.message,
       ip,
       requestId,
-    } as any);
+    });
 
     return result;
   }
