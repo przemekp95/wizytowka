@@ -23,7 +23,9 @@ export class ContactResolver {
       const requestId = req.requestId;
 
       const result = await this.contactService.createAndNotify({
-        ...input,
+        name: input.name,
+        email: input.email,
+        message: input.message,
         ip,
         requestId,
       });

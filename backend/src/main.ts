@@ -37,7 +37,7 @@ async function bootstrap() {
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
       if (allowedOrigins.has(origin)) return cb(null, true);
-      return cb(new Error(`CORS blocked for origin: ${origin}`), false);
+      return cb(new Error(`CORS blocked for origin: ${origin}`) as any, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -78,4 +78,5 @@ async function bootstrap() {
   console.log(`📊 Ready   → http://localhost:${port}/health/ready`);
   console.log(`🔄 Live    → http://localhost:${port}/health/live`);
 }
-void bootstrap();
+
+bootstrap();
