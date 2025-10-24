@@ -33,9 +33,7 @@ export default function LanguageSwitcher() {
   };
 
   const getLocaleInfo = (locale: string) => {
-    return locale === 'pl'
-      ? { flag: '🇵🇱', name: 'Polski' }
-      : { flag: '🇬🇧', name: 'English' };
+    return locale === 'pl' ? { flag: '🇵🇱', name: 'Polski' } : { flag: '🇬🇧', name: 'English' };
   };
 
   const currentLocale = getCurrentLocale();
