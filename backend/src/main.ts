@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import type { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
   console.log('🚀 Starting NestJS application...');
@@ -37,7 +38,7 @@ async function bootstrap() {
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
       if (allowedOrigins.has(origin)) return cb(null, true);
-      return cb(new Error(`CORS blocked for origin: ${origin}`) as any, false);
+      return cb(new Error(`CORS blocked for origin: ${origin}`), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -54,7 +55,9 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
-  app.use(new RequestIdMiddleware().use);
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    new RequestIdMiddleware().use(req, res, next);
+  });
 
   app.setGlobalPrefix('api');
 
@@ -79,4 +82,7 @@ async function bootstrap() {
   console.log(`🔄 Live    → http://localhost:${port}/health/live`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('❌ Failed to start application:', error);
+  process.exit(1);
+});
