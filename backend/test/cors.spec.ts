@@ -3,6 +3,10 @@ import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
+import type { Request, Response } from 'express';
+
+// @ts-ignore
+import { beforeAll, afterAll, expect } from '@jest/globals';
 
 describe('CORS', () => {
   let app: INestApplication;
@@ -13,7 +17,27 @@ describe('CORS', () => {
       imports: [AppModule],
     }).compile();
     app = mod.createNestApplication();
-    // ważne: konfiguracja z main.ts (CORS/helmet) powinna tu też być, np. przez bootstrap helper
+
+    // Konfiguracja CORS jak w main.ts
+    app.enableCors({
+      origin: (origin: string | undefined, cb: (error: Error | null, allow?: boolean) => void) => {
+        if (!origin) return cb(null, true);
+        const allowedOrigins = new Set([
+          'http://localhost:3000',
+          'http://localhost:3001',
+        ]);
+        if (allowedOrigins.has(origin)) return cb(null, true);
+        return cb(new Error(`CORS blocked for origin: ${origin}`), false);
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['Set-Cookie'],
+      maxAge: 600,
+    });
+
+    app.setGlobalPrefix('api');
+
     await app.init();
   });
 
