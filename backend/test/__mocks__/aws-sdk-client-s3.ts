@@ -16,5 +16,3 @@ export class DeleteObjectCommand {
     // Mock implementation
   }
 }
-+++++++ REPLACE</diff>
-</write_to_file>

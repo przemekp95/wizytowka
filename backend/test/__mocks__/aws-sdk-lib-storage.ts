@@ -9,5 +9,3 @@ export class Upload {
     };
   }
 }
-+++++++ REPLACE</diff>
-</write_to_file>
