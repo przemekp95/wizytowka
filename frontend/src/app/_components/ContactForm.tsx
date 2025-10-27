@@ -60,7 +60,7 @@ export default function ContactSection() {
         name: String(fd.get('name') ?? '').trim(),
         email: String(fd.get('email') ?? '').trim(),
         message: String(fd.get('message') ?? '').trim(),
-        hcaptchaToken: '', // ⬅️ zostawiamy placeholder, integracja później
+        hcaptchaToken: '',
       };
 
       if (!input.name || !input.email || !input.message) {

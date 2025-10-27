@@ -1,11 +1,4 @@
 <?php
-/**
- * contact.php — handler formularza kontaktowego (hCaptcha + mail)
- * Bezpieczeństwo:
- * - Sekrety pobierane z ENV lub z pliku konfiguracyjnego poza public_html
- * - Honeypot
- * - Walidacje
- */
 
 header('Content-Type: application/json; charset=utf-8');
 header('Referrer-Policy: no-referrer');
@@ -20,11 +13,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
   json_response(false, 'Method not allowed');
 }
 
-/* ====== KONFIG: ENV -> plik poza webrootem -> wartości domyślne ====== */
 $home = rtrim(getenv('HOME') ?: '', '/');
 $cfg  = [];
 if ($home && is_readable($home . '/config/contact.php')) {
-  // UWAGA: ~/config/contact.php ma zwracać tablicę z kluczami jak poniżej
   $cfg = require $home . '/config/contact.php';
 }
 
@@ -42,7 +33,6 @@ if ($HCAPTCHA_SECRET === '') {
   json_response(false, 'Brak HCAPTCHA_SECRET w konfiguracji serwera.');
 }
 
-/* ====== Odbiór danych (JSON lub application/x-www-form-urlencoded) ====== */
 $raw    = file_get_contents('php://input') ?: '';
 $asJson = json_decode($raw, true);
 
@@ -52,9 +42,7 @@ $message = trim($asJson['message'] ?? ($_POST['message'] ?? ''));
 $website = trim($asJson['website'] ?? ($_POST['website'] ?? '')); // honeypot
 $captcha = trim($asJson['captchaToken'] ?? ($_POST['h-captcha-response'] ?? ''));
 
-/* ====== Walidacje ====== */
 if ($website !== '') {
-  // Bot – udajemy sukces, żeby nie podpowiadać
   json_response(true);
 }
 if ($name === '' || $email === '' || $message === '') {
@@ -67,7 +55,6 @@ if ($captcha === '') {
   json_response(false, 'Brak tokenu hCaptcha.');
 }
 
-/* ====== Weryfikacja hCaptcha ====== */
 $ch = curl_init('https://hcaptcha.com/siteverify');
 curl_setopt_array($ch, [
   CURLOPT_POST           => true,
@@ -87,7 +74,6 @@ if (empty($data['success'])) {
   json_response(false, 'Weryfikacja hCaptcha nie powiodła się.');
 }
 
-/* ====== Przygotowanie maila ====== */
 $safe_name  = str_replace(["\r", "\n"], ' ', $name);
 $safe_email = str_replace(["\r", "\n"], ' ', $email);
 $subject    = 'Nowa wiadomość z formularza: ' . $safe_name;
@@ -96,7 +82,6 @@ $bodyTxt = "Imię i nazwisko: $safe_name\n"
          . "E-mail: $safe_email\n\n"
          . "Wiadomość:\n$message\n";
 
-/* ====== PHPMailer (jeśli dostępny) ====== */
 $phpmailerPath = __DIR__ . '/PHPMailer.php';
 $smtpPath      = __DIR__ . '/SMTP.php';
 $excPath       = __DIR__ . '/Exception.php';
@@ -129,12 +114,10 @@ if ($hasPHPMailer && $SMTP_HOST && $SMTP_USER && $SMTP_PASS) {
     $mail->send();
     json_response(true);
   } catch (Throwable $e) {
-    // Jeżeli SMTP zawiedzie — fallback na mail()
-    // (przechodzimy dalej)
+
   }
 }
 
-/* ====== Fallback: wbudowane mail() ====== */
 $encodedFromName = '=?UTF-8?B?' . base64_encode($MAIL_FROM_NAME) . '?=';
 $encodedSubject  = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 $headers = [

@@ -2,8 +2,7 @@ resources:
   - backend.yaml
   - frontend.yaml
   - ingress.yaml
-# postgres opcjonalnie:
-#  - postgres.yaml
+
 
 images:
   - name: ghcr.io/przemekp95/wizytowka-backend

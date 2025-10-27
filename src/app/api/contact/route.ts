@@ -1,18 +1,14 @@
-// app/api/contact/route.ts
 import { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
 
-// ── ustawienia runtime/cache ───────────────────────────────────────────────────
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// ── pomocnicze ─────────────────────────────────────────────────────────────────
 function isValidEmail(v: unknown) {
   return typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-// bardzo prosty limiter w pamięci procesu (działa w środowiskach Node z długim życiem procesu)
 const hits = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 10 * 60 * 1000; // 10 min
 const MAX_HITS = 5;
@@ -31,28 +27,23 @@ function rateLimit(ip: string) {
   return { ok: true as const };
 }
 
-// Obsługa zarówno JSON, jak i klasycznego <form>
 async function parseBody(req: NextRequest) {
   const ct = (req.headers.get("content-type") || "").toLowerCase();
   if (ct.includes("application/json")) {
     return await req.json();
   }
-  // obsłuży form-urlencoded i multipart/form-data
   const fd = await req.formData();
   return Object.fromEntries(fd.entries());
 }
 
-// ── handler ────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
     const { name, email, message, website } = await parseBody(req);
 
-    // honeypot
     if (typeof website === "string" && website.trim() !== "") {
-      return Response.json({ ok: true }, { status: 200 }); // udaj sukces
+      return Response.json({ ok: true }, { status: 200 });
     }
 
-    // walidacje
     if (typeof name !== "string" || name.trim().length < 2) {
       return Response.json({ ok: false, error: "Podaj imię i nazwisko" }, { status: 400 });
     }
@@ -63,7 +54,6 @@ export async function POST(req: NextRequest) {
       return Response.json({ ok: false, error: "Wiadomość jest za krótka" }, { status: 400 });
     }
 
-    // rate-limit (opcjonalny)
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("cf-connecting-ip") ||
@@ -79,7 +69,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── wysyłka maila ─────────────────────────────────────────────────────────
     const host = process.env.SMTP_HOST;
     const port = Number(process.env.SMTP_PORT ?? 465);
     const secure = String(process.env.SMTP_SECURE ?? "true") === "true";
@@ -128,7 +117,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// (opcjonalnie) zablokuj inne metody – pomaga w diagnostyce
 export async function GET() {
   return Response.json({ ok: false, error: "Method Not Allowed" }, { status: 405 });
 }

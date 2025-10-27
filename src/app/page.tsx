@@ -1,12 +1,9 @@
-// app/page.tsx — SERVER COMPONENT (brak 'use client')
 import "@/styles/custom.scss";
 import Image from "next/image";
 
-// Header może pozostać client componentem, server strona może go normalnie użyć
 import Header from "@/app/_components/Header";
 
-// Użyj serwerowej wersji formularza (statyczny HTML + widoczna hCaptcha)
-import ContactForm from "@/app/_components/ContactForm"; // patrz poprzednie moje msg
+import ContactForm from "@/app/_components/ContactForm";
 
 export const dynamic = "force-static";
 export const revalidate = false;
@@ -14,17 +11,14 @@ export const revalidate = false;
 export default function OnePager() {
   return (
     <>
-      {/* NAV */}
       <Header />
 
       <main className="pt-14 bg-white text-slate-900">
-        {/* HERO (bez Framer Motion; CSS-only animacje) */}
         <section id="home" className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white">
           <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-2xl bg-indigo-200/60 blur-xl" />
           <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
             <div className="relative">
-              {/* WAŻNE: wrapper musi być relative dla Image fill */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
                 <Image
                   src="/images/PP-2-JPG-01.webp"
@@ -51,7 +45,6 @@ export default function OnePager() {
           </div>
         </section>
 
-        {/* PORTFOLIO — bez zmian istotnych dla SSG */}
         <section id="portfolio" className="py-20 md:py-28">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">Portfolio</h2>
@@ -144,7 +137,6 @@ export default function OnePager() {
           </div>
         </section>
 
-        {/* ABOUT */}
         <section id="about" className="bg-slate-50">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
             <div className="lg:col-span-2 flex justify-center">
@@ -175,7 +167,6 @@ export default function OnePager() {
           </div>
         </section>
 
-        {/* CONTACT (server section – statyczny HTML, hCaptcha widoczna) */}
         <section id="contact" className="py-24 bg-gradient-to-b from-white to-slate-50">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">Kontakt</h2>
@@ -187,7 +178,6 @@ export default function OnePager() {
         </section>
       </main>
 
-      {/* FOOTER (rok zrenderuje się przy buildzie) */}
       <footer className="border-t">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} Przemysław Pietrzak</p>

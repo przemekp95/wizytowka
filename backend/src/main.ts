@@ -44,7 +44,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Set-Cookie'],
-    maxAge: 600, // cache preflight
+    maxAge: 600,
   });
 
   app.use(

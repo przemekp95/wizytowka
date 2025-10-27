@@ -21,7 +21,7 @@ export class ContactController {
       (req.headers['x-forwarded-for'] as string | undefined)
         ?.split(',')[0]
         ?.trim() || req.ip;
-    const requestId = req.requestId; // już typowane ✅
+    const requestId = req.requestId;
 
     const result = await this.contact.createAndNotify({
       name: dto.name,

@@ -1,5 +1,4 @@
-/* pnpm tsx scripts/seed-portfolio.ts */
-import 'dotenv/config'; // <-- wczyta backend/.env
+import 'dotenv/config';
 import { MongoClient } from 'mongodb';
 
 const items = [
@@ -84,5 +83,4 @@ const items = [
   );
 
   await client.close();
-  console.log('Seed OK');
 })();

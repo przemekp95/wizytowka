@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-
 import { Injectable, Logger } from '@nestjs/common';
 import nodemailer, { Transporter } from 'nodemailer';
 import { PrismaService } from '../prisma/prisma.service';
@@ -35,7 +33,6 @@ export class ContactService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  // Jednorazowa konfiguracja transportu SMTP z zwiększonymi timeout'ami
   private transporter: Transporter = nodemailer.createTransport(
     {
       host: process.env.SMTP_HOST,
@@ -45,12 +42,10 @@ export class ContactService {
         process.env.SMTP_USER && process.env.SMTP_PASS
           ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
           : undefined,
-      // Zwiększone timeout'y dla środowiska Render
-      connectionTimeout: 30_000, // 30s zamiast 15s
-      greetingTimeout: 30_000, // 30s zamiast 15s
-      socketTimeout: 60_000, // 60s zamiast 20s
-      // Dodatkowe opcje dla lepszej niezawodności
-      pool: true, // Użyj connection pool
+      connectionTimeout: 30_000,
+      greetingTimeout: 30_000,
+      socketTimeout: 60_000,
+      pool: true,
       maxConnections: 5,
       maxMessages: 100,
       rateDelta: 1000,
@@ -62,9 +57,6 @@ export class ContactService {
     },
   );
 
-  /**
-   * Utility method do obsługi retry z wykładniczym backoff'em
-   */
   private async retryWithBackoff<T>(
     operation: () => Promise<T>,
     options: RetryOptions,
@@ -85,10 +77,9 @@ export class ContactService {
         lastError = error as Error;
 
         if (attempt === options.maxRetries) {
-          break; // Ostatnia próba, nie czekamy więcej
+          break;
         }
 
-        // Oblicz delay z wykładniczym backoff'em
         const delay = Math.min(
           options.baseDelay * Math.pow(2, attempt),
           options.maxDelay,
@@ -125,8 +116,8 @@ export class ContactService {
 
     const retryOptions: RetryOptions = {
       maxRetries: 3,
-      baseDelay: 1000, // 1 sekunda
-      maxDelay: 10000, // 10 sekund max
+      baseDelay: 1000,
+      maxDelay: 10000,
     };
 
     const result = await this.retryWithBackoff(
@@ -155,11 +146,6 @@ export class ContactService {
     return result;
   }
 
-  /**
-   * Zapis w bazie + wysyłka maila.
-   * Błędy zapisu NIE blokują maila.
-   * Błędy maila NIE powodują 500 — logujemy i nadal zwracamy 202.
-   */
   async createAndNotify(params: CreateContactInput): Promise<{
     ok: true;
     messageId?: string;
@@ -167,7 +153,6 @@ export class ContactService {
   }> {
     let savedId: string | undefined;
 
-    // 1) Zapis do DB (best-effort)
     try {
       const saved = await this.prisma.contactMessage.create({
         data: {
@@ -185,7 +170,6 @@ export class ContactService {
       );
     }
 
-    // 2) Wysyłka maila (best-effort)
     try {
       const { messageId } = await this.sendMail(params);
       return { ok: true, messageId, savedId };
@@ -193,7 +177,6 @@ export class ContactService {
       this.logger.error(
         `Mail send failed. requestId=${params.requestId} reason=${(e as Error).message}`,
       );
-      // nadal 202 — klient nie utknie przez błąd SMTP
       return { ok: true, savedId };
     }
   }

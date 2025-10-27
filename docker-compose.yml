@@ -35,7 +35,6 @@ services:
       timeout: 3s
       retries: 12
 
-  # (opcjonalnie) GUI do Mongo: http://localhost:8081
   mongo-express:
     image: mongo-express:1
     container_name: wiz-mongo-express
@@ -50,7 +49,6 @@ services:
       mongo:
         condition: service_healthy
 
-  # (opcjonalnie) podgląd maili w dev: http://localhost:8025
   mailhog:
     image: mailhog/mailhog:v1.0.1
     container_name: wiz-mailhog
@@ -59,7 +57,6 @@ services:
       - "1025:1025"   # SMTP
       - "8025:8025"   # Web UI
 
-  # (opcjonalnie) podgląd Postgresa: http://localhost:5050
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: wiz-pgadmin

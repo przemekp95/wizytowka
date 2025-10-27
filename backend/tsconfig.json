@@ -22,7 +22,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
 
-    // 👇 dodaj to
     "types": ["node", "express", "jest"],
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
