@@ -99,9 +99,6 @@ jobs:
       - name: Prisma generate
         run: pnpm -F backend exec prisma generate
 
-      - name: Prisma migrate deploy
-        run: pnpm -F backend exec prisma migrate deploy
-
       # ---- Lint ----
       - name: Lint backend
         run: pnpm -F backend lint
