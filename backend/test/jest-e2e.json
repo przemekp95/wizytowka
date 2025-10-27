@@ -9,8 +9,6 @@
       { "tsconfig": "tsconfig.json", "transpilation": true }
     ]
   },
-  "transformIgnorePatterns": [
-    "node_modules/(?!(uuid|@aws-sdk)/)"
-  ],
+  "setupFilesAfterEnv": ["<rootDir>/test-setup.ts"],
   "testTimeout": 30000
 }
