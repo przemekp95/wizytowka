@@ -43,18 +43,15 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-
 html {
   scroll-behavior: smooth;
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 }
-
 
 section[id],
 [data-anchor] {
