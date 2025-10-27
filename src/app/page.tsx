@@ -35,11 +35,11 @@ export default function OnePager() {
                 Next.js &amp; PHP Web Developer
               </h1>
               <p className="mt-5 max-w-prose text-lg text-slate-600 fade-up-delayed">
-                Buduję nowoczesne aplikacje webowe (Next.js, Laravel) i systemy AI offline. Łączę warsztat prawniczy z technologią.
+                I build modern web applications (Next.js, Laravel) and offline AI systems. I combine legal expertise with technology.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3 fade-up-delayed2">
-                <a href="#portfolio" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Zobacz projekty</a>
-                <a href="#contact" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Skontaktuj się</a>
+                <a href="#portfolio" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">View Projects</a>
+                <a href="#contact" className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">Contact Me</a>
               </div>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function OnePager() {
                         className={`${imgClasses} transition-transform duration-500 group-hover:scale-[1.02]`}
                         sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                       />
-                      {p.newTech && <span className="badge">Nowa technologia</span>}
+                      {p.newTech && <span className="badge">New Technology</span>}
                     </div>
                     <h3 className="mt-4 text-lg font-bold">
                       <a
@@ -123,7 +123,7 @@ export default function OnePager() {
                     </h3>
                     <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
                     <div className="mt-4">
-                      <div className="font-semibold text-slate-800">Technologie</div>
+                      <div className="font-semibold text-slate-800">Technologies</div>
                       <div className="mt-2 flex flex-wrap justify-center gap-2">
                         {p.tags.map((t) => (
                           <span key={t} className="chip">{t}</span>
@@ -150,13 +150,13 @@ export default function OnePager() {
               />
             </div>
             <div className="lg:col-span-3">
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">O mnie</h2>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">About Me</h2>
               <p className="mt-3 text-slate-700 leading-relaxed">
-                Jestem developerem budującym nowoczesne aplikacje webowe. Łączę analityczne podejście
-                z inżynierią oprogramowania: Next.js, Laravel, Prisma, Docker.
+                I am a developer building modern web applications. I combine analytical approach
+                with software engineering: Next.js, Laravel, Prisma, Docker.
               </p>
               <div className="mt-8">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Stack technologiczny</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Technology Stack</h3>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                   {["Next.js / React", "Laravel / PHP", "Prisma / SQL", "Docker / CI"].map((tech) => (
                     <li key={tech} className="bullet">{tech}</li>
@@ -169,8 +169,8 @@ export default function OnePager() {
 
         <section id="contact" className="py-24 bg-gradient-to-b from-white to-slate-50">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">Kontakt</h2>
-            <p className="mt-2 text-center text-slate-600">Napisz wiadomość – odpowiem możliwie szybko.</p>
+            <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">Contact</h2>
+            <p className="mt-2 text-center text-slate-600">Send a message – I'll reply as soon as possible.</p>
             <div className="mt-10 flex justify-center">
               <ContactForm />
             </div>
