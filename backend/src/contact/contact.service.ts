@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface RetryOptions {
@@ -33,6 +33,7 @@ export class ContactService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   private transporter: Transporter = nodemailer.createTransport(
     {
       host: process.env.SMTP_HOST,
@@ -62,7 +63,7 @@ export class ContactService {
     options: RetryOptions,
     requestId?: string,
   ): Promise<T> {
-    let lastError: Error;
+    let lastError: Error | undefined;
 
     for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
       try {
@@ -74,7 +75,10 @@ export class ContactService {
 
         return await operation();
       } catch (error) {
-        lastError = error as Error;
+        lastError =
+          (error as unknown) instanceof Error
+            ? (error as unknown as Error)
+            : new Error(String(error));
 
         if (attempt === options.maxRetries) {
           break;
@@ -87,7 +91,7 @@ export class ContactService {
 
         this.logger.warn(
           `Email send failed (attempt ${attempt + 1}), retrying in ${delay}ms. ` +
-            `Error: ${(error as Error).message} requestId=${requestId}`,
+            `Error: ${lastError.message} requestId=${requestId}`,
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -122,6 +126,7 @@ export class ContactService {
 
     const result = await this.retryWithBackoff(
       async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const info = await this.transporter.sendMail({
           from,
           to,
@@ -131,13 +136,25 @@ export class ContactService {
           headers: { 'X-Request-Id': params.requestId ?? '' },
         });
 
-        this.logger.log(
-          `Mail sent successfully: messageId=${info.messageId} ` +
-            `accepted=${JSON.stringify(info.accepted)} ` +
-            `rejected=${JSON.stringify(info.rejected)} req=${params.requestId}`,
-        );
+        // Type guard to ensure info is SentMessageInfo
+        if (info && typeof info === 'object' && 'messageId' in info) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const sentInfo = info as SentMessageInfo;
 
-        return { messageId: info.messageId };
+          this.logger.log(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            `Mail sent successfully: messageId=${sentInfo.messageId} ` +
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              `accepted=${JSON.stringify(sentInfo.accepted)} ` +
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              `rejected=${JSON.stringify(sentInfo.rejected)} req=${params.requestId}`,
+          );
+
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          return { messageId: sentInfo.messageId };
+        } else {
+          throw new Error('Invalid response from sendMail');
+        }
       },
       retryOptions,
       params.requestId,
@@ -165,8 +182,12 @@ export class ContactService {
       });
       savedId = saved.id;
     } catch (e) {
+      const error =
+        (e as unknown) instanceof Error
+          ? (e as unknown as Error)
+          : new Error(String(e));
       this.logger.warn(
-        `DB save failed, continuing. requestId=${params.requestId} reason=${(e as Error).message}`,
+        `DB save failed, continuing. requestId=${params.requestId} reason=${error.message}`,
       );
     }
 
@@ -174,8 +195,12 @@ export class ContactService {
       const { messageId } = await this.sendMail(params);
       return { ok: true, messageId, savedId };
     } catch (e) {
+      const error =
+        (e as unknown) instanceof Error
+          ? (e as unknown as Error)
+          : new Error(String(e));
       this.logger.error(
-        `Mail send failed. requestId=${params.requestId} reason=${(e as Error).message}`,
+        `Mail send failed. requestId=${params.requestId} reason=${error.message}`,
       );
       return { ok: true, savedId };
     }
