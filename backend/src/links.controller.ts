@@ -22,7 +22,7 @@ export class LinksController {
   @Get('r/:slug')
   redirect(@Param('slug') slug: string, @Res() res: Response) {
     const found = LINKS.find((l) => l.slug === slug);
-    if (!found) return res.redirect(302, '/'); // albo 404
+    if (!found) return res.redirect(302, '/');
     return res.redirect(302, found.url);
   }
 }

@@ -13,7 +13,7 @@ export default function Header() {
       el.classList.toggle('scrolled', scrolled);
     };
 
-    onScroll(); // stan początkowy po odświeżeniu
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

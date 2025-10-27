@@ -11,10 +11,8 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    // Dzięki temu w kodzie frontu wywołujesz po prostu /api/...
     return [{ source: '/api/:path*', destination: `${BACKEND}/api/:path*` }];
   },
-  // (opcjonalnie) bezpieczniejsze nagłówki dla statyków
   async headers() {
     return [
       {
@@ -27,7 +25,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Ensure static files are served correctly
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : undefined,
 };
 

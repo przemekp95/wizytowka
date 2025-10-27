@@ -50,7 +50,7 @@ describe('ContactSection', () => {
     });
 
     render(<ContactSection />);
-    await userEvent.type(screen.getByLabelText(/Imię i nazwisko/i), 'A'); // dowolne
+    await userEvent.type(screen.getByLabelText(/Imię i nazwisko/i), 'A'); 
     await userEvent.type(screen.getByLabelText(/E-mail/i), 'x@x.pl');
     await userEvent.type(screen.getByLabelText(/Wiadomość/i), 'krótka');
 

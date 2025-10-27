@@ -18,7 +18,6 @@ export default function ContactSection() {
     try {
       const fd = new FormData(formRef.current);
 
-      // honeypot
       const website = String(fd.get("website") ?? "");
       if (website.trim() !== "") {
         setStatus("sent");
@@ -64,7 +63,7 @@ export default function ContactSection() {
       ref={formRef}
       className="w-full max-w-xl space-y-4"
       onSubmit={onSubmit}
-      action="/api/contact"   // fallback gdy JS się nie załaduje
+      action="/api/contact"
       method="POST"
       noValidate
       aria-busy={status === "sending"}
@@ -101,7 +100,6 @@ export default function ContactSection() {
         />
       </div>
 
-      {/* honeypot (ukryte pole dla botów) */}
       <input
         type="text"
         name="website"

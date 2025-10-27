@@ -8,11 +8,9 @@ PLIK: styles/custom.scss (importowany w komponencie)
 @use "tailwindcss";   
 
 
-/* --- Tekst/brand/linki --- */
 .brand { @apply font-bold; }
 .link { @apply text-slate-700 hover:text-indigo-600 transition-colors; }
 
-/* --- Przyciski --- */
 .btn {
   @include btn-base;
   @apply inline-flex items-center justify-center
@@ -30,10 +28,8 @@ PLIK: styles/custom.scss (importowany w komponencie)
   &:hover { background: $primary-500; }
 }
 
-/* --- Nagłówki/sekcje --- */
 .section-title { @apply text-3xl md:text-4xl font-extrabold tracking-tight; }
 
-/* --- Karty/miniatury --- */
 .card { 
   @include card; 
   @apply transition-transform hover:-translate-y-0.5;
@@ -48,31 +44,22 @@ PLIK: styles/custom.scss (importowany w komponencie)
   color: $text-muted; font-size: .9rem;
 }
 
-/* --- Chip/tag (do listy technologii) --- */
 .chip {
   @apply inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-700 bg-white;
 }
 
-/* --- Avatar/wyliczenia --- */
 .avatar { height: 20rem; border-radius: 1rem; background: linear-gradient(135deg,#c7d2fe,#f5d0fe); }
 .bullet { @apply flex items-center gap-2 text-sm; }
 .bullet::before { content: ""; width: .375rem; height: .375rem; border-radius: 9999px; background: $primary-600; display: inline-block; }
 
-/* --- Tła/gradienty --- */
 .gradient-surface { background: linear-gradient(180deg,#eef2ff, #ffffff 40%, #ffffff); }
 
-/* --- Formularz --- */
 .label { @apply block text-sm font-medium text-slate-700; }
 .input, .textarea { 
   @apply mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 outline-none 
          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white;
 }
 
-/* --- (opcjonalnie) rytm pionowy sekcji, gdy nie używasz utility w JSX --- */
-/* .section { @apply py-20 md:py-28; } */
-
-
-/* HEADER BASE — bez pozycjonowania (to masz w TSX) */
 .site-header {
   @apply transition-colors duration-300; /* żadnego fixed/sticky/z-index tutaj */
   height: 3.5rem; /* = h-14, pasuje do nav */
@@ -93,7 +80,6 @@ PLIK: styles/custom.scss (importowany w komponencie)
   }
 }
 
-/* SCROLLED — biały header + czarne litery + czarny przycisk */
 .site-header.scrolled {
   @apply bg-white border-b shadow-sm;
 
@@ -111,14 +97,12 @@ PLIK: styles/custom.scss (importowany w komponencie)
   }
 }
 
-/* (opcjonalnie) drobna korekta klikalnego obszaru */
 .site-header .nav-link,
 .site-header .nav-btn { @apply leading-none; }
 
 
 
 
-/* Karty portfolio */
 .card-media {
   @apply relative overflow-hidden rounded-xl;
 }
@@ -129,14 +113,12 @@ PLIK: styles/custom.scss (importowany w komponencie)
   @apply scale-105;
 }
 
-/* Badge "Nowa technologia" */
 .badge {
   @apply absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-semibold;
   @apply bg-indigo-600 text-white shadow;
 }
 
 
-/* Sekcja "O mnie" */
 
 
 .stack-title {
@@ -144,14 +126,12 @@ PLIK: styles/custom.scss (importowany w komponencie)
 }
 
 
-/* === KARTA FORMULARZA === */
 .contact-card {
   @apply w-full max-w-xl mx-auto bg-white 
          rounded-2xl border border-slate-200 shadow-md 
          p-8 grid gap-6;
 }
 
-/* Floating labels */
 .field-floating { @apply relative; }
 
 .input-floating {
@@ -173,7 +153,6 @@ PLIK: styles/custom.scss (importowany w komponencie)
   transform: translateY(-0.9rem) scale(0.95);
 }
 
-/* === Przycisk wysyłki === */
 
 
 
@@ -185,21 +164,17 @@ PLIK: styles/custom.scss (importowany w komponencie)
          transition-all duration-200 ease-out
          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
 
-  /* Hover – jaśniejszy i lekko podbity */
   &:hover {
     @apply bg-indigo-700 scale-105 shadow-xl;
   }
 
-  /* Active – wciśnięty */
   &:active {
     @apply bg-indigo-800 scale-95 shadow-md;
   }
 
-  /* Animacja lekkiego podjazdu przy wejściu na ekran */
   animation: fadeInUp 0.4s ease both;
 }
 
-/* Kluczowe klatki */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -212,7 +187,6 @@ PLIK: styles/custom.scss (importowany w komponencie)
 }
 
 
-/* Autofill fix */
 input:-webkit-autofill,
 textarea:-webkit-autofill {
   -webkit-text-fill-color: #0f172a;

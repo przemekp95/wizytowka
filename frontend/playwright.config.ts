@@ -10,10 +10,8 @@ export default defineConfig({
     headless: true,
     trace: 'on-first-retry',
   },
-  // Startujemy oba serwery: backend (4000) i frontend (3000)
   webServer: [
     {
-      // uruchom backend z katalogu backend
       command: 'pnpm -C ../backend dev',
       url: 'http://localhost:4000/graphql',
       reuseExistingServer: true,
@@ -29,7 +27,6 @@ export default defineConfig({
       },
     },
     {
-      // uruchom frontend (Next) z bieżącego pakietu
       command: 'pnpm dev',
       url: 'http://localhost:3000',
       reuseExistingServer: true,
