@@ -9,5 +9,8 @@
       { "tsconfig": "tsconfig.json", "transpilation": true }
     ]
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(uuid|@aws-sdk)/)"
+  ],
   "testTimeout": 30000
 }
