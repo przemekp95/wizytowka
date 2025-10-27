@@ -13,8 +13,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wizytówka IT - Przemysław Pietrzak",
-  description: "PHP & Next.js Web Developer",
+  title: "IT Business Card - Przemysław Pietrzak",
+  description: "PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.",
+  keywords: "Next.js, PHP, Laravel, Web Developer, React, Prisma, Docker, AI, Web Applications",
+  authors: [{ name: "Przemysław Pietrzak" }],
+  creator: "Przemysław Pietrzak",
+  publisher: "Przemysław Pietrzak",
+  robots: "index, follow",
+  viewport: "width=device-width, initial-scale=1",
+  openGraph: {
+    title: "IT Business Card - Przemysław Pietrzak",
+    description: "PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.",
+    url: "https://przemyslaw-pietrzak.pl",
+    siteName: "Przemysław Pietrzak Portfolio",
+    images: [
+      {
+        url: "/images/PP-2-JPG-01.webp",
+        width: 1200,
+        height: 630,
+        alt: "Przemysław Pietrzak - Web Developer",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "IT Business Card - Przemysław Pietrzak",
+    description: "PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.",
+    images: ["/images/PP-2-JPG-01.webp"],
+    creator: "@przemekp95",
+  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
