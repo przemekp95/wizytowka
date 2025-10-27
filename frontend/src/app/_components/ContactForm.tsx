@@ -5,6 +5,7 @@ type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
 
+// Internal function for loading translations
 async function loadTranslations(locale: string, section: string) {
   try {
     const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
