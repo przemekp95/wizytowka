@@ -62,3 +62,4 @@ out/
 
 .early.coveragekubeconfig.b64
 kubeconfig.yaml
+\n# kubeconfig ignore (local note for PR)
