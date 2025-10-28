@@ -60,4 +60,5 @@ out/
 # Misc
 .DS_Store
 
-.early.coverage
+.early.coveragekubeconfig.b64
+kubeconfig.yaml
