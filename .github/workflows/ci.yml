@@ -71,7 +71,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # pnpm: wersja pobierana z package.json ("packageManager")
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -89,28 +88,48 @@ jobs:
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
 
+      - name: Diagnostic information
+        if: always()
+        run: |
+          node -v
+          npm -v
+          pnpm -v
+
       - name: Install netcat
-        run: sudo apt-get update && sudo apt-get install -y netcat
+        run: |
+          if command -v nc >/dev/null 2>&1; then
+            echo "nc already installed"
+          else
+            sudo apt-get update
+            sudo apt-get install -y netcat-openbsd || echo "netcat install failed, continuing with fallback"
+          fi
+        continue-on-error: true
 
       - name: Wait for Postgres & Mongo
         run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client mongosh
           for i in {1..60}; do
-            (nc -z localhost 5432) && (nc -z localhost 27017) && break
-            echo "Waiting for DBs... ($i/60)"; sleep 2
+            if pg_isready -h localhost -p 5432 -U wiz >/dev/null 2>&1 && mongosh --eval "db.adminCommand({ ping: 1 })" >/dev/null 2>&1; then
+              echo "DBs are ready"
+              break
+            fi
+            echo "Waiting for DBs... ($i/60)"
+            sleep 2
           done
+          if [ "$i" -ge 60 ]; then
+            echo "DBs did not become ready in time"
+          fi
 
-      # ---- Prisma (backend) ----
       - name: Prisma generate
         run: pnpm -F backend exec prisma generate
 
-      # ---- Lint ----
       - name: Lint backend
         run: pnpm -F backend lint
 
       - name: Lint frontend
         run: pnpm -F frontend lint
 
-      # ---- Tests ----
       - name: Unit tests (backend)
         run: pnpm -F backend test
 
@@ -135,7 +154,6 @@ jobs:
           echo "TAG_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=latest"        >> $GITHUB_OUTPUT
 
-      # --- Build & push to GHCR ---
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
