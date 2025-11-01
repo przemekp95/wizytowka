@@ -4,6 +4,9 @@
   "description": "",
   "author": "",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

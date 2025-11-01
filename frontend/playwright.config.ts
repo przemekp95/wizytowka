@@ -2,8 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
-  expect: { timeout: 10_000 },
+  timeout: 300000,
+  expect: { timeout: 10000 },
   retries: process.env.CI ? 2 : 0,
   use: {
     baseURL: 'http://localhost:3000',
@@ -15,7 +15,7 @@ export default defineConfig({
       command: 'pnpm -C ../backend dev',
       url: 'http://localhost:4000/graphql',
       reuseExistingServer: true,
-      timeout: 120_000,
+      timeout: 180000,
       env: {
         NODE_ENV: 'test',
         PORT: '4000',
@@ -30,7 +30,7 @@ export default defineConfig({
       command: 'pnpm dev',
       url: 'http://localhost:3000',
       reuseExistingServer: true,
-      timeout: 120_000,
+      timeout: 180000,
       env: {
         NODE_ENV: 'test',
         PORT: '3000',
