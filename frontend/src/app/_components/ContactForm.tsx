@@ -21,7 +21,6 @@ export default function ContactSection() {
   const [err, setErr] = useState('');
   const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
- 
 
   useEffect(() => {
     const loadContactTranslations = async () => {
@@ -35,7 +34,8 @@ export default function ContactSection() {
 
   // render occurs immediately; no loading guard
   const t = (key: string) =>
-    translations[key] ?? ({
+    translations[key] ??
+    {
       name: 'Imię i nazwisko',
       email: 'E-mail',
       message: 'Wiadomość',
@@ -44,8 +44,9 @@ export default function ContactSection() {
       success: 'Wiadomość wysłana ✅',
       error: 'Uzupełnij wszystkie pola.',
       sendError: 'Błąd wysyłki',
-      unknownError: 'Nieznany błąd'
-    }[key] ?? key);
+      unknownError: 'Nieznany błąd',
+    }[key] ??
+    key;
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -186,7 +187,9 @@ export default function ContactSection() {
 
       {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
       {status === 'sent' && (
-        <p data-testid="contact-success" className="text-sm text-green-700" aria-live="polite">{t('success')}</p>
+        <p data-testid="contact-success" className="text-sm text-green-700" aria-live="polite">
+          {t('success')}
+        </p>
       )}
     </form>
   );

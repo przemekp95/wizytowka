@@ -40,7 +40,7 @@ test('wysyłanie formularza kontaktowego (onepager)', async ({ page }) => {
   await name.fill('Jan');
   await email.fill('jan@test.com');
   await message.fill('To jest test E2E');
-        await submit.click({ timeout: 120000, force: true });
+  await submit.click({ timeout: 120000, force: true });
 
   const _success = page.getByTestId('contact-success');
   await _success.waitFor({ state: 'visible', timeout: 60000 });
