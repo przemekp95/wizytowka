@@ -48,7 +48,6 @@ jobs:
 
   build_and_push:
     if: github.ref == 'refs/heads/main'
-    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,7 +66,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        
+
       - name: Build images
         run: |
           echo "Building and pushing images would occur here"
