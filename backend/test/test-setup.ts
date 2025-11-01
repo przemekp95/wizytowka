@@ -1,3 +1,5 @@
+process.env.SKIP_PRISMA = 'true';
+
 // Mock problematic ES6 modules for Jest E2E tests
 // @ts-ignore
 jest.mock('uuid', () => ({
