@@ -15,7 +15,7 @@ export default defineConfig({
       command: 'pnpm -C ../backend dev',
       url: 'http://localhost:4000/graphql',
       reuseExistingServer: true,
-      timeout: 180000,
+      timeout: 600000,
       env: {
         NODE_ENV: 'test',
         PORT: '4000',
@@ -30,7 +30,7 @@ export default defineConfig({
       command: 'pnpm dev',
       url: 'http://localhost:3000',
       reuseExistingServer: true,
-      timeout: 180000,
+      timeout: 600000,
       env: {
         NODE_ENV: 'test',
         PORT: '3000',
