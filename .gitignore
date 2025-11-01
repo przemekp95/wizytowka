@@ -64,3 +64,5 @@ out/
 kubeconfig.yaml
 \n# kubeconfig ignore (local note for PR)
 kubeconfig.b64
+frontend/test-results/
+frontend/test-results/

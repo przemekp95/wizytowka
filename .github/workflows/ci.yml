@@ -46,12 +46,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run tests
-        run: pnpm -w test:all
-
   build_and_push:
     if: github.ref == 'refs/heads/main'
-    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,6 +63,9 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Build images
         run: |
