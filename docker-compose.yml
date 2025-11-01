@@ -13,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d wizytowka"]
+      test: ["CMD-SHELL", "pg_isready -U wiz_user -d wizytowka"]
       interval: 5s
       timeout: 3s
       retries: 20
