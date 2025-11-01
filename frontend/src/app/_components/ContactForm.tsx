@@ -21,14 +21,13 @@ export default function ContactSection() {
   const [err, setErr] = useState('');
   const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+ 
 
   useEffect(() => {
     const loadContactTranslations = async () => {
       const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
       const contactTranslations = await loadTranslations(locale, 'contact');
       setTranslations(contactTranslations);
-      setLoading(false);
     };
 
     loadContactTranslations();
