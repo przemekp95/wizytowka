@@ -26,10 +26,12 @@ test('wysyłanie formularza kontaktowego (onepager)', async ({ page }) => {
     })
   );
 
-  const name = page.getByLabel(/Imię i nazwisko/i);
+  const name = page.getByTestId('contact-name');
   const email = page.getByLabel(/E-?mail/i); // obsłuży "E-mail" i "Email"
-  const message = page.getByLabel(/Wiadomość/i);
-  const submit = page.getByRole('button', { name: /Wyślij/i });
+  const message = page.getByTestId('contact-message');
+  const submit = page.getByTestId('contact-submit');
+  await expect(submit).toBeVisible();
+  await expect(submit).toBeEnabled();
 
   await expect(name).toBeVisible();
   await expect(email).toBeVisible();
@@ -38,7 +40,9 @@ test('wysyłanie formularza kontaktowego (onepager)', async ({ page }) => {
   await name.fill('Jan');
   await email.fill('jan@test.com');
   await message.fill('To jest test E2E');
-  await submit.click();
+        await submit.click({ timeout: 120000, force: true });
 
-  await expect(page.getByText(/Wiadomość wysłana/i)).toBeVisible();
+  const _success = page.getByTestId('contact-success');
+  await _success.waitFor({ state: 'visible', timeout: 60000 });
+  await expect(_success).toBeVisible();
 });

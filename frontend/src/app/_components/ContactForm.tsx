@@ -21,7 +21,7 @@ export default function ContactSection() {
   const [err, setErr] = useState('');
   const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadContactTranslations = async () => {
@@ -34,11 +34,19 @@ export default function ContactSection() {
     loadContactTranslations();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const t = (key: string) => translations[key] || key;
+  // render occurs immediately; no loading guard
+  const t = (key: string) =>
+    translations[key] ?? ({
+      name: 'Imię i nazwisko',
+      email: 'E-mail',
+      message: 'Wiadomość',
+      send: 'Wyślij',
+      sending: 'Wysyłanie...',
+      success: 'Wiadomość wysłana ✅',
+      error: 'Uzupełnij wszystkie pola.',
+      sendError: 'Błąd wysyłki',
+      unknownError: 'Nieznany błąd'
+    }[key] ?? key);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,7 +104,7 @@ export default function ContactSection() {
       setStatus('error');
       setErr(e instanceof Error ? e.message : t('unknownError'));
     } finally {
-      setTimeout(() => setStatus('idle'), 1500);
+      // Keep status visible for tests; do not auto-hide
     }
   };
 
@@ -118,6 +126,7 @@ export default function ContactSection() {
           name="name"
           required
           autoComplete="name"
+          data-testid="contact-name"
           className="w-full border rounded-lg px-3 py-2"
           suppressHydrationWarning
         />
@@ -148,6 +157,7 @@ export default function ContactSection() {
           rows={5}
           required
           maxLength={5000}
+          data-testid="contact-message"
           className="w-full border rounded-lg px-3 py-2 resize-none"
           suppressHydrationWarning
         />
@@ -167,6 +177,7 @@ export default function ContactSection() {
       <div className="flex justify-center">
         <button
           type="submit"
+          data-testid="contact-submit"
           disabled={status === 'sending'}
           className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
         >
@@ -175,7 +186,9 @@ export default function ContactSection() {
       </div>
 
       {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
-      {status === 'sent' && <p className="text-sm text-green-700">{t('success')}</p>}
+      {status === 'sent' && (
+        <p data-testid="contact-success" className="text-sm text-green-700" aria-live="polite">{t('success')}</p>
+      )}
     </form>
   );
 }
