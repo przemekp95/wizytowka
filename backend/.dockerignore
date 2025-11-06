@@ -1,4 +1,78 @@
-node_modules
-dist
+# --- VCS & system ---
 .git
+.gitignore
+.gitattributes
+*.swp
+*.DS_Store
+Thumbs.db
+
+# --- Node caches & locki per-project ---
+**/node_modules
+**/.pnpm-store
+**/.yarn
+**/.yarn-cache
+**/.turbo
+**/.cache
+**/.eslintcache
+
+# --- Artefakty buildów / bundlerów ---
+**/dist
+**/build
+**/.next
+**/.nuxt
+**/out
+**/coverage
+
+# --- Test tooling, e2e, ciężkie binaria ---
+**/cypress
+**/cypress-downloads
+**/playwright-report
+**/test-results
+**/.playwright
+**/.vitest
+**/.jest
+
+# --- Logi, zrzuty, tymczasówki ---
+**/*.log
+**/*.pid
+**/*.seed
+**/*.tgz
+**/tmp
+**/temp
+
+# --- Frontendowe assety źródłowe, które i tak budujesz osobno ---
+**/public/*.map
+**/public/**/*.map
+
+# --- Docker pliki w root (opcjonalnie ignoruj, jeśli nieużywane) ---
 Dockerfile
+docker-compose.yml
+compose.yml
+
+# =========================
+# WHITELIST (utrzymaj to co potrzebne do builda backendu)
+# =========================
+
+# pnpm workspace i locki w root
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!package.json
+
+# katalog backend: kod, definicje, configi
+!backend/**
+# ale dalej możesz ignorować w backend ciężkie artefakty lokalne:
+backend/node_modules
+backend/dist
+backend/coverage
+backend/*.log
+
+# zachowaj pliki wymagane przez proces builda w backend
+!backend/package.json
+!backend/pnpm-lock.yaml
+!backend/tsconfig.json
+!backend/tsconfig.build.json
+!backend/nest-cli.json
+!backend/prisma/**
+!backend/src/**
+!backend/.env.example
+!backend/Dockerfile

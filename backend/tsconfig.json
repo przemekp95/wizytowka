@@ -13,9 +13,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
-    "ignoreDeprecations": "6.0",
-     
+             
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -24,7 +22,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
 
-    "types": ["node", "express", "jest"],
+    "types": ["node", "express"],
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": ["src", "src/types", "src/types/global.d.ts"]
