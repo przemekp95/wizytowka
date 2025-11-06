@@ -1,4 +1,4 @@
-# ---------- BUILD ----------
+# BUILD
 FROM node:20-alpine AS build
 WORKDIR /app
 
@@ -15,15 +15,15 @@ RUN pnpm fetch --prod --filter ./backend...
 COPY backend ./backend
 RUN HUSKY_SKIP_INSTALL=1 pnpm --filter ./backend... install --offline --prod --ignore-scripts --no-frozen-lockfile
 RUN npm install -g @nestjs/cli && (cd backend && nest build)
+
 RUN echo "prune skipped"
 
 RUN echo "deploy skipped"
 
-# ---------- RUNTIME ----------
-FROM gcr.io/distroless/nodejs20-debian12:nonroot AS runtime
+# RUNTIME
+FROM node:20-alpine AS runtime
 WORKDIR /app
-ENV NODE_ENV=production \
-    PORT=3000
-COPY --from=build /app/backend/dist ./dist
+ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["node","./dist/main.js"]  # w distroless entrypoint to `node`, więc wystarczy ścieżka do pliku
+COPY --from=build /app/backend/dist ./dist
+CMD ["node","./dist/main.js"]
