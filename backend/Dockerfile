@@ -14,7 +14,7 @@ RUN pnpm fetch --prod --filter ./backend...
 
 COPY backend ./backend
 RUN HUSKY_SKIP_INSTALL=1 pnpm --filter ./backend... install --offline --prod --ignore-scripts --no-frozen-lockfile
-RUN npm install -g @nestjs/cli && (cd backend && nest build)
+RUN npm install -g @nestjs/cli prisma && (cd backend && npx prisma generate && nest build)
 
 RUN echo "prune skipped"
 

@@ -6,12 +6,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ContactService } from './contact.service';
 import { ContactDto } from './contact.dto';
 import type { Request } from 'express';

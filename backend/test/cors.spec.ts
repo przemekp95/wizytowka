@@ -3,10 +3,8 @@ import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import type { Request, Response } from 'express';
-
-// @ts-ignore
-import { beforeAll, afterAll, expect } from '@jest/globals';
+import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 describe('CORS', () => {
   let app: INestApplication;
@@ -14,8 +12,31 @@ describe('CORS', () => {
 
   beforeAll(async () => {
     const mod = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        // Override config for test environment to provide AWS credentials
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: [], // Don't load .env file
+          load: [
+            () => ({
+              aws: {
+                s3: {
+                  bucketName: 'test-bucket',
+                },
+                region: 'us-east-1',
+                accessKeyId: 'test-key',
+                secretAccessKey: 'test-secret',
+              },
+              database: {
+                url: 'postgresql://test:test@localhost:5432/test',
+              },
+            }),
+          ],
+        }),
+        AppModule,
+      ],
     }).compile();
+
     app = mod.createNestApplication();
 
     // Konfiguracja CORS jak w main.ts
@@ -54,12 +75,12 @@ describe('CORS', () => {
     expect(res.header['access-control-allow-origin']).toBe(ORIGIN);
   });
 
-  it('POST echoes ACAO', async () => {
+  it('POST echoes ACAO', async function () {
     const res = await request(app.getHttpServer())
       .post('/api/contact')
       .set('Origin', ORIGIN)
-      .send({ name: 'T', email: 't@e.pl', message: 'm' });
+      .send({ name: 'T', email: 't@example.pl', message: 'Test message' });
     expect(res.status).toBe(202); // albo 200, zgodnie z twoją implementacją
     expect(res.header['access-control-allow-origin']).toBe(ORIGIN);
-  });
+  }, 5000);
 });

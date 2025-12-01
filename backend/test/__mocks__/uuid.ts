@@ -1,4 +1,3 @@
-// @ts-ignore
-const jest = require('jest');
+const v4 = jest.fn(() => 'mocked-uuid');
 
-export const v4 = jest.fn(() => 'mocked-uuid-1234-5678-9abc-def012345678');
+export { v4 };

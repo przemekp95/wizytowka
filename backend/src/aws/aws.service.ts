@@ -18,17 +18,31 @@ export class AwsService {
   private readonly bucketName: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.bucketName = this.configService.get('aws.s3.bucketName')!;
+    const bucketName = this.configService.get<string>('aws.s3.bucketName');
+    if (!bucketName) {
+      throw new Error('AWS S3 bucket name is not configured');
+    }
+    this.bucketName = bucketName;
   }
 
   private getS3Client(): S3Client {
     if (!this.s3Client) {
       this.logger.log('🔧 Initializing AWS S3 client...');
+      const region = this.configService.get<string>('aws.region');
+      const accessKeyId = this.configService.get<string>('aws.accessKeyId');
+      const secretAccessKey = this.configService.get<string>(
+        'aws.secretAccessKey',
+      );
+
+      if (!region || !accessKeyId || !secretAccessKey) {
+        throw new Error('AWS credentials are not properly configured');
+      }
+
       this.s3Client = new S3Client({
-        region: this.configService.get('aws.region'),
+        region,
         credentials: {
-          accessKeyId: this.configService.get('aws.accessKeyId')!,
-          secretAccessKey: this.configService.get('aws.secretAccessKey')!,
+          accessKeyId,
+          secretAccessKey,
         },
       });
       this.logger.log('✅ AWS S3 client initialized');

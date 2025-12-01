@@ -19,6 +19,8 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 
 import { PrismaModule } from './prisma/prisma.module';
+import { LoggingModule } from './logging/logging.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { PrismaModule } from './prisma/prisma.module';
     ContactModule,
     PortfolioModule,
     AwsModule,
+    LoggingModule,
+    MetricsModule,
   ],
   controllers: [
     AppController,
