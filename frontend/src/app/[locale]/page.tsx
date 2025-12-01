@@ -5,11 +5,11 @@ import { notFound } from 'next/navigation';
 
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
-import { SkillProgress } from '@/components/SkillProgress';
-import { TechStackChart } from '@/components/TechStackChart';
+import { SkillProgress, TechTrend } from '@/components/SkillProgress';
+import { TechStackChart, PortfolioCategory } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
-import { calculateDynamicSkills, calculateDynamicTechStack, formatExperienceTime } from '@/data/skills.data';
+import { calculateTechTrends, calculatePortfolioCategories } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -75,9 +75,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const items = await fetchPortfolio();
   const t = await getTranslations(locale);
 
-  // Wyliczenie dynamicznych umiejętności na podstawie portfola
-  const dynamicSkills = calculateDynamicSkills(items);
-  const dynamicTechStack = calculateDynamicTechStack(items);
+  // Wyliczenie trendów technologii i kategorii projektów na podstawie portfola
+  const techTrends = calculateTechTrends(items);
+  const portfolioCategories = calculatePortfolioCategories(items);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -309,44 +309,28 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         <section id="skills" className="py-20 md:py-28 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
-              {locale === 'en' ? 'Skills & Expertise' : 'Umiejętności i kompetencje'}
+              {locale === 'en' ? 'Technology Analysis' : 'Analiza technologiczna'}
             </h2>
 
             <div className="grid gap-12 lg:grid-cols-2 items-start">
-              {/* Top Technology Skills - compact */}
+              {/* Technology Trends year-over-year - using NEW SkillProgress component */}
               <div>
                 <h3 className="text-xl font-semibold text-slate-700 mb-6">
-                  {locale === 'en' ? 'Top Technology Skills' : 'Główne umiejętności technologiczne'}
+                  {locale === 'en' ? 'Technology Trends (YoY)' : 'Trendy technologii (rok do roku)'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {dynamicSkills.slice(0, 6).map((skill) => (
-                    <div key={skill.id} className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border border-slate-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-slate-800 truncate">{skill.name}</span>
-                        <span className="text-sm font-semibold text-indigo-600">{skill.level}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div
-                          className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${skill.level}%` }}
-                        />
-                      </div>
-                      {skill.experienceMonths && (
-                        <span className="text-xs text-slate-600">
-                          {formatExperienceTime(skill.experienceMonths, locale)}
-                        </span>
-                      )}
-                    </div>
+                  {techTrends.slice(0, 6).map((trend) => (
+                    <SkillProgress key={trend.id} trend={trend} />
                   ))}
                 </div>
               </div>
 
-              {/* Technology Distribution Chart */}
+              {/* Portfolio Categories Chart - using NEW TechStackChart component */}
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-slate-700 mb-6">
-                  {locale === 'en' ? 'Technology Focus' : 'Nastawienie technologiczne'}
+                  {locale === 'en' ? 'Portfolio Categories' : 'Kategorie projektów'}
                 </h3>
-                <TechStackChart locale={locale as 'pl' | 'en'} techStack={dynamicTechStack} />
+                <TechStackChart locale={locale as 'pl' | 'en'} portfolioCategories={portfolioCategories} />
               </div>
             </div>
           </div>

@@ -1,6 +1,5 @@
 'use client';
 
-
 import {
   Chart as ChartJS,
   ArcElement,
@@ -14,22 +13,70 @@ import { techStackData, type TechStack } from '@/data/skills.data';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-interface TechStackChartProps {
-  locale: 'pl' | 'en';
-  techStack?: TechStack[]; // Optional - jeśli nie przekazane, używa statycznych danych
+export interface PortfolioCategory {
+  id: string;
+  namePl: string;
+  nameEn: string;
+  percentage: number;
+  color: string;
+  descriptionPl: string;
+  descriptionEn: string;
 }
 
-export function TechStackChart({ locale, techStack }: TechStackChartProps) {
+interface TechStackChartProps {
+  locale: 'pl' | 'en';
+  portfolioCategories?: PortfolioCategory[]; // Optional - jeśli nie przekazane, używa statycznych danych
+}
+
+export function TechStackChart({ locale, portfolioCategories }: TechStackChartProps) {
   const isEnglish = locale === 'en';
-  const dataSource = techStack || techStackData; // Use dynamic data if available, fallback to static
+  // Use portfolio categories if available, fallback to default tech stack (will be changed to portfolio cats)
+  const dataSource = portfolioCategories || [
+    {
+      id: 'demo-web-apps',
+      namePl: 'Aplikacje webowe',
+      nameEn: 'Web Applications',
+      percentage: 60,
+      color: 'rgba(99, 102, 241, 0.8)',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications',
+    },
+    {
+      id: 'demo-api',
+      namePl: 'API i usługi',
+      nameEn: 'APIs & Services',
+      percentage: 25,
+      color: 'rgba(139, 92, 246, 0.8)',
+      descriptionPl: 'Backend i usługi webowe',
+      descriptionEn: 'Backend services and APIs',
+    },
+    {
+      id: 'demo-tools',
+      namePl: 'Narzędzia',
+      nameEn: 'Tools & Utilities',
+      percentage: 10,
+      color: 'rgba(6, 182, 212, 0.8)',
+      descriptionPl: 'Narzędzia i aplikacje pomocnicze',
+      descriptionEn: 'Helper tools and utilities',
+    },
+    {
+      id: 'demo-other',
+      namePl: 'Inne',
+      nameEn: 'Other',
+      percentage: 5,
+      color: 'rgba(16, 185, 129, 0.8)',
+      descriptionPl: 'Pozostałe projekty',
+      descriptionEn: 'Other projects',
+    },
+  ];
 
   const data = {
-    labels: dataSource.map(stack => isEnglish ? stack.nameEn : stack.namePl),
+    labels: dataSource.map(item => isEnglish ? item.nameEn : item.namePl),
     datasets: [
       {
-        data: dataSource.map(stack => stack.percentage),
-        backgroundColor: dataSource.map(stack => stack.color),
-        borderColor: dataSource.map(stack => stack.color.replace('0.8)', '1)')),
+        data: dataSource.map(item => item.percentage),
+        backgroundColor: dataSource.map(item => item.color),
+        borderColor: dataSource.map(item => item.color.replace('0.8)', '1)')),
         borderWidth: 2,
         hoverOffset: 12,
       },
@@ -100,7 +147,7 @@ export function TechStackChart({ locale, techStack }: TechStackChartProps) {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-lg font-semibold text-center text-slate-700 mb-6"
         >
-          {isEnglish ? 'Technology Stack Distribution' : 'Rozkład kompetencji'}
+          {isEnglish ? 'Portfolio Categories' : 'Kategorie projektów'}
         </motion.h3>
 
         <div className="relative h-80">

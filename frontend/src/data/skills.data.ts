@@ -1,3 +1,4 @@
+// Typy
 export interface Skill {
   id: string;
   name: string;
@@ -13,6 +14,248 @@ export interface TechStack {
   percentage: number;
   color: string;
 }
+
+type PortfolioItem = {
+  _id: string;
+  title: string;
+  title_en?: string;
+  slug: string;
+  href: string;
+  desc: string;
+  desc_en?: string;
+  tags: string[];
+  img: string;
+  isLogo?: boolean;
+  newTech?: boolean;
+  repoUrl?: string | null;
+  dateFrom?: Date;
+  dateTo?: Date;
+};
+
+// Trendy technologii rok do roku
+export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
+  if (!portfolio.length) {
+    return [
+      {
+        id: 'trend1',
+        name: 'React/Next.js',
+        yearOverYearChange: 15,
+        category: 'frontend' as const,
+        isTrend: 'rising' as const,
+      },
+      {
+        id: 'trend2',
+        name: 'Node.js',
+        yearOverYearChange: 8,
+        category: 'backend' as const,
+        isTrend: 'stable' as const,
+      }
+    ];
+  }
+
+  // Grupuj technologie po latach
+  const techByYear: Record<number, Record<string, number>> = {};
+  const now = new Date();
+
+  portfolio.forEach((project) => {
+    if (!project.dateFrom) return;
+
+    const year = new Date(project.dateFrom).getFullYear();
+    if (!techByYear[year]) {
+      techByYear[year] = {};
+    }
+
+    project.tags.forEach((tag) => {
+      techByYear[year][tag] = (techByYear[year][tag] || 0) + 1;
+    });
+  });
+
+  const years = Object.keys(techByYear).map(Number).sort();
+
+  if (years.length < 2) {
+    return [{
+      id: 'trend-fallback',
+      name: years.length > 0 ? Object.keys(techByYear[years[0]])[0] || 'Technologie' : 'Technologie',
+      yearOverYearChange: 0,
+      category: 'frontEnd' as const,
+      isTrend: 'stable' as const,
+    }];
+  }
+
+  // Oblicz trendy dla głównych technologii
+  const allTechs = new Set<string>();
+  years.forEach(year => {
+    Object.keys(techByYear[year]).forEach(tech => allTechs.add(tech));
+  });
+
+  const trends: Array<{
+    id: string;
+    name: string;
+    yearOverYearChange: number;
+    category: Skill['category'];
+    isTrend: 'rising' | 'falling' | 'stable';
+  }> = [];
+
+  Array.from(allTechs).forEach((tech, index) => {
+    const currentYear = Math.max(...years);
+    const previousYear = currentYear - 1;
+
+    const currentCount = techByYear[currentYear]?.[tech] || 0;
+    const previousCount = techByYear[previousYear]?.[tech] || 0;
+
+    let change = 0;
+    if (previousCount > 0) {
+      change = Math.round(((currentCount - previousCount) / previousCount) * 100);
+    } else if (currentCount > 0) {
+      change = 100; // nowa technologia
+    }
+
+    // Określ kategorię na podstawie nazwy technologii
+    let category: Skill['category'] = 'frontEnd';
+    const lowerTech = tech.toLowerCase();
+    if (['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite'].some(db => lowerTech.includes(db))) {
+      category = 'database';
+    } else if (['docker', 'kubernetes', 'aws', 'vercel', 'github', 'ci/cd', 'jenkins'].some(devops => lowerTech.includes(devops))) {
+      category = 'devops';
+    } else if (['node.js', 'nestjs', 'php', 'laravel', 'django', 'spring', 'express', 'api'].some(be => lowerTech.includes(be))) {
+      category = 'backEnd';
+    }
+
+    let isTrend: 'rising' | 'falling' | 'stable' = 'stable';
+    if (change >= 10) isTrend = 'rising';
+    else if (change <= -10) isTrend = 'falling';
+
+    trends.push({
+      id: `<TUTORIAL>${tech.toLowerCase().replace(/\s+/g, '-')}-${index}</TUTORIAL>`,
+      name: tech,
+      yearOverYearChange: change,
+      category,
+      isTrend,
+    });
+  });
+
+  // Sortuj po bezwzględnej wartości zmiany (największe trendy na górze)
+  return trends.sort((a, b) => Math.abs(b.yearOverYearChange) - Math.abs(a.yearOverYearChange));
+};
+
+// Rozkład kategorii projektów
+export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
+  if (!portfolio.length) {
+    return [
+      {
+        id: 'web-app',
+        namePl: 'Aplikacje webowe',
+        nameEn: 'Web Applications',
+        percentage: 60,
+        color: 'rgba(99, 102, 241, 0.8)', // indigo
+        descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+        descriptionEn: 'Full-featured web applications',
+      },
+      {
+        id: 'api',
+        namePl: 'API i usługi',
+        nameEn: 'APIs & Services',
+        percentage: 25,
+        color: 'rgba(139, 92, 246, 0.8)', // purple
+        descriptionPl: 'Backend i usługi webowe',
+        descriptionEn: 'Backend services and APIs',
+      },
+      {
+        id: 'tools',
+        namePl: 'Narzędzia',
+        nameEn: 'Tools & Utilities',
+        percentage: 10,
+        color: 'rgba(6, 182, 212, 0.8)', // cyan
+        descriptionPl: 'Narzędzia i aplikacje pomocnicze',
+        descriptionEn: 'Helper tools and utilities',
+      },
+      {
+        id: 'other',
+        namePl: 'Inne',
+        nameEn: 'Other',
+        percentage: 5,
+        color: 'rgba(16, 185, 129, 0.8)', // emerald
+        descriptionPl: 'Pozostałe projekty',
+        descriptionEn: 'Other projects',
+      },
+    ];
+  }
+
+  // Kategoryzacja projektów na podstawie tagów i tytułów
+  const categories: Record<string, { count: number; color: string; namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }> = {
+    'web-app': {
+      count: 0,
+      color: 'rgba(99, 102, 241, 0.8)',
+      namePl: 'Aplikacje webowe',
+      nameEn: 'Web Applications',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications'
+    },
+    'api': {
+      count: 0,
+      color: 'rgba(139, 92, 246, 0.8)',
+      namePl: 'API i usługi',
+      nameEn: 'APIs & Services',
+      descriptionPl: 'Backend i usługi webowe',
+      descriptionEn: 'Backend services and APIs'
+    },
+    'tools': {
+      count: 0,
+      color: 'rgba(6, 182, 212, 0.8)',
+      namePl: 'Narzędzia',
+      nameEn: 'Tools & Utilities',
+      descriptionPl: 'Narzędzia i aplikacje pomocnicze',
+      descriptionEn: 'Helper tools and utilities'
+    },
+    'landing': {
+      count: 0,
+      color: 'rgba(16, 185, 129, 0.8)',
+      namePl: 'Landing page',
+      nameEn: 'Landing Pages',
+      descriptionPl: 'Strony wizytówki i prezentacji',
+      descriptionEn: 'Presentation and landing pages'
+    },
+    'other': {
+      count: 0,
+      color: 'rgba(245, 158, 11, 0.8)',
+      namePl: 'Inne',
+      nameEn: 'Other',
+      descriptionPl: 'Pozostałe projekty',
+      descriptionEn: 'Other projects'
+    }
+  };
+
+  portfolio.forEach((project) => {
+    const titleLower = project.title.toLowerCase();
+    const tagStrings = project.tags.join(' ').toLowerCase();
+
+    // Kategoryzacja na podstawie tagów i tytułów
+    if (tagStrings.includes('api') || tagStrings.includes('rest') || tagStrings.includes('graphql') || tagStrings.includes('backend')) {
+      categories['api'].count++;
+    } else if (tagStrings.includes('landing') || titleLower.includes('portfolio') || titleLower.includes('wizytówka')) {
+      categories['landing'].count++;
+    } else if (tagStrings.includes('tool') || tagStrings.includes('cms') || tagStrings.includes('admin') || tagStrings.includes('narzędzie')) {
+      categories['tools'].count++;
+    } else if (tagStrings.includes('next') || tagStrings.includes('react') || tagStrings.includes('vue') || tagStrings.includes('angular') ||
+               tagStrings.includes('wordpress') || tagStrings.includes('woocommerce') || titleLower.includes('shop')) {
+      categories['web-app'].count++;
+    } else {
+      categories['other'].count++;
+    }
+  });
+
+  // Oblicz procenty na podstawie całkowitej liczby projektów
+  const totalProjects = portfolio.length;
+  return Object.entries(categories).map(([key, data]) => ({
+    id: key,
+    namePl: data.namePl,
+    nameEn: data.nameEn,
+    percentage: Math.round((data.count / totalProjects) * 100),
+    color: data.color,
+    descriptionPl: data.descriptionPl,
+    descriptionEn: data.descriptionEn,
+  })).filter(cat => cat.percentage > 0);
+};
 
 // Stan umiejętności - fallback do pracy jako prezentacja gdy nie ma portfolio
 // Wszystkie umiejętności są generowane dynamicznie z danych portfolio
@@ -54,8 +297,7 @@ export const techStackData: TechStack[] = [
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   try {
     // Czytamy tłumaczeń polskiego (source of truth)
-    const plMessages = require('../i18n/messages/pl.json').default ||
-                       require('../i18n/messages/pl.json');
+    import plMessages from '../i18n/messages/pl.json';
 
     // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
     const categoryMapping: Record<string, Skill['category']> = {
@@ -215,7 +457,7 @@ const normalizeTechName = (tech: string): string => {
   const words = tech.trim().split(/\s+/);
 
   const normalizedWords = words.map(word => {
-    // Obsługa specjalnych przypadków (.js, .net, numbers, etc.)
+    // Obsługa specjalnych przypadków (.js, .net) - zamień tylko przed kropką
     if (word.includes('.') && word.indexOf('.') === word.lastIndexOf('.') && !word.startsWith('.')) {
       // Dla pojedynczych kropek (Next.js) - zamień tylko przed kropką
       const [prefix, suffix] = word.split('.');
@@ -250,14 +492,6 @@ const parseTechStackString = (techString: string): string[] => {
 };
 
 const techToCategoryMap = createTechToCategoryMap();
-
-type PortfolioItem = {
-  tags: string[];
-  dateFrom?: Date;
-  dateTo?: Date;
-};
-
-
 
 // Oblicz rzeczywiste miesiące doświadczenia dla technologii na podstawie zakresów dat
 const calculateSkillExperienceMonths = (portfolio: PortfolioItem[], techName: string): number => {
@@ -462,9 +696,11 @@ export const formatExperienceTime = (
 
   } catch (error) {
     // Fallback na angielski jeśli błędy tłumaczeń
-    if (years === 0) return `${months} month${months !== 1 ? 's' : ''}`;
-    if (months === 0) return `${years} year${years !== 1 ? 's' : ''}`;
-    return `${years} year${years !== 1 ? 's' : ''} and ${months} month${months !== 1 ? 's' : ''}`;
+    const fallbackYears = Math.floor(totalMonths / 12);
+    const fallbackMonths = totalMonths % 12;
+    if (fallbackYears === 0) return `${fallbackMonths} month${fallbackMonths !== 1 ? 's' : ''}`;
+    if (fallbackMonths === 0) return `${fallbackYears} year${fallbackYears !== 1 ? 's' : ''}`;
+    return `${fallbackYears} year${fallbackYears !== 1 ? 's' : ''} and ${fallbackMonths} month${fallbackMonths !== 1 ? 's' : ''}`;
   }
 };
 
