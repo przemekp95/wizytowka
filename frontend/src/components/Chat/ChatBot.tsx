@@ -10,12 +10,22 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+async function loadTranslations(locale: string, section: string) {
+  try {
+    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
+    const sectionData = messages[section] || {};
+    return sectionData;
+  } catch {
+    return {};
+  }
+}
+
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      content: 'Cześć! Jestem AI asystentem Przemysława. Jak mogę Ci pomóc? Możesz zapytać o moje projekty, umiejętności techniczne lub doświadczenie.',
+      content: '',
       isUser: false,
       timestamp: new Date(),
     },
@@ -23,6 +33,8 @@ export function ChatBot() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [currentLocale, setCurrentLocale] = useState('pl');
+  const [chatTranslations, setChatTranslations] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -39,6 +51,27 @@ export function ChatBot() {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  // Load translations and locale
+  useEffect(() => {
+    const loadChatTranslations = async () => {
+      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
+      setCurrentLocale(locale);
+      const chatTranslations = await loadTranslations(locale, 'chat');
+      setChatTranslations(chatTranslations);
+
+      // Update welcome message
+      setMessages(prev => prev.map(msg =>
+        msg.id === '1'
+          ? { ...msg, content: chatTranslations.welcomeMessage || msg.content }
+          : msg
+      ));
+    };
+
+    loadChatTranslations();
+  }, []);
+
+  const t = (key: string) => chatTranslations[key] || key;
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -86,7 +119,7 @@ export function ChatBot() {
       console.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: 'Przepraszam, wystąpił błąd podczas łączenia się z asystentem. Spróbuj ponownie później.',
+        content: t('errorMessage'),
         isUser: false,
         timestamp: new Date(),
       };
@@ -104,7 +137,7 @@ export function ChatBot() {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('pl-PL', {
+    return date.toLocaleTimeString(currentLocale === 'en' ? 'en-US' : 'pl-PL', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -115,11 +148,11 @@ export function ChatBot() {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 group"
-        aria-label="Otwórz czat z AI asystentem"
+        aria-label={t('openButtonLabel')}
       >
         <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
         <div className="absolute -top-12 right-0 bg-slate-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          Porozmawiaj z AI
+          {t('tooltip')}
         </div>
       </button>
     );
@@ -132,14 +165,14 @@ export function ChatBot() {
         <div className="flex items-center gap-3">
           <Bot className="w-6 h-6" />
           <div>
-            <h3 className="font-semibold">AI Asystent</h3>
-            <p className="text-sm opacity-90">Portfolio Przemysława</p>
+            <h3 className="font-semibold">{t('title')}</h3>
+            <p className="text-sm opacity-90">{t('subtitle')}</p>
           </div>
         </div>
         <button
           onClick={() => setIsOpen(false)}
           className="hover:bg-indigo-700 rounded-full p-1 transition-colors"
-          aria-label="Zamknij czat"
+          aria-label={t('closeButtonLabel')}
         >
           <X className="w-5 h-5" />
         </button>
@@ -208,7 +241,7 @@ export function ChatBot() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Wpisz wiadomość..."
+            placeholder={t('placeholder')}
             disabled={isLoading}
             className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
           />
@@ -216,7 +249,7 @@ export function ChatBot() {
             onClick={sendMessage}
             disabled={!inputValue.trim() || isLoading}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            aria-label="Wyślij wiadomość"
+            aria-label={t('sendButtonLabel')}
           >
             <Send className="w-5 h-5" />
           </button>

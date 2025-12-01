@@ -54,5 +54,16 @@
   "language": {
     "polish": "Polski",
     "english": "English"
+  },
+  "chat": {
+    "openButtonLabel": "Otwórz czat z AI asystentem",
+    "closeButtonLabel": "Zamknij czat",
+    "sendButtonLabel": "Wyślij wiadomość",
+    "welcomeMessage": "Cześć! Jestem AI asystentem Przemysława. Jak mogę Ci pomóc? Możesz zapytać o moje projekty, umiejętności techniczne lub doświadczenie.",
+    "errorMessage": "Przepraszam, wystąpił błąd podczas łączenia się z asystentem. Spróbuj ponownie później.",
+    "placeholder": "Wpisz wiadomość...",
+    "title": "AI Asystent",
+    "subtitle": "Portfolio Przemysława",
+    "tooltip": "Porozmawiaj z AI"
   }
 }
