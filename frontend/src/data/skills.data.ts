@@ -2,7 +2,8 @@ export interface Skill {
   id: string;
   name: string;
   level: number;
-  category: 'frontEnd' | 'backEnd' | 'database' | 'devops' | 'experience';
+  category: 'frontEnd' | 'backEnd' | 'database' | 'devops';
+  experienceMonths?: number;
 }
 
 export interface TechStack {
@@ -196,33 +197,25 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
     });
   });
 
-  // Convert to skills with dynamic levels
+  // Convert to skills with dynamic levels and experience months
   const maxOccurrences = Math.max(...Object.values(techCounts), 1);
+  const totalMonthsExperience = calculateExperienceMonths(portfolio);
   const skills: Skill[] = Object.entries(techCounts).map(([techName, count]) => {
     const category = techToCategoryMap[techName] || 'frontEnd';
     // Normalize level to 10-95 scale based on occurrence frequency
     const rawLevel = (count / maxOccurrences) * 85 + 10;
     const level = Math.round(Math.min(95, Math.max(10, rawLevel)));
+    // Szacowane miesiące doświadczenia: ~3 miesiące per projekt + wczesniejsze doświadczenie
+    const experienceMonths = Math.round(count * 3 + (totalMonthsExperience * 0.1));
 
     return {
       id: techName.toLowerCase().replace(/\s+/g, '-'),
       name: techName,
       level,
-      category
+      category,
+      experienceMonths
     };
   }).sort((a, b) => b.level - a.level); // Sort by level descending
-
-  // Dodaj skill "miesiące doświadczenia"
-  const experienceMonths = calculateExperienceMonths(portfolio);
-  // Normalize months to 0-100 percentage (assuming 60 months = 100% experience)
-  const experienceLevel = Math.min(100, Math.round((experienceMonths / 60) * 100));
-
-  skills.push({
-    id: 'experience-months',
-    name: 'Miesiące doświadczenia',
-    level: experienceLevel,
-    category: 'experience'
-  });
 
   return skills;
 };
@@ -237,8 +230,7 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     frontEnd: 0,
     backEnd: 0,
     database: 0,
-    devops: 0,
-    experience: 0
+    devops: 0
   };
 
   let totalTechCount = 0;

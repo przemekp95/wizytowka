@@ -26,10 +26,6 @@ const colorMap = {
     indicator: 'bg-emerald-500',
     text: 'text-emerald-600',
   },
-  experience: {
-    indicator: 'bg-violet-500',
-    text: 'text-violet-600',
-  },
 } as const;
 
 export function SkillProgress({ skill }: SkillProgressProps) {
@@ -50,7 +46,14 @@ export function SkillProgress({ skill }: SkillProgressProps) {
       className="mb-4"
     >
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-slate-700">{skill.name}</span>
+        <span className="text-sm font-medium text-slate-700">
+          {skill.name}
+          {skill.experienceMonths && (
+            <span className="text-xs text-slate-500 ml-1">
+              ({skill.experienceMonths} mies.)
+            </span>
+          )}
+        </span>
         <motion.span
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
