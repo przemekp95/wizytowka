@@ -259,7 +259,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                 </h3>
                 <div className="space-y-4">
                   {dynamicSkills.map((skill) => (
-                    <SkillProgress key={skill.id} skill={skill} />
+                    <SkillProgress key={skill.id} skill={skill} monthsLabel={t('skills.months')} />
                   ))}
                 </div>
               </div>

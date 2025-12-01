@@ -7,6 +7,7 @@ import type { Skill } from '@/data/skills.data';
 
 interface SkillProgressProps {
   skill: Skill;
+  monthsLabel?: string;
 }
 
 const colorMap = {
@@ -28,7 +29,7 @@ const colorMap = {
   },
 } as const;
 
-export function SkillProgress({ skill }: SkillProgressProps) {
+export function SkillProgress({ skill, monthsLabel = 'mies.' }: SkillProgressProps) {
   const [progress, setProgress] = React.useState(0);
 
   React.useEffect(() => {
@@ -50,7 +51,7 @@ export function SkillProgress({ skill }: SkillProgressProps) {
           {skill.name}
           {skill.experienceMonths && (
             <span className="text-xs text-slate-500 ml-1">
-              ({skill.experienceMonths} mies.)
+              ({skill.experienceMonths} {monthsLabel})
             </span>
           )}
         </span>

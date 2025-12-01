@@ -198,13 +198,13 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   });
 
   // Convert to skills with dynamic levels and experience months
-  const maxOccurrences = Math.max(...Object.values(techCounts), 1);
+  const totalProjects = portfolio.length;
   const totalMonthsExperience = calculateExperienceMonths(portfolio);
   const skills: Skill[] = Object.entries(techCounts).map(([techName, count]) => {
     const category = techToCategoryMap[techName] || 'frontEnd';
-    // Normalize level to 10-95 scale based on occurrence frequency
-    const rawLevel = (count / maxOccurrences) * 85 + 10;
-    const level = Math.round(Math.min(95, Math.max(10, rawLevel)));
+    // Procent wystąpienia w projektach + minimalny offset
+    const projectPercentage = (count / totalProjects) * 100;
+    const level = Math.round(Math.max(10, projectPercentage)); // Min 10% + procent projektów
     // Szacowane miesiące doświadczenia: ~3 miesiące per projekt + wczesniejsze doświadczenie
     const experienceMonths = Math.round(count * 3 + (totalMonthsExperience * 0.1));
 
