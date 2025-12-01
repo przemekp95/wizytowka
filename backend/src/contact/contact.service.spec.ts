@@ -3,39 +3,40 @@ import { ContactService } from './contact.service';
 import { PrismaService } from '../prisma/prisma.service';
 import nodemailer from 'nodemailer';
 
-jest.mock('nodemailer', () => {
-  const createTransport = jest.fn(); // implementacja będzie ustawiana w beforeEach
-  return {
-    __esModule: true,
-    default: { createTransport },
-    createTransport,
-  };
-});
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn(),
+}));
 
 describe('ContactService', () => {
   let service: ContactService;
-
   let sendMailMock: jest.Mock;
   let prismaMock: PrismaService;
 
   beforeEach(async () => {
+    // Setup environment variables
     process.env.SMTP_HOST = 'smtp.test.local';
     process.env.SMTP_FROM = 'from@test.local';
     process.env.SMTP_TO = 'to@test.local';
     process.env.SMTP_PORT = '465';
     process.env.SMTP_SECURE = 'true';
+    process.env.SMTP_USER = 'smtpuser@test.local';
+    process.env.SMTP_PASS = 'smtppass123';
 
     jest.clearAllMocks();
 
+    // Setup mocks
     sendMailMock = jest.fn().mockResolvedValue({
       messageId: 'test-id',
       accepted: ['to@example.com'],
       rejected: [],
     });
-    const createTransport =
-      (nodemailer as any).createTransport ??
-      (nodemailer as any).default.createTransport;
-    createTransport.mockReturnValue({ sendMail: sendMailMock });
+
+    const createTransportMock = jest.fn().mockReturnValue({
+      sendMail: sendMailMock,
+    });
+
+    // Properly mock the createTransport function
+    (nodemailer.createTransport as jest.Mock) = createTransportMock;
 
     prismaMock = {
       contactMessage: {
@@ -54,74 +55,133 @@ describe('ContactService', () => {
   });
 
   afterEach(() => {
+    // Cleanup environment variables
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_FROM;
     delete process.env.SMTP_TO;
     delete process.env.SMTP_PORT;
     delete process.env.SMTP_SECURE;
-    jest.resetAllMocks();
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    delete process.env.SMTP_DEBUG;
+    jest.clearAllMocks();
   });
 
-  it('sendMail: wysyła e-mail i zwraca messageId', async () => {
-    const res = await service.sendMail({
+  it('should send email and return messageId', async () => {
+    const result = await service.sendMail({
       name: 'Jan',
       email: 'jan@test.local',
-      message: 'Treść',
+      message: 'Treść wiadomości',
       ip: '203.0.113.7',
       requestId: 'req-123',
     });
 
-    expect(res).toEqual({ messageId: 'test-id' });
-
-    const createTransport =
-      (nodemailer as any).createTransport ??
-      (nodemailer as any).default?.createTransport;
-
-    expect(createTransport).toHaveBeenCalled();
-    expect(sendMailMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        from: 'from@test.local',
-        to: 'to@test.local',
-        replyTo: 'jan@test.local',
-        subject: expect.stringContaining('Jan'),
-        text: expect.stringContaining('Treść'),
-        headers: { 'X-Request-Id': 'req-123' },
-      }),
-    );
+    expect(result).toEqual({ messageId: 'test-id' });
+    expect(sendMailMock).toHaveBeenCalledWith({
+      from: 'from@test.local',
+      to: 'to@test.local',
+      replyTo: 'jan@test.local',
+      subject: 'Wiadomość ze strony – Jan',
+      text: expect.stringContaining('Imię i nazwisko: Jan'),
+      headers: { 'X-Request-Id': 'req-123' },
+    });
   });
 
-  it('createAndNotify: zwraca savedId i messageId', async () => {
-    const res = await service.createAndNotify({
+  it('should save to database and send email successfully', async () => {
+    const result = await service.createAndNotify({
       name: 'Ala',
       email: 'ala@test.local',
       message: 'Hej',
+      ip: '127.0.0.1',
+      requestId: 'db-email-test',
     });
 
-    expect(res.ok).toBe(true);
-    expect(res.savedId).toBe('saved-123');
-    expect(res.messageId).toBe('test-id');
+    expect(result).toEqual({
+      ok: true,
+      messageId: 'test-id',
+      savedId: 'saved-123',
+    });
 
-    expect(prismaMock.contactMessage.create as any).toHaveBeenCalledWith({
+    expect(prismaMock.contactMessage.create).toHaveBeenCalledWith({
       data: {
         name: 'Ala',
         email: 'ala@test.local',
         message: 'Hej',
-        ip: null,
+        ip: '127.0.0.1',
       },
       select: { id: true },
     });
+  });
+
+  it('should handle database failure gracefully and still send email', async () => {
+    const dbError = new Error('Database connection failed');
+    (prismaMock.contactMessage.create as jest.Mock).mockRejectedValue(dbError);
+
+    const result = await service.createAndNotify({
+      name: 'Test',
+      email: 'test@test.local',
+      message: 'Test message',
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      messageId: 'test-id',
+      savedId: undefined,
+    });
+
     expect(sendMailMock).toHaveBeenCalled();
   });
 
-  it('sendMail: rzuca błąd przy braku wymaganej konfiguracji SMTP', async () => {
+  it('should handle email failure gracefully and still save to database', async () => {
+    const emailError = new Error('SMTP failure');
+    sendMailMock.mockRejectedValue(emailError);
+
+    const result = await service.createAndNotify({
+      name: 'Test',
+      email: 'test@test.local',
+      message: 'Test message',
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      savedId: 'saved-123',
+      messageId: undefined,
+    });
+
+    expect(prismaMock.contactMessage.create).toHaveBeenCalled();
+  });
+
+  it('should throw error when SMTP configuration is incomplete', async () => {
     delete process.env.SMTP_HOST;
 
     await expect(
       service.sendMail({
-        name: 'Ktoś',
-        email: 'kto@test.local',
-        message: 'x',
+        name: 'Test',
+        email: 'test@test.local',
+        message: 'Test message',
       }),
     ).rejects.toThrow(/Brak konfiguracji SMTP/i);
+  });
+
+  it('should test retry functionality with single failure', async () => {
+    // Mock the private retryWithBackoff method by making sendMail fail once then succeed
+    const error = new Error('Temporary SMTP error');
+    sendMailMock
+      .mockRejectedValueOnce(error) // First call fails
+      .mockResolvedValueOnce({     // Second call succeeds
+        messageId: 'retried-success-id',
+        accepted: ['to@example.com'],
+        rejected: [],
+      });
+
+    const result = await service.sendMail({
+      name: 'Test',
+      email: 'test@test.local',
+      message: 'Test message',
+      requestId: 'retry-test',
+    });
+
+    expect(result).toEqual({ messageId: 'retried-success-id' });
+    expect(sendMailMock).toHaveBeenCalledTimes(2); // One initial + one retry
   });
 });

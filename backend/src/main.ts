@@ -5,7 +5,9 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import compression from 'compression';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { LoggingMetricsMiddleware } from './common/middleware/logging-metrics.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -55,10 +57,19 @@ async function bootstrap() {
     }),
   );
 
+  // Performance optimizations
+  app.use(compression({
+    level: 6, // Good balance between speed and compression
+    threshold: 1024, // Only compress responses larger than 1KB
+  }));
+
   app.use(cookieParser());
   app.use((req: Request, res: Response, next: NextFunction) => {
     new RequestIdMiddleware().use(req, res, next);
   });
+
+  // Apply logging and metrics middleware
+  app.use(LoggingMetricsMiddleware);
 
   app.setGlobalPrefix('api');
 
