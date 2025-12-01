@@ -226,29 +226,25 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   return skills;
 };
 
-// Dynamiczne wyliczenie dystrybucji technologii (top 6 z najwyższym miesiącami doświadczenia)
+// Dynamiczne wyliczenie dystrybucji technologii (te same co w paskach umiejętności)
 export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
   if (!portfolio.length) {
     return techStackData; // fallback do statycznych danych
   }
 
-  // Pobierz wszystkie umiejętności zebrane dynamicznie
+  // Użyj tych samych umiejętności co skill bars (pierwsze 6 posortowane po level)
   const dynamicSkills = calculateDynamicSkills(portfolio);
+  const skillBarSkills = dynamicSkills.slice(0, 6); // dokładnie te same co w skill bars
 
-  // Sortuj po miesiącach doświadczenia malejąco i weź top 6
-  const topSkillsByExperience = dynamicSkills
-    .sort((a, b) => (b.experienceMonths || 0) - (a.experienceMonths || 0))
-    .slice(0, 6);
-
-  if (topSkillsByExperience.length === 0) {
+  if (skillBarSkills.length === 0) {
     return techStackData;
   }
 
   // Sumuj wszystkie miesiące doświadczenia dla proporcjonalnego podziału
-  const totalExperienceMonths = topSkillsByExperience.reduce((sum, skill) => sum + (skill.experienceMonths || 0), 0);
+  const totalExperienceMonths = skillBarSkills.reduce((sum, skill) => sum + (skill.experienceMonths || 0), 0);
 
-  // Stwórz dane wykresu na podstawie miesięcy doświadczenia
-  return topSkillsByExperience.map((skill, index) => {
+  // Stwórz dane wykresu na podstawie miesięcy doświadczenia (tych samych technologii)
+  return skillBarSkills.map((skill, index) => {
     const percentage = Math.round(((skill.experienceMonths || 0) / totalExperienceMonths) * 100);
     const colors = [
       'rgba(99, 102, 241, 0.8)',   // indigo (blue)
