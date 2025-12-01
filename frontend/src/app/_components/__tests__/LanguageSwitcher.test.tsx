@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
+import { ComponentProps } from 'react';
 import LanguageSwitcher from '../LanguageSwitcher';
 
 // Mock next/navigation
@@ -19,7 +20,7 @@ vi.mock('next/navigation', () => ({
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
+    div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: unknown }>) => (
       <div {...props}>{children}</div>
     ),
   },
@@ -29,7 +30,7 @@ vi.mock('framer-motion', () => ({
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown-content">{children}</div>,
-  DropdownMenuItem: ({ children, onClick, disabled, ...props }: any) => (
+  DropdownMenuItem: ({ children, onClick, disabled, ...props }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; [key: string]: unknown }) => (
     <div
       onClick={disabled ? undefined : onClick}
       data-testid="dropdown-item"
@@ -44,7 +45,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, variant, size, disabled, className, 'aria-label': ariaLabel, ...props }: any) => (
+  Button: ({ children, variant, size, disabled, className, 'aria-label': ariaLabel, ...props }: { children: React.ReactNode; variant?: string; size?: string; disabled?: boolean; className?: string; 'aria-label'?: string; [key: string]: unknown }) => (
     <button
       className={className}
       disabled={disabled}

@@ -19,7 +19,6 @@ async function loadTranslations(locale: string, section: string) {
 export default function ContactSection() {
   const [status, setStatus] = useState<Status>('idle');
   const [err, setErr] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
 
@@ -131,7 +130,6 @@ export default function ContactSection() {
           required
           autoComplete="given-name"
           aria-describedby="name-error"
-          aria-invalid={fieldErrors.name ? 'true' : undefined}
           className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning
         />
@@ -151,7 +149,6 @@ export default function ContactSection() {
           required
           autoComplete="email"
           aria-describedby="email-error"
-          aria-invalid={fieldErrors.email ? 'true' : undefined}
           className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning
         />
@@ -171,7 +168,6 @@ export default function ContactSection() {
           required
           maxLength={5000}
           aria-describedby="message-error"
-          aria-invalid={fieldErrors.message ? 'true' : undefined}
           data-testid="contact-message"
           className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning

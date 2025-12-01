@@ -13,13 +13,22 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    // Tworzenie 3D kostek/kształtów - ABSOLUTNIE MAKSYMALNĄ liczbę!
+    // Optymalizacja - mniej obiektów, ale większe kluczowe kształty
     const isMobile = window.innerWidth < 768;
-    const shapeCount = isMobile ? 40 : 100; // Szalenie zwiększona!
+    const shapeCount = isMobile ? 15 : 30; // Znacznie mniej obiektów
     const shapes: HTMLDivElement[] = [];
 
+    // Główna pętla tworzenia obiektów
     for (let i = 0; i < shapeCount; i++) {
-      const size = Math.random() * 80 + 20; // Losowe rozmiary od 20px do 100px
+      // Hierarchia rozmiarów: główne duże, pozostałe średnie/małe
+      let size;
+      if (i < 3) { // 3 główne duże kształty
+        size = Math.random() * 120 + 100; // 100-220px
+      } else if (i < 8) { // kolejne duże i średnie
+        size = Math.random() * 60 + 60; // 60-120px
+      } else { // pozostałe małe dla rozmycia
+        size = Math.random() * 40 + 20; // 20-60px
+      }
       const shape = document.createElement('div');
       shape.className = `absolute rounded-lg opacity-40 hover:opacity-70 transition-all duration-700 hover:scale-110 cursor-pointer ${
         i % 6 === 0 ? 'bg-indigo-500/60' :
@@ -58,22 +67,31 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
       shapes.push(shape);
     }
 
-    // Funkcja śledzenia kursora myszy dla interaktywności
+    // Funkcja śledzenia kursora myszy dla interaktywności - zoptymalizowana
+    let lastUpdate = 0;
+    const throttleMs = 32; // ~30fps zamiast 60fps
+
     const handleMouseMove = (e: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastUpdate < throttleMs) return;
+      lastUpdate = now;
+
       const mouseX = e.clientX / window.innerWidth;
       const mouseY = e.clientY / window.innerHeight;
 
-      shapes.forEach((shape, index) => {
-        const speed = (index % 3 + 1) * 0.5;
+      // Aktualizuj tylko główne duże kształty podczas ruchu myszki dla lepszej wydajności
+      shapes.slice(0, 8).forEach((shape, index) => {
+        const speed = (index % 3 + 1) * 0.3; // Zmniejszone prędkości
         const x = parseFloat(shape.style.transform.split('translate3d(')[1]?.split('px')[0] || '0');
         const y = parseFloat(shape.style.transform.split(',')[1]?.split('px')[0] || '0');
 
-        // Randomizowane reakcje - niektóre kostki reagują przeciwnie dla efektu rozsypania
-        const directionX = Math.random() > 0.5 ? 1 : -1;
-        const directionY = Math.random() > 0.5 ? 1 : -1;
+        // Pre-kalkulowane kierunki dla dodatkowych oszczędności
+        const shouldReverse = (index < 3); // Tylko główne 3 kształty mają przeciwną reakcję
+        const directionX = shouldReverse ? -1 : 1;
+        const directionY = shouldReverse ? -1 : 1;
 
-        const newX = x + (mouseX - 0.5) * speed * directionX * 6;
-        const newY = y + (mouseY - 0.5) * speed * directionY * 6;
+        const newX = x + (mouseX - 0.5) * speed * directionX * 3; // Zmniejszony współczynnik ruchu
+        const newY = y + (mouseY - 0.5) * speed * directionY * 3;
 
         const rotationMatch = shape.style.transform.match(/rotateX\([^)]+\)\s+rotateY\([^)]+\)\s+rotateZ\([^)]+\)/);
         shape.style.transform = `translate3d(${newX}px, ${newY}px, ${shape.style.transform.split(',')[2]?.split('px')[0]}px) ${rotationMatch ? rotationMatch[0] : ''}`;
