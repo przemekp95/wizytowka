@@ -226,84 +226,43 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   return skills;
 };
 
-// Dynamiczne wyliczenie dystrybucji kategorii
+// Dynamiczne wyliczenie dystrybucji technologii (top 6 z najwyższym poziomem)
 export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
   if (!portfolio.length) {
     return techStackData; // fallback do statycznych danych
   }
 
-  const categoryCounts: Record<Skill['category'], number> = {
-    frontEnd: 0,
-    backEnd: 0,
-    database: 0,
-    devops: 0,
-  };
+  // Pobierz top 6 umiejętności z najwyższymi poziomami
+  const dynamicSkills = calculateDynamicSkills(portfolio);
+  const topSkills = dynamicSkills.slice(0, 6);
 
-  let totalTechCount = 0;
-
-  portfolio.forEach((project) => {
-    project.tags.forEach((tag) => {
-      // Case-insensitive lookup in techToCategoryMap
-      const normalizedTag = tag.toLowerCase();
-      let category = 'frontEnd'; // default fallback
-
-      // Find exact match first (case insensitive)
-      const exactMatch = Object.keys(techToCategoryMap).find(
-        (tech) => tech.toLowerCase() === normalizedTag
-      );
-
-      if (exactMatch) {
-        category = techToCategoryMap[exactMatch];
-      } else {
-        // Try partial match (tag contains tech or tech contains tag)
-        const partialMatch = Object.keys(techToCategoryMap).find((tech) =>
-          normalizedTag.includes(tech.toLowerCase()) ||
-          tech.toLowerCase().includes(normalizedTag)
-        );
-        if (partialMatch) {
-          category = techToCategoryMap[partialMatch];
-        }
-      }
-
-      categoryCounts[category as keyof typeof categoryCounts]++;
-      totalTechCount++;
-    });
-  });
-
-  if (totalTechCount === 0) {
+  if (topSkills.length === 0) {
     return techStackData;
   }
 
-  return [
-    {
-      id: 'frontend',
-      namePl: 'Frontend',
-      nameEn: 'Frontend',
-      percentage: Math.round((categoryCounts.frontEnd / totalTechCount) * 100),
-      color: 'rgba(99, 102, 241, 0.8)',
-    },
-    {
-      id: 'backend',
-      namePl: 'Backend',
-      nameEn: 'Backend',
-      percentage: Math.round((categoryCounts.backEnd / totalTechCount) * 100),
-      color: 'rgba(139, 92, 246, 0.8)',
-    },
-    {
-      id: 'databases',
-      namePl: 'Bazy danych',
-      nameEn: 'Databases',
-      percentage: Math.round((categoryCounts.database / totalTechCount) * 100),
-      color: 'rgba(6, 182, 212, 0.8)',
-    },
-    {
-      id: 'devops',
-      namePl: 'DevOps',
-      nameEn: 'DevOps',
-      percentage: Math.round((categoryCounts.devops / totalTechCount) * 100),
-      color: 'rgba(16, 185, 129, 0.8)',
-    },
-  ].sort((a, b) => b.percentage - a.percentage);
+  // Sumuj wszystkie poziomy dla proporcjonalnego podziału
+  const totalLevel = topSkills.reduce((sum, skill) => sum + skill.level, 0);
+
+  // Stwórz dane wykresu na podstawie poziomów umiejętności
+  return topSkills.map((skill, index) => {
+    const percentage = Math.round((skill.level / totalLevel) * 100);
+    const colors = [
+      'rgba(99, 102, 241, 0.8)',   // indigo (blue)
+      'rgba(139, 92, 246, 0.8)',   // purple
+      'rgba(6, 182, 212, 0.8)',    // cyan
+      'rgba(16, 185, 129, 0.8)',   // emerald (green)
+      'rgba(245, 158, 11, 0.8)',   // amber (yellow)
+      'rgba(244, 63, 94, 0.8)',    // rose (pink)
+    ];
+
+    return {
+      id: skill.id,
+      namePl: skill.name,
+      nameEn: skill.name,
+      percentage,
+      color: colors[index] || 'rgba(156, 163, 175, 0.8)', // gray fallback
+    };
+  }).sort((a, b) => b.percentage - a.percentage);
 };
 
 // funkcje pomocnicze (zachowane dla kompatybilności)
