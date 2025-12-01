@@ -2,7 +2,7 @@ export interface Skill {
   id: string;
   name: string;
   level: number;
-  category: 'frontEnd' | 'backEnd' | 'database' | 'devops';
+  category: 'frontEnd' | 'backEnd' | 'database' | 'devops' | 'experience';
 }
 
 export interface TechStack {
@@ -147,6 +147,33 @@ const techToCategoryMap: Record<string, Skill['category']> = {
 
 type PortfolioItem = {
   tags: string[];
+  dateFrom?: Date;
+  dateTo?: Date;
+};
+
+// Oblicz miesiące doświadczenia na podstawie projektów
+const calculateExperienceMonths = (portfolio: PortfolioItem[]): number => {
+  if (!portfolio.length) {
+    return 30; // fallback dla ~2.5 roku doświadczenia
+  }
+
+  let totalMonths = 0;
+  const now = new Date();
+
+  portfolio.forEach(project => {
+    if (project.dateFrom) {
+      const startDate = new Date(project.dateFrom);
+      const endDate = project.dateTo ? new Date(project.dateTo) : now;
+
+      if (startDate < endDate) {
+        const diffMs = endDate.getTime() - startDate.getTime();
+        const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44)); // ~30.44 dni w miesiącu
+        totalMonths += Math.max(1, diffMonths); // minimum 1 miesiąc dla projektu
+      }
+    }
+  });
+
+  return Math.max(1, totalMonths);
 };
 
 // Dynamiczne wyliczenie umiejętności na podstawie portfolo
@@ -170,10 +197,8 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   });
 
   // Convert to skills with dynamic levels
-  const projectCount = portfolio.length;
   const maxOccurrences = Math.max(...Object.values(techCounts), 1);
-
-  return Object.entries(techCounts).map(([techName, count]) => {
+  const skills: Skill[] = Object.entries(techCounts).map(([techName, count]) => {
     const category = techToCategoryMap[techName] || 'frontEnd';
     // Normalize level to 10-95 scale based on occurrence frequency
     const rawLevel = (count / maxOccurrences) * 85 + 10;
@@ -186,6 +211,20 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
       category
     };
   }).sort((a, b) => b.level - a.level); // Sort by level descending
+
+  // Dodaj skill "miesiące doświadczenia"
+  const experienceMonths = calculateExperienceMonths(portfolio);
+  // Normalize months to 0-100 percentage (assuming 60 months = 100% experience)
+  const experienceLevel = Math.min(100, Math.round((experienceMonths / 60) * 100));
+
+  skills.push({
+    id: 'experience-months',
+    name: 'Miesiące doświadczenia',
+    level: experienceLevel,
+    category: 'experience'
+  });
+
+  return skills;
 };
 
 // Dynamiczne wyliczenie dystrybucji kategorii
@@ -198,7 +237,8 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     frontEnd: 0,
     backEnd: 0,
     database: 0,
-    devops: 0
+    devops: 0,
+    experience: 0
   };
 
   let totalTechCount = 0;

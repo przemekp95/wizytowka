@@ -32,6 +32,12 @@ export class PortfolioGQL {
   @Field({ nullable: true })
   repoUrl?: string;
 
+  @Field(() => Date, { nullable: true })
+  dateFrom?: Date;
+
+  @Field(() => Date, { nullable: true })
+  dateTo?: Date;
+
   @Field({ nullable: true })
   order?: number;
 

@@ -11,6 +11,8 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-laravel',
+    dateFrom: new Date('2022-03-01'),
+    dateTo: new Date('2022-07-31'),
   },
   {
     title: 'CASN Next.js',
@@ -21,6 +23,8 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-nextjs',
+    dateFrom: new Date('2022-08-01'),
+    dateTo: new Date('2023-02-28'),
   },
   {
     title: 'Mazowieści',
@@ -31,6 +35,8 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'mazowiesci',
+    dateFrom: new Date('2023-01-15'),
+    dateTo: new Date('2023-06-30'),
   },
   {
     title: 'Strona Wizytówka',
@@ -41,6 +47,8 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'strona-wizytowka',
+    dateFrom: new Date('2024-03-01'),
+    // dateTo: null - wciąż trwający projekt (do dzisiaj)
   },
   {
     title: 'Fundacja Służba Niepodległej',
@@ -51,6 +59,8 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'fundacja-sluzba-niepodleglej',
+    dateFrom: new Date('2023-09-01'),
+    // dateTo: null - wciąż trwający projekt
   },
 ];
 
@@ -72,14 +82,17 @@ const items = [
   const now = new Date();
   await col.deleteMany({});
   await col.insertMany(
-    items.map((p, i) => ({
-      ...p,
-      _id: p.slug,
-      order: i + 1,
-      status: 'published',
-      createdAt: now,
-      updatedAt: now,
-    })),
+    items.map((p, i) => {
+      const doc: any = {
+        ...p,
+        _id: p.slug,
+        order: i + 1,
+        status: 'published',
+        createdAt: now,
+        updatedAt: now,
+      };
+      return doc;
+    }),
   );
 
   await client.close();

@@ -26,6 +26,10 @@ const colorMap = {
     indicator: 'bg-emerald-500',
     text: 'text-emerald-600',
   },
+  experience: {
+    indicator: 'bg-violet-500',
+    text: 'text-violet-600',
+  },
 } as const;
 
 export function SkillProgress({ skill }: SkillProgressProps) {
