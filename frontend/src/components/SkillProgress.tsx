@@ -4,6 +4,8 @@ import * as Progress from '@radix-ui/react-progress';
 import { motion } from 'framer-motion';
 import React from 'react';
 import type { Skill } from '@/data/skills.data';
+import { formatExperienceTime } from '@/data/skills.data';
+import { useTranslations } from 'next-intl';
 
 interface SkillProgressProps {
   skill: Skill;
@@ -31,13 +33,23 @@ const colorMap = {
 
 export function SkillProgress({ skill, monthsLabel = 'mies.' }: SkillProgressProps) {
   const [progress, setProgress] = React.useState(0);
+  const t = useTranslations();
 
   React.useEffect(() => {
     const timer = setTimeout(() => setProgress(skill.level), 300);
     return () => clearTimeout(timer);
   }, [skill.level]);
 
+  // Get current locale for formatting
+  const locale = t('language.polish') === 'Polski' ? 'en' : 'pl'; // Quick way to detect locale
+
   const colors = colorMap[skill.category];
+
+  // Format experience time with proper localization
+  const formattedExperienceTime = React.useMemo(() => {
+    if (!skill.experienceMonths) return null;
+    return formatExperienceTime(skill.experienceMonths, locale);
+  }, [skill.experienceMonths, locale]);
 
   return (
     <motion.div
@@ -49,9 +61,9 @@ export function SkillProgress({ skill, monthsLabel = 'mies.' }: SkillProgressPro
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm font-medium text-slate-700">
           {skill.name}
-          {skill.experienceMonths && (
+          {formattedExperienceTime && (
             <span className="text-xs text-slate-500 ml-1">
-              ({skill.experienceMonths} {monthsLabel})
+              ({formattedExperienceTime})
             </span>
           )}
         </span>
