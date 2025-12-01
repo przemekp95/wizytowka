@@ -9,7 +9,7 @@ import { SkillProgress } from '@/components/SkillProgress';
 import { TechStackChart } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
-import { calculateDynamicSkills, calculateDynamicTechStack } from '@/data/skills.data';
+import { calculateDynamicSkills, calculateDynamicTechStack, formatExperienceTime } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -333,7 +333,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                       </div>
                       {skill.experienceMonths && (
                         <span className="text-xs text-slate-600">
-                          {skill.experienceMonths} {t('skills.months')}
+                          {formatExperienceTime(skill.experienceMonths, locale)}
                         </span>
                       )}
                     </div>
