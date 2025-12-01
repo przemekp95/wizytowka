@@ -201,10 +201,32 @@ const techNameMap: Record<string, string> = {
   'illustrator': 'Illustrator'
 };
 
-// Normalizuj nazwę technologii używając lookup table
+// Normalizuj nazwę technologii używając lookup table i automatycznego Title Case jako fallback
 const normalizeTechName = (tech: string): string => {
   const lowerTech = tech.toLowerCase().replace(/\s+/g, ' ').trim();
-  return techNameMap[lowerTech] || tech; // Jeśli nie znaleziono w mapie, zostaw oryginał
+
+  // 1. Najpierw sprawdź lookup table dla standardowych nazw
+  if (techNameMap[lowerTech]) {
+    return techNameMap[lowerTech];
+  }
+
+  // 2. Dla technologii nieznanych w mapie, zastosuj inteligentne tytuły Case
+  // Zamień wszystkie słowa na Title Case, chyba że to specjalne części jak .js, .net, etc.
+  const words = tech.trim().split(/\s+/);
+
+  const normalizedWords = words.map(word => {
+    // Obsługa specjalnych przypadków (.js, .net, numbers, etc.)
+    if (word.includes('.') && word.indexOf('.') === word.lastIndexOf('.') && !word.startsWith('.')) {
+      // Dla pojedynczych kropek (Next.js) - zamień tylko przed kropką
+      const [prefix, suffix] = word.split('.');
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase() + '.' + suffix;
+    } else {
+      // Standardowy Title Case dla każdego słowa
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }
+  });
+
+  return normalizedWords.join(' ');
 };
 
 // Parser stringu technologii: "Next.js / React / Tailwind / SCSS / JavaScript, TypeScript"
