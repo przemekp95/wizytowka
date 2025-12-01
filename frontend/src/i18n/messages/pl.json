@@ -47,6 +47,10 @@
     "github": "GitHub",
     "linkedin": "LinkedIn"
   },
+  "skills": {
+    "months": "mies.",
+    "years": "rok"
+  },
   "language": {
     "polish": "Polski",
     "english": "English"
