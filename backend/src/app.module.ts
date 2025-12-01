@@ -38,6 +38,7 @@ import { MetricsModule } from './metrics/metrics.module';
       playground: process.env.NODE_ENV !== 'production',
       introspection: process.env.NODE_ENV !== 'production',
       path: '/graphql',
+      csrfPrevention: false, // Disable CSRF protection for development
       context: ({ req, res }: { req: Request; res: Response }) => ({
         req,
         res,

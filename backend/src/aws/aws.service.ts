@@ -15,14 +15,18 @@ interface MulterFile {
 export class AwsService {
   private readonly logger = new Logger(AwsService.name);
   private s3Client: S3Client | null = null;
-  private readonly bucketName: string;
+  private bucketName: string | null = null;
 
-  constructor(private readonly configService: ConfigService) {
-    const bucketName = this.configService.get<string>('aws.s3.bucketName');
-    if (!bucketName) {
-      throw new Error('AWS S3 bucket name is not configured');
+  constructor(private readonly configService: ConfigService) {}
+
+  private getBucketName(): string {
+    if (!this.bucketName) {
+      this.bucketName = this.configService.get<string>('aws.s3.bucketName') ?? null;
+      if (!this.bucketName) {
+        throw new Error('AWS S3 bucket name is not configured');
+      }
     }
-    this.bucketName = bucketName;
+    return this.bucketName;
   }
 
   private getS3Client(): S3Client {
@@ -65,7 +69,7 @@ export class AwsService {
       const upload = new Upload({
         client: this.getS3Client(),
         params: {
-          Bucket: this.bucketName,
+          Bucket: this.getBucketName(),
           Key: fileName,
           Body: file.buffer,
           ContentType: file.mimetype,
@@ -80,7 +84,7 @@ export class AwsService {
 
       await Promise.race([uploadPromise, timeoutPromise]);
       this.logger.log(`Image uploaded successfully: ${fileName}`);
-      return `https://${this.bucketName}.s3.amazonaws.com/${fileName}`;
+      return `https://${this.getBucketName()}.s3.amazonaws.com/${fileName}`;
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -95,7 +99,7 @@ export class AwsService {
       const key = imageUrl.split('/').slice(-2).join('/');
       await this.getS3Client().send(
         new DeleteObjectCommand({
-          Bucket: this.bucketName,
+          Bucket: this.getBucketName(),
           Key: key,
         }),
       );
