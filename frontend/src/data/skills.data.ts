@@ -104,47 +104,68 @@ export const techStackData: TechStack[] = [
   },
 ];
 
-// Mapowanie technologii na kategorie umiejętności
-const techToCategoryMap: Record<string, Skill['category']> = {
-  // Frontend
-  'Next.js': 'frontEnd',
-  React: 'frontEnd',
-  JavaScript: 'frontEnd',
-  TypeScript: 'frontEnd',
-  Tailwind: 'frontEnd',
-  CSS: 'frontEnd',
-  SCSS: 'frontEnd',
-  HTML: 'frontEnd',
-  Vite: 'frontEnd',
+// Automatyczna klasyfikacja technologii na podstawie słowa kluczowych z technology stack
+const createTechToCategoryMap = (): Record<string, Skill['category']> => {
+  const mappings: Array<{ tech: string; category: Skill['category'] }> = [
+    // Frontend (based on: Next.js, React, TypeScript, Tailwind, CSS)
+    { tech: 'Next.js', category: 'frontEnd' },
+    { tech: 'React', category: 'frontEnd' },
+    { tech: 'JavaScript', category: 'frontEnd' },
+    { tech: 'TypeScript', category: 'frontEnd' },
+    { tech: 'Tailwind', category: 'frontEnd' },
+    { tech: 'Tailwind CSS', category: 'frontEnd' },
+    { tech: 'CSS', category: 'frontEnd' },
+    { tech: 'SCSS', category: 'frontEnd' },
+    { tech: 'HTML', category: 'frontEnd' },
+    { tech: 'Vite', category: 'frontEnd' },
+    { tech: 'Sass', category: 'frontEnd' },
 
-  // Backend
-  'Node.js': 'backEnd',
-  NestJS: 'backEnd',
-  Laravel: 'backEnd',
-  Symfony: 'backEnd',
-  PHP: 'backEnd',
-  Express: 'backEnd',
-  GraphQL: 'backEnd',
-  'REST API': 'backEnd',
-  API: 'backEnd',
+    // Backend (based on: NestJS, Node.js, GraphQL, REST API)
+    { tech: 'Node.js', category: 'backEnd' },
+    { tech: 'NestJS', category: 'backEnd' },
+    { tech: 'Laravel', category: 'backEnd' },
+    { tech: 'Symfony', category: 'backEnd' },
+    { tech: 'PHP', category: 'backEnd' },
+    { tech: 'Express', category: 'backEnd' },
+    { tech: 'GraphQL', category: 'backEnd' },
+    { tech: 'REST API', category: 'backEnd' },
+    { tech: 'REST', category: 'backEnd' },
+    { tech: 'API', category: 'backEnd' },
+    { tech: 'JWT', category: 'backEnd' },
+    { tech: 'Sessions', category: 'backEnd' },
 
-  // Databases
-  MySQL: 'database',
-  PostgreSQL: 'database',
-  MongoDB: 'database',
-  Prisma: 'database',
-  SQL: 'database',
-  NoSQL: 'database',
+    // Databases (based on: MongoDB, PostgreSQL, Prisma ORM)
+    { tech: 'MySQL', category: 'database' },
+    { tech: 'PostgreSQL', category: 'database' },
+    { tech: 'MongoDB', category: 'database' },
+    { tech: 'Prisma', category: 'database' },
+    { tech: 'Prisma ORM', category: 'database' },
+    { tech: 'SQL', category: 'database' },
+    { tech: 'NoSQL', category: 'database' },
 
-  // DevOps
-  Docker: 'devops',
-  Kubernetes: 'devops',
-  AWS: 'devops',
-  Render: 'devops',
-  'GitHub Actions': 'devops',
-  'CI/CD': 'devops',
-  Passenger: 'devops',
+    // DevOps/Deployment (based on: Docker, Kubernetes, AWS, GitHub Actions)
+    { tech: 'Docker', category: 'devops' },
+    { tech: 'Kubernetes', category: 'devops' },
+    { tech: 'AWS', category: 'devops' },
+    { tech: 'Render', category: 'devops' },
+    { tech: 'GitHub Actions', category: 'devops' },
+    { tech: 'CI/CD', category: 'devops' },
+    { tech: 'Passenger', category: 'devops' },
+    { tech: 'Github', category: 'devops' },
+    { tech: 'GitHub', category: 'devops' },
+    { tech: 'AWS S3', category: 'devops' },
+    { tech: 'SEO', category: 'devops' },
+    { tech: 'hCaptcha', category: 'devops' },
+  ];
+
+  // Konwertuj na record mapę
+  return mappings.reduce((map, { tech, category }) => {
+    map[tech] = category;
+    return map;
+  }, {} as Record<string, Skill['category']>);
 };
+
+const techToCategoryMap = createTechToCategoryMap();
 
 type PortfolioItem = {
   tags: string[];
