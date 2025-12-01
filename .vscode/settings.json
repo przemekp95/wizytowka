@@ -1,4 +1,35 @@
 {
-    "WillLuke.nextjs.addTypesOnSave": true,
-    "WillLuke.nextjs.hasPrompted": true
+  // Jest configuration - disable auto detection for monorepo conflicts
+  "jest.enableMultiRootWorkspaceSupport": false,
+  "jest.disabledWorkspaceFolders": ["frontend"],
+  "jest.rootPath": "backend",
+
+  // Explicit Jest command for backend
+  "jest.jestCommandLine": "cd backend && npm run test --",
+
+  // VSCode Testing - disable Jest, use built-in testing only
+  "testing.defaultProfile": "jest",
+  "testing.automaticallyOpenTestResults": "openOnTestStart",
+
+  // TypeScript settings
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+
+  // ESLint configuration for monorepo
+  "eslint.workingDirectories": [
+    { "directory": "backend", "changeProcessCWD": true },
+    { "directory": "frontend", "changeProcessCWD": true }
+  ],
+
+  // Exclude build files from search
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/logs": true
+  },
+
+  // Git settings for large monorepo
+  "git.ignoreLimitWarning": true
 }
