@@ -88,8 +88,6 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           id="home"
           className="relative overflow-hidden bg-transparent"
         >
-          <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-2xl bg-indigo-200/60 blur-xl" />
-          <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
@@ -255,20 +253,39 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
             </h2>
 
             <div className="grid gap-12 lg:grid-cols-2 items-start">
-              {/* Technology Skills */}
+              {/* Top Technology Skills - compact */}
               <div>
                 <h3 className="text-xl font-semibold text-slate-700 mb-6">
-                  {locale === 'en' ? 'Technology Skills' : 'Umiejętności technologiczne'}
+                  {locale === 'en' ? 'Top Technology Skills' : 'Główne umiejętności technologiczne'}
                 </h3>
-                <div className="space-y-4">
-                  {dynamicSkills.map((skill) => (
-                    <SkillProgress key={skill.id} skill={skill} monthsLabel={t('skills.months')} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {dynamicSkills.slice(0, 6).map((skill) => (
+                    <div key={skill.id} className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-800 truncate">{skill.name}</span>
+                        <span className="text-sm font-semibold text-indigo-600">{skill.level}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div
+                          className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${skill.level}%` }}
+                        />
+                      </div>
+                      {skill.experienceMonths && (
+                        <span className="text-xs text-slate-600">
+                          {skill.experienceMonths} {t('skills.months')}
+                        </span>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Technology Distribution Chart */}
               <div className="flex flex-col items-center">
+                <h3 className="text-xl font-semibold text-slate-700 mb-6">
+                  {locale === 'en' ? 'Technology Focus' : 'Nastawienie technologiczne'}
+                </h3>
                 <TechStackChart locale={locale as 'pl' | 'en'} techStack={dynamicTechStack} />
               </div>
             </div>
