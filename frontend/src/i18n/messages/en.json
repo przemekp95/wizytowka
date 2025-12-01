@@ -49,7 +49,23 @@
   },
   "skills": {
     "months": "months",
-    "years": "year"
+    "years_single": "year",
+    "years_plural": "years",
+    "months_form": {
+      "one": "month",
+      "few": "months",
+      "many": "months"
+    },
+    "years_form": {
+      "one": "year",
+      "few": "years",
+      "many": "years"
+    },
+    "experience_format": {
+      "years_only": "{years} {years_form}",
+      "months_only": "{months} {months_form}",
+      "years_and_months": "{years} {years_form} and {months} {months_form}"
+    }
   },
   "language": {
     "polish": "Polski",

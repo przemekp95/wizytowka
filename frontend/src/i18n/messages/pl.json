@@ -49,7 +49,24 @@
   },
   "skills": {
     "months": "mies.",
-    "years": "rok"
+    "years_single": "rok",
+    "years_plural": "lata",
+    "years_genitive": "lat",
+    "months_form": {
+      "one": "miesiąc",
+      "few": "miesiące",
+      "many": "miesięcy"
+    },
+    "years_form": {
+      "one": "rok",
+      "few": "lata",
+      "many": "lat"
+    },
+    "experience_format": {
+      "years_only": "{years} {years_form}",
+      "months_only": "{months} {months_form}",
+      "years_and_months": "{years} {years_form} i {months} {months_form}"
+    }
   },
   "language": {
     "polish": "Polski",
