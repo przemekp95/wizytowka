@@ -348,5 +348,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Przemysław Pietrzak**
 - GitHub: [@przemekp95](https://github.com/przemekp95)
-- LinkedIn: [Your LinkedIn Profile]
-- Email: contact@pplegalsolutions.pl
+- LinkedIn: [[LinkedIn Profile]](https://www.linkedin.com/in/przempietrzak/)
+- Email: contact@ppsolutions.com.pl
