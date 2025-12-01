@@ -168,8 +168,9 @@ const calculateExperienceMonths = (portfolio: PortfolioItem[]): number => {
 
       if (startDate < endDate) {
         const diffMs = endDate.getTime() - startDate.getTime();
-        const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44)); // ~30.44 dni w miesiącu
-        totalMonths += Math.max(1, diffMonths); // minimum 1 miesiąc dla projektu
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // zaokrąglij dni w górę
+        const diffMonths = Math.ceil(diffDays / 30.44); // zaokrąglij miesiące w górę
+        totalMonths += Math.max(1, diffMonths); // minimum 1 miesiąc dla projektu + rounding up
       }
     }
   });
