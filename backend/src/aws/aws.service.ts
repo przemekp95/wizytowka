@@ -21,7 +21,8 @@ export class AwsService {
 
   private getBucketName(): string {
     if (!this.bucketName) {
-      this.bucketName = this.configService.get<string>('aws.s3.bucketName') ?? null;
+      this.bucketName =
+        this.configService.get<string>('aws.s3.bucketName') ?? null;
       if (!this.bucketName) {
         throw new Error('AWS S3 bucket name is not configured');
       }

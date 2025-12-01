@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { LinksController } from './links.controller';
 import { ContactModule } from './contact/contact.module';
+import { ChatModule } from './chat/chat.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -49,6 +50,7 @@ import { MetricsModule } from './metrics/metrics.module';
 
     ContactModule,
     PortfolioModule,
+    ChatModule,
     AwsModule,
     LoggingModule,
     MetricsModule,

@@ -55,10 +55,12 @@ async function bootstrap() {
   );
 
   // Performance optimizations
-  app.use(compression({
-    level: 6, // Good balance between speed and compression
-    threshold: 1024, // Only compress responses larger than 1KB
-  }));
+  app.use(
+    compression({
+      level: 6, // Good balance between speed and compression
+      threshold: 1024, // Only compress responses larger than 1KB
+    }),
+  );
 
   app.use(cookieParser());
   // Temporary disabled logging middleware for debugging

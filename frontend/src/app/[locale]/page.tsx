@@ -6,6 +6,7 @@ import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
 import { SkillProgress } from '@/components/SkillProgress';
 import { TechStackChart } from '@/components/TechStackChart';
+import { ChatBot } from '@/components/Chat/ChatBot';
 import { calculateDynamicSkills, calculateDynamicTechStack } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
@@ -298,6 +299,8 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </div>
       </footer>
+
+      <ChatBot />
     </>
   );
 }
