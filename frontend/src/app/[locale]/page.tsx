@@ -1,5 +1,6 @@
 import '@/styles/custom.scss';
 import Image from 'next/image';
+import Script from 'next/script';
 import { notFound } from 'next/navigation';
 
 import Header from '@/app/_components/Header';
@@ -78,8 +79,67 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const dynamicSkills = calculateDynamicSkills(items);
   const dynamicTechStack = calculateDynamicTechStack(items);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Przemysław Pietrzak',
+    jobTitle: locale === 'en' ? 'Full Stack Web Developer' : 'Full Stack Web Developer',
+    description: locale === 'en'
+      ? 'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.'
+      : 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    knowsAbout: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Node.js',
+      'PHP',
+      'Laravel',
+      'PostgreSQL',
+      'MongoDB',
+      'REST API',
+      'GraphQL',
+      'Docker',
+      'Kubernetes'
+    ],
+    hasOccupation: {
+      '@type': 'Occupation',
+      name: 'Full Stack Developer',
+      occupationalCategory: 'Software Development'
+    },
+    sameAs: [
+      'https://github.com/przemekp95',
+      'https://www.linkedin.com/in/przempietrzak/',
+      'https://przemyslawpietrzak.pl'
+    ],
+    nationality: {
+      '@type': 'Country',
+      name: 'Poland'
+    },
+    knowsLanguage: [
+      {
+        '@type': 'Language',
+        name: 'Polish',
+        alternateName: 'pl'
+      },
+      {
+        '@type': 'Language',
+        name: 'English',
+        alternateName: 'en'
+      }
+    ],
+    url: `https://przemyslawpietrzak.pl/${locale}`,
+    image: 'https://przemyslawpietrzak.pl/images/ja.jpeg'
+  };
+
   return (
     <>
+      <Script
+        id="structured-data"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd)
+        }}
+      />
       <ThreeBackground />
       <Header />
 

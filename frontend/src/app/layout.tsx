@@ -37,8 +37,17 @@ export const metadata: Metadata = {
     description:
       'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
     url: 'https://przemyslawpietrzak.pl',
-    siteName: 'Przemysław Pietrzak',
+    siteName: 'Przemyslaw Pietrzak - Developer Portfolio',
+    images: [
+      {
+        url: '/images/ja.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'Przemysław Pietrzak - Full Stack Web Developer',
+      },
+    ],
     locale: 'en_US',
+    alternateLocale: ['pl_PL'],
     type: 'website',
   },
   robots: {
