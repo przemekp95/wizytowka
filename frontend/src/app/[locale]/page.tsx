@@ -24,6 +24,8 @@ type PortfolioItem = {
   isLogo?: boolean;
   newTech?: boolean;
   repoUrl?: string | null;
+  dateFrom?: Date;
+  dateTo?: Date;
 };
 
 async function fetchPortfolio(): Promise<PortfolioItem[]> {
