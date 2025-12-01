@@ -28,10 +28,21 @@ export class LoggingMetricsMiddleware implements NestMiddleware {
       const { statusCode } = res;
 
       // Log request completion
-      this.loggingService.logRequest(method, url, statusCode, responseTime, requestId);
+      this.loggingService.logRequest(
+        method,
+        url,
+        statusCode,
+        responseTime,
+        requestId,
+      );
 
       // Record metrics
-      this.metricsService.recordHttpRequest(method, url, statusCode, responseTime);
+      this.metricsService.recordHttpRequest(
+        method,
+        url,
+        statusCode,
+        responseTime,
+      );
     });
 
     // Handle errors

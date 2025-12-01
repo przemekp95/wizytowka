@@ -17,7 +17,8 @@ export class MetricsController {
     description: 'Metrics successfully retrieved',
     content: {
       'text/plain': {
-        example: '# HELP wizytowka_http_requests_total Total number of HTTP requests\n# TYPE wizytowka_http_requests_total counter\nwizytowka_http_requests_total{method="GET",route="/health",status_code="200"} 1',
+        example:
+          '# HELP wizytowka_http_requests_total Total number of HTTP requests\n# TYPE wizytowka_http_requests_total counter\nwizytowka_http_requests_total{method="GET",route="/health",status_code="200"} 1',
       },
     },
   })

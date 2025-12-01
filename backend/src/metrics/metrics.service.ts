@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { register, collectDefaultMetrics, Counter, Histogram, Gauge } from 'prom-client';
+import {
+  register,
+  collectDefaultMetrics,
+  Counter,
+  Histogram,
+  Gauge,
+} from 'prom-client';
 
 @Injectable()
 export class MetricsService {
@@ -58,9 +64,16 @@ export class MetricsService {
   }
 
   // Metody do rejestrowania metryk
-  recordHttpRequest(method: string, route: string, statusCode: number, durationMs: number): void {
+  recordHttpRequest(
+    method: string,
+    route: string,
+    statusCode: number,
+    durationMs: number,
+  ): void {
     const durationSeconds = durationMs / 1000;
-    this.httpRequestDuration.labels(method, route, statusCode.toString()).observe(durationSeconds);
+    this.httpRequestDuration
+      .labels(method, route, statusCode.toString())
+      .observe(durationSeconds);
     this.httpRequestsTotal.labels(method, route, statusCode.toString()).inc();
   }
 
@@ -72,10 +85,19 @@ export class MetricsService {
     this.activeConnections.dec();
   }
 
-  recordDatabaseOperation(operation: string, collection: string, durationMs: number, success: boolean): void {
+  recordDatabaseOperation(
+    operation: string,
+    collection: string,
+    durationMs: number,
+    success: boolean,
+  ): void {
     const durationSeconds = durationMs / 1000;
-    this.databaseOperationDuration.labels(operation, collection).observe(durationSeconds);
-    this.databaseOperationsTotal.labels(operation, collection, success.toString()).inc();
+    this.databaseOperationDuration
+      .labels(operation, collection)
+      .observe(durationSeconds);
+    this.databaseOperationsTotal
+      .labels(operation, collection, success.toString())
+      .inc();
   }
 
   recordError(type: string, route?: string): void {
