@@ -413,6 +413,61 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
   }).sort((a, b) => b.percentage - a.percentage);
 };
 
+// Funkcja do formatowania czasu doświadczenia z tłumaczeniami
+export const formatExperienceTime = (
+  totalMonths: number,
+  locale: string = 'pl'
+): string => {
+  if (totalMonths <= 0) return locale === 'en' ? '0 months' : '0 mies.';
+
+  try {
+    // Import tłumaczeń na podstawie aktualnego lokalizacji
+    const messages = locale === 'en'
+      ? require('../i18n/messages/en.json').default || require('../i18n/messages/en.json')
+      : require('../i18n/messages/pl.json').default || require('../i18n/messages/pl.json');
+
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+
+    if (years === 0) {
+      // Tylko miesiące (<= 11)
+      const monthsKey = months === 1 ? 'one' : months >= 2 && months <= 4 ? 'few' : 'many';
+      const monthsForm = messages.skills.months_form[monthsKey];
+      return messages.skills.experience_format.months_only
+        .replace('{months}', months.toString())
+        .replace('{months_form}', monthsForm);
+    }
+
+    if (months === 0) {
+      // Tylko lata (bez miesięcy)
+      const yearsKey = years === 1 ? 'one' : years >= 2 && years <= 4 ? 'few' : 'many';
+      const yearsForm = messages.skills.years_form[yearsKey];
+      return messages.skills.experience_format.years_only
+        .replace('{years}', years.toString())
+        .replace('{years_form}', yearsForm);
+    }
+
+    // Lata i miesiące
+    const yearsKey = years === 1 ? 'one' : years >= 2 && years <= 4 ? 'few' : 'many';
+    const yearsForm = messages.skills.years_form[yearsKey];
+
+    const monthsKey = months === 1 ? 'one' : months >= 2 && months <= 4 ? 'few' : 'many';
+    const monthsForm = messages.skills.months_form[monthsKey];
+
+    return messages.skills.experience_format.years_and_months
+      .replace('{years}', years.toString())
+      .replace('{years_form}', yearsForm)
+      .replace('{months}', months.toString())
+      .replace('{months_form}', monthsForm);
+
+  } catch (error) {
+    // Fallback na angielski jeśli błędy tłumaczeń
+    if (years === 0) return `${months} month${months !== 1 ? 's' : ''}`;
+    if (months === 0) return `${years} year${years !== 1 ? 's' : ''}`;
+    return `${years} year${years !== 1 ? 's' : ''} and ${months} month${months !== 1 ? 's' : ''}`;
+  }
+};
+
 // funkcje pomocnicze (zachowane dla kompatybilności)
 export const getSkillsByCategory = (category: Skill['category'], skills?: Skill[]): Skill[] => {
   const data = skills || skillsData;
