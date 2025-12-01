@@ -108,42 +108,42 @@ export const techStackData: TechStack[] = [
 const techToCategoryMap: Record<string, Skill['category']> = {
   // Frontend
   'Next.js': 'frontEnd',
-  'React': 'frontEnd',
-  'JavaScript': 'frontEnd',
-  'TypeScript': 'frontEnd',
-  'Tailwind': 'frontEnd',
-  'CSS': 'frontEnd',
-  'SCSS': 'frontEnd',
-  'HTML': 'frontEnd',
-  'Vite': 'frontEnd',
+  React: 'frontEnd',
+  JavaScript: 'frontEnd',
+  TypeScript: 'frontEnd',
+  Tailwind: 'frontEnd',
+  CSS: 'frontEnd',
+  SCSS: 'frontEnd',
+  HTML: 'frontEnd',
+  Vite: 'frontEnd',
 
   // Backend
   'Node.js': 'backEnd',
-  'NestJS': 'backEnd',
-  'Laravel': 'backEnd',
-  'Symfony': 'backEnd',
-  'PHP': 'backEnd',
-  'Express': 'backEnd',
-  'GraphQL': 'backEnd',
+  NestJS: 'backEnd',
+  Laravel: 'backEnd',
+  Symfony: 'backEnd',
+  PHP: 'backEnd',
+  Express: 'backEnd',
+  GraphQL: 'backEnd',
   'REST API': 'backEnd',
-  'API': 'backEnd',
+  API: 'backEnd',
 
   // Databases
-  'MySQL': 'database',
-  'PostgreSQL': 'database',
-  'MongoDB': 'database',
-  'Prisma': 'database',
-  'SQL': 'database',
-  'NoSQL': 'database',
+  MySQL: 'database',
+  PostgreSQL: 'database',
+  MongoDB: 'database',
+  Prisma: 'database',
+  SQL: 'database',
+  NoSQL: 'database',
 
   // DevOps
-  'Docker': 'devops',
-  'Kubernetes': 'devops',
-  'AWS': 'devops',
-  'Render': 'devops',
+  Docker: 'devops',
+  Kubernetes: 'devops',
+  AWS: 'devops',
+  Render: 'devops',
   'GitHub Actions': 'devops',
   'CI/CD': 'devops',
-  'Passenger': 'devops',
+  Passenger: 'devops',
 };
 
 type PortfolioItem = {
@@ -152,28 +152,65 @@ type PortfolioItem = {
   dateTo?: Date;
 };
 
-// Oblicz miesiące doświadczenia na podstawie projektów
-const calculateExperienceMonths = (portfolio: PortfolioItem[]): number => {
+
+
+// Oblicz rzeczywiste miesiące doświadczenia dla technologii na podstawie zakresów dat
+const calculateSkillExperienceMonths = (portfolio: PortfolioItem[], techName: string): number => {
   if (!portfolio.length) {
-    return 30; // fallback dla ~2.5 roku doświadczenia
+    return 6; // fallback ~6 miesięcy na start
   }
 
-  let totalMonths = 0;
+  // Zbierz wszystkie zakresy dat, gdzie technologia była używana
+  const dateRanges: Array<{ start: Date; end: Date }> = [];
+
   const now = new Date();
-
-  portfolio.forEach(project => {
-    if (project.dateFrom) {
-      const startDate = new Date(project.dateFrom);
-      const endDate = project.dateTo ? new Date(project.dateTo) : now;
-
-      if (startDate < endDate) {
-        const diffMs = endDate.getTime() - startDate.getTime();
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // zaokrąglij dni w górę
-        const diffMonths = Math.ceil(diffDays / 30.44); // zaokrąglij miesiące w górę
-        totalMonths += Math.max(1, diffMonths); // minimum 1 miesiąc dla projektu + rounding up
+  portfolio.forEach((project) => {
+    if (
+      project.tags.some(
+        (tag) =>
+          techName.toLowerCase().includes(tag.toLowerCase()) ||
+          tag.toLowerCase().includes(techName.toLowerCase())
+      ) &&
+      project.dateFrom
+    ) {
+      const start = new Date(project.dateFrom);
+      const end = project.dateTo ? new Date(project.dateTo) : now;
+      if (start < end) {
+        dateRanges.push({ start, end });
       }
     }
   });
+
+  if (dateRanges.length === 0) return 6; // fallback jeśli brak danych
+
+  // Sortuj zakresy po dacie rozpoczęcia
+  dateRanges.sort((a, b) => a.start.getTime() - b.start.getTime());
+
+  // Połącz overlapping zakresy
+  const mergedRanges: Array<{ start: Date; end: Date }> = [];
+  for (const range of dateRanges) {
+    if (mergedRanges.length === 0) {
+      mergedRanges.push(range);
+    } else {
+      const lastMerged = mergedRanges[mergedRanges.length - 1];
+      if (range.start <= lastMerged.end) {
+        // zakresy się pokrywają - połącz
+        lastMerged.end = new Date(Math.max(lastMerged.end.getTime(), range.end.getTime()));
+      } else {
+        // nowy zakres
+        mergedRanges.push(range);
+      }
+    }
+  }
+
+  // Policzy miesiące dla każdego połączonego zakresu i zaokrągli w górę
+  let totalMonths = 0;
+  for (const range of mergedRanges) {
+    const diffMs = range.end.getTime() - range.start.getTime();
+    const diffDays = Math.max(0, diffMs / (1000 * 60 * 60 * 24));
+    const diffMonths = diffDays / 30.44;
+    totalMonths += Math.ceil(Math.max(0.01, diffMonths)); // zaokrągli w górę, minimum 1 dzień
+  }
 
   return Math.max(1, totalMonths);
 };
@@ -187,12 +224,15 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   // Zlicz wystąpienia technologii w portfolio
   const techCounts: Record<string, number> = {};
 
-  portfolio.forEach(project => {
-    project.tags.forEach(tag => {
+  portfolio.forEach((project) => {
+    project.tags.forEach((tag) => {
       // Normalize tag names for counting
-      const normalizedTag = Object.keys(techToCategoryMap).find(
-        tech => tech.toLowerCase() === tag.toLowerCase() || tag.toLowerCase().includes(tech.toLowerCase())
-      ) || tag;
+      const normalizedTag =
+        Object.keys(techToCategoryMap).find(
+          (tech) =>
+            tech.toLowerCase() === tag.toLowerCase() ||
+            tag.toLowerCase().includes(tech.toLowerCase())
+        ) || tag;
 
       techCounts[normalizedTag] = (techCounts[normalizedTag] || 0) + 1;
     });
@@ -200,23 +240,24 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
 
   // Convert to skills with dynamic levels and experience months
   const totalProjects = portfolio.length;
-  const totalMonthsExperience = calculateExperienceMonths(portfolio);
-  const skills: Skill[] = Object.entries(techCounts).map(([techName, count]) => {
-    const category = techToCategoryMap[techName] || 'frontEnd';
-    // Procent wystąpienia w projektach + minimalny offset
-    const projectPercentage = (count / totalProjects) * 100;
-    const level = Math.round(Math.max(10, projectPercentage)); // Min 10% + procent projektów
-    // Szacowane miesiące doświadczenia: ~3 miesiące per projekt + wczesniejsze doświadczenie
-    const experienceMonths = Math.round(count * 3 + (totalMonthsExperience * 0.1));
+  const skills: Skill[] = Object.entries(techCounts)
+    .map(([techName, count]) => {
+      const category = techToCategoryMap[techName] || 'frontEnd';
+      // Procent wystąpienia w projektach (bez minimum)
+      const projectPercentage = (count / totalProjects) * 100;
+      const level = Math.round(projectPercentage); // Bez minimalnego progu
+      // Rzeczywiste miesiące doświadczenia na podstawie zakresów dat
+      const experienceMonths = calculateSkillExperienceMonths(portfolio, techName);
 
-    return {
-      id: techName.toLowerCase().replace(/\s+/g, '-'),
-      name: techName,
-      level,
-      category,
-      experienceMonths
-    };
-  }).sort((a, b) => b.level - a.level); // Sort by level descending
+      return {
+        id: techName.toLowerCase().replace(/\s+/g, '-'),
+        name: techName,
+        level,
+        category,
+        experienceMonths,
+      };
+    })
+    .sort((a, b) => b.level - a.level); // Sort by level descending
 
   return skills;
 };
@@ -231,18 +272,20 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     frontEnd: 0,
     backEnd: 0,
     database: 0,
-    devops: 0
+    devops: 0,
   };
 
   let totalTechCount = 0;
 
-  portfolio.forEach(project => {
-    project.tags.forEach(tag => {
-      const category = techToCategoryMap[tag] || techToCategoryMap[
-        Object.keys(techToCategoryMap).find(
-          tech => tag.toLowerCase().includes(tech.toLowerCase())
-        ) || 'frontEnd'
-      ];
+  portfolio.forEach((project) => {
+    project.tags.forEach((tag) => {
+      const category =
+        techToCategoryMap[tag] ||
+        techToCategoryMap[
+          Object.keys(techToCategoryMap).find((tech) =>
+            tag.toLowerCase().includes(tech.toLowerCase())
+          ) || 'frontEnd'
+        ];
 
       if (category) {
         categoryCounts[category]++;
@@ -290,7 +333,7 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
 // funkcje pomocnicze (zachowane dla kompatybilności)
 export const getSkillsByCategory = (category: Skill['category'], skills?: Skill[]): Skill[] => {
   const data = skills || skillsData;
-  return data.filter(skill => skill.category === category);
+  return data.filter((skill) => skill.category === category);
 };
 
 export const getSkillCategories = (): Skill['category'][] => {
@@ -299,8 +342,11 @@ export const getSkillCategories = (): Skill['category'][] => {
 
 export const getTotalSkillCategories = (skills?: Skill[]): Record<string, number> => {
   const data = skills || skillsData;
-  return data.reduce((acc, skill) => {
-    acc[skill.category] = (acc[skill.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  return data.reduce(
+    (acc, skill) => {
+      acc[skill.category] = (acc[skill.category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 };
