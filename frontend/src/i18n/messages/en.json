@@ -54,5 +54,16 @@
   "language": {
     "polish": "Polski",
     "english": "English"
+  },
+  "chat": {
+    "openButtonLabel": "Open chat with AI assistant",
+    "closeButtonLabel": "Close chat",
+    "sendButtonLabel": "Send message",
+    "welcomeMessage": "Hello! I'm Przemysław's AI assistant. How can I help you? You can ask about my projects, technical skills or experience.",
+    "errorMessage": "Sorry, there was an error connecting to the assistant. Try again later.",
+    "placeholder": "Type a message...",
+    "title": "AI Assistant",
+    "subtitle": "Przemysław's Portfolio",
+    "tooltip": "Talk with AI"
   }
 }
