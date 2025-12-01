@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { AwsService } from '../aws/aws.service';
 
@@ -27,54 +32,79 @@ export type PortfolioItem = {
   repoUrl?: string;
 };
 
+/**
+ * Portfolio service managing MongoDB operations for portfolio items.
+ * Handles CRUD operations with file upload support and AWS S3 integration.
+ */
 @Injectable()
 export class PortfolioService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PortfolioService.name);
   private client!: MongoClient;
   private db!: Db;
 
   constructor(private readonly awsService: AwsService) {}
 
+  /**
+   * Initialize MongoDB connection with indexes creation.
+   * Uses graceful degradation - if connection/operations fail, service continues with mock data.
+   */
   async onModuleInit() {
     try {
-      console.log('🔌 PortfolioService: Starting MongoDB connection...');
-      console.log(
-        `📊 MONGODB_URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`,
+      this.logger.log('Starting MongoDB connection...');
+      this.logger.log(
+        `MONGODB_URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`,
       );
-      console.log(`📊 MONGODB_DB: ${process.env.MONGODB_DB || 'wizytowka'}`);
+      this.logger.log(`MONGODB_DB: ${process.env.MONGODB_DB || 'wizytowka'}`);
 
-      this.client = new MongoClient(process.env.MONGODB_URI!);
+      this.client = new MongoClient(process.env.MONGODB_URI!, {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+      });
 
-      console.log('⏰ PortfolioService: Attempting MongoDB connection...');
+      this.logger.log('Attempting MongoDB connection...');
       const connectPromise = this.client.connect();
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
-          () => reject(new Error('MongoDB connection timeout after 10s')),
-          10000,
+          () => reject(new Error('Connection timeout after 5s')),
+          5000,
         ),
       );
 
       await Promise.race([connectPromise, timeoutPromise]);
-      console.log('✅ PortfolioService: MongoDB connection established');
+      this.logger.log('MongoDB connection established');
 
       this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
-      console.log('📁 PortfolioService: Database selected');
+      this.logger.log(`Database "${this.db.databaseName}" selected`);
 
-      const col = this.db.collection<PortfolioItem>('portfolio_items');
-      console.log('📋 PortfolioService: Creating indexes...');
+      // Try to create indexes (graceful degradation if fails)
+      try {
+        const col = this.db.collection<PortfolioItem>('portfolio_items');
+        this.logger.log('Creating database indexes...');
 
-      await col.createIndex({ slug: 1 }, { unique: true });
-      console.log('✅ PortfolioService: Slug index created');
+        await col.createIndex({ slug: 1 }, { unique: true });
+        this.logger.log('Slug index created');
 
-      await col.createIndex({ status: 1, order: 1 });
-      console.log('✅ PortfolioService: Status/Order index created');
+        await col.createIndex({ status: 1, order: 1 });
+        this.logger.log('Status/Order index created');
 
-      console.log('✅ PortfolioService: MongoDB setup completed successfully');
+        this.logger.log('Database indexes created successfully');
+      } catch (indexError) {
+        this.logger.warn(
+          `Could not create indexes: ${indexError instanceof Error ? indexError.message : String(indexError)}`,
+        );
+        this.logger.log(
+          'Continuing without indexes (performance may be reduced)',
+        );
+      }
+
+      this.logger.log('PortfolioService initialization completed successfully');
     } catch (error) {
-      console.error(
-        '❌ PortfolioService: MongoDB connection failed:',
-        error instanceof Error ? error.message : String(error),
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`MongoDB connection failed: ${errorMessage}`);
+      this.logger.warn(
+        'PortfolioService will run with mock data - reduced functionality',
       );
-      console.log('⚠️  PortfolioService: Running with mock data');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
@@ -70,12 +71,27 @@ async function bootstrap() {
     }),
   );
 
+  // Swagger/OpenAPI configuration
+  const config = new DocumentBuilder()
+    .setTitle('Personal Portfolio API')
+    .setDescription('REST and GraphQL API for personal portfolio website')
+    .setVersion('1.0')
+    .addTag('health', 'Health check endpoints')
+    .addTag('portfolio', 'Portfolio item management')
+    .addTag('contact', 'Contact form and messaging')
+    .addTag('links', 'External links and redirects')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
   const port = Number(process.env.PORT) || 3000;
   console.log(`🔧 Starting server on port ${port}...`);
 
   await app.listen(port);
   console.log(`✅ Server listening on port ${port}`);
   console.log(`🌐 REST   → http://localhost:${port}/api`);
+  console.log(`📖 Swagger→ http://localhost:${port}/api/docs`);
   console.log(`🔗 GraphQL→ http://localhost:${port}/graphql`);
   console.log(`💚 Health  → http://localhost:${port}/health`);
   console.log(`📊 Ready   → http://localhost:${port}/health/ready`);
