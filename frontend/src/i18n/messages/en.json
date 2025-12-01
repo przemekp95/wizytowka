@@ -2,7 +2,8 @@
   "nav": {
     "home": "Home",
     "portfolio": "Portfolio",
-    "about": "About",
+    "about": "About me",
+    "skills": "Skills",
     "contact": "Contact",
     "contactMe": "Contact me"
   },

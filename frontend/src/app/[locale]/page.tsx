@@ -3,8 +3,10 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import Header from '@/app/_components/Header';
-
 import ContactForm from '@/app/_components/ContactForm';
+import { SkillProgress } from '@/components/SkillProgress';
+import { TechStackChart } from '@/components/TechStackChart';
+import { calculateDynamicSkills, calculateDynamicTechStack } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -67,6 +69,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
   const items = await fetchPortfolio();
   const t = await getTranslations(locale);
+
+  // Wyliczenie dynamicznych umiejętności na podstawie portfola
+  const dynamicSkills = calculateDynamicSkills(items);
+  const dynamicTechStack = calculateDynamicTechStack(items);
 
   return (
     <>
@@ -232,6 +238,33 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                     <strong>{t('about.devops')}</strong>
                   </li>
                 </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="skills" className="py-20 md:py-28 bg-white">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
+              {locale === 'en' ? 'Skills & Expertise' : 'Umiejętności i kompetencje'}
+            </h2>
+
+            <div className="grid gap-12 lg:grid-cols-2 items-start">
+              {/* Technology Skills */}
+              <div>
+                <h3 className="text-xl font-semibold text-slate-700 mb-6">
+                  {locale === 'en' ? 'Technology Skills' : 'Umiejętności technologiczne'}
+                </h3>
+                <div className="space-y-4">
+                  {dynamicSkills.map((skill) => (
+                    <SkillProgress key={skill.id} skill={skill} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Technology Distribution Chart */}
+              <div className="flex flex-col items-center">
+                <TechStackChart locale={locale as 'pl' | 'en'} techStack={dynamicTechStack} />
               </div>
             </div>
           </div>
