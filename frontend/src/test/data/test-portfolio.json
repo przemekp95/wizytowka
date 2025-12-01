@@ -1,0 +1,60 @@
+[
+  {
+    "_id": "casn-laravel",
+    "title": "CASN Laravel",
+    "href": "https://casn.pietrzakprzemyslaw.pl",
+    "desc": "Stworzyłem aplikację webową...",
+    "tags": ["Laravel", "PHP", "Blade", "Github", "Bootstrap"],
+    "img": "/images/logo.jpg",
+    "isLogo": true,
+    "newTech": false,
+    "dateFrom": "2022-03-01",
+    "dateTo": "2022-07-31"
+  },
+  {
+    "_id": "casn-nextjs",
+    "title": "CASN Next.js",
+    "href": "https://casn.pl",
+    "desc": "Migracja strony think-tanku...",
+    "tags": ["Next.js", "Prisma", "MySQL", "Typescript", "Markdown", "Github"],
+    "img": "/images/logo.jpg",
+    "isLogo": true,
+    "newTech": false,
+    "dateFrom": "2022-08-01",
+    "dateTo": "2023-02-28"
+  },
+  {
+    "_id": "mazowiesci",
+    "title": "Mazowieści",
+    "href": "https://mazowiesci.pl",
+    "desc": "Migracja z WIX do WordPress...",
+    "tags": ["Python (Scrapy)", "WordPress", "PHP", "HTML", "CSS", "REST API", "SEO"],
+    "img": "/images/mazo.png",
+    "isLogo": true,
+    "newTech": false,
+    "dateFrom": "2023-01-15",
+    "dateTo": "2023-06-30"
+  },
+  {
+    "_id": "strona-wizytowka",
+    "title": "Strona Wizytówka",
+    "href": "https://pietrzakprzemyslaw.pl",
+    "desc": "One-pager w Next.js...",
+    "tags": ["Next.js", "Tailwind", "Sass"],
+    "img": "/images/PP-2-JPG-01.webp",
+    "isLogo": true,
+    "newTech": false,
+    "dateFrom": "2024-03-01"
+  },
+  {
+    "_id": "fundacja-sluzba-niepodleglej",
+    "title": "Fundacja Służba Niepodległej",
+    "href": "https://sluzbaniepodleglej.pl",
+    "desc": "Administrowanie...",
+    "tags": ["WordPress", "PHP", "CSS", "HTML", "Google Search Console", "SEO"],
+    "img": "/images/logo-sluzba-niepodleglej.png",
+    "isLogo": true,
+    "newTech": false,
+    "dateFrom": "2023-09-01"
+  }
+]
