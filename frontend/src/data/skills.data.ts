@@ -54,10 +54,8 @@ export const techStackData: TechStack[] = [
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   try {
     // Czytamy tłumaczeń polskiego (source of truth)
-    const plMessages = require('../../../frontend/src/i18n/messages/pl.json').default ||
-                       require('../../../frontend/src/i18n/messages/pl.json') ||
-                       require('../../i18n/messages/pl.json').default ||
-                       require('../../i18n/messages/pl.json');
+    const plMessages = require('../i18n/messages/pl.json').default ||
+                       require('../i18n/messages/pl.json');
 
     // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
     const categoryMapping: Record<string, Skill['category']> = {
@@ -245,18 +243,30 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
 
   portfolio.forEach((project) => {
     project.tags.forEach((tag) => {
-      const category =
-        techToCategoryMap[tag] ||
-        techToCategoryMap[
-          Object.keys(techToCategoryMap).find((tech) =>
-            tag.toLowerCase().includes(tech.toLowerCase())
-          ) || 'frontEnd'
-        ];
+      // Case-insensitive lookup in techToCategoryMap
+      const normalizedTag = tag.toLowerCase();
+      let category = 'frontEnd'; // default fallback
 
-      if (category) {
-        categoryCounts[category]++;
-        totalTechCount++;
+      // Find exact match first (case insensitive)
+      const exactMatch = Object.keys(techToCategoryMap).find(
+        (tech) => tech.toLowerCase() === normalizedTag
+      );
+
+      if (exactMatch) {
+        category = techToCategoryMap[exactMatch];
+      } else {
+        // Try partial match (tag contains tech or tech contains tag)
+        const partialMatch = Object.keys(techToCategoryMap).find((tech) =>
+          normalizedTag.includes(tech.toLowerCase()) ||
+          tech.toLowerCase().includes(normalizedTag)
+        );
+        if (partialMatch) {
+          category = techToCategoryMap[partialMatch];
+        }
       }
+
+      categoryCounts[category as keyof typeof categoryCounts]++;
+      totalTechCount++;
     });
   });
 
