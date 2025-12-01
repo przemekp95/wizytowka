@@ -101,6 +101,10 @@ export function ChatBot() {
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          // Chat service not available
+          throw new Error('Chat service not available');
+        }
         throw new Error('Network response was not ok');
       }
 
@@ -119,7 +123,9 @@ export function ChatBot() {
       console.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: t('errorMessage'),
+        content: error instanceof Error && error.message === 'Chat service not available'
+          ? (currentLocale === 'en' ? 'Chat service is currently unavailable. Please try again later.' : 'Usługa czatu jest obecnie niedostępna. Spróbuj ponownie później.')
+          : t('errorMessage'),
         isUser: false,
         timestamp: new Date(),
       };

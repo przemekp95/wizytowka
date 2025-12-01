@@ -1,4 +1,5 @@
 import { HelloResolver } from './graphql/hello.resolver';
+import { ChatModule } from './chat/chat.module';
 
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -6,7 +7,6 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { LinksController } from './links.controller';
 import { ContactModule } from './contact/contact.module';
-import { ChatModule } from './chat/chat.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -23,8 +23,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { LoggingModule } from './logging/logging.module';
 import { MetricsModule } from './metrics/metrics.module';
 
-@Module({
-  imports: [
+function createImports() {
+  const baseImports = [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env'], // backend/.env
@@ -50,11 +50,24 @@ import { MetricsModule } from './metrics/metrics.module';
 
     ContactModule,
     PortfolioModule,
-    ChatModule,
     AwsModule,
     LoggingModule,
     MetricsModule,
-  ],
+  ];
+
+  // Add ChatModule only if OPENAI_API_KEY is available
+  if (process.env.OPENAI_API_KEY) {
+    baseImports.push(ChatModule);
+    console.log('🔧 ChatModule enabled - OPENAI_API_KEY available');
+  } else {
+    console.log('⚠️  ChatModule disabled - OPENAI_API_KEY not available');
+  }
+
+  return baseImports;
+}
+
+@Module({
+  imports: createImports(),
   controllers: [
     AppController,
     HealthController,
