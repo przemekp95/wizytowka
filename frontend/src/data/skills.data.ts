@@ -14,63 +14,9 @@ export interface TechStack {
   color: string;
 }
 
-// umiejętności technologiczne
-export const skillsData: Skill[] = [
-  {
-    id: 'nextjs-react',
-    name: 'Next.js / React',
-    level: 95,
-    category: 'frontEnd',
-  },
-  {
-    id: 'typescript-js',
-    name: 'TypeScript / JavaScript',
-    level: 90,
-    category: 'frontEnd',
-  },
-  {
-    id: 'tailwind',
-    name: 'Tailwind CSS',
-    level: 88,
-    category: 'frontEnd',
-  },
-  {
-    id: 'nestjs-node',
-    name: 'Node.js / NestJS',
-    level: 85,
-    category: 'backEnd',
-  },
-  {
-    id: 'laravel-symfony',
-    name: 'Laravel / Symfony',
-    level: 80,
-    category: 'backEnd',
-  },
-  {
-    id: 'mysql-postgresql',
-    name: 'MySQL / PostgreSQL',
-    level: 82,
-    category: 'database',
-  },
-  {
-    id: 'mongodb',
-    name: 'MongoDB',
-    level: 75,
-    category: 'database',
-  },
-  {
-    id: 'docker-kubernetes',
-    name: 'Docker / Kubernetes',
-    level: 78,
-    category: 'devops',
-  },
-  {
-    id: 'aws-render',
-    name: 'AWS / Render',
-    level: 70,
-    category: 'devops',
-  },
-];
+// Stan umiejętności - fallback do pracy jako prezentacja gdy nie ma portfolio
+// Wszystkie umiejętności są generowane dynamicznie z danych portfolio
+export const skillsData: Skill[] = [];
 
 // dane do wykresu kołowego rozkładu kompetencji
 export const techStackData: TechStack[] = [
@@ -104,65 +50,64 @@ export const techStackData: TechStack[] = [
   },
 ];
 
-// Automatyczna klasyfikacja technologii na podstawie słowa kluczowych z technology stack
+// Dynamic mapowanie technologii z tłumaczeń About Me sekcji
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
-  const mappings: Array<{ tech: string; category: Skill['category'] }> = [
-    // Frontend (based on: Next.js, React, TypeScript, Tailwind, CSS)
-    { tech: 'Next.js', category: 'frontEnd' },
-    { tech: 'React', category: 'frontEnd' },
-    { tech: 'JavaScript', category: 'frontEnd' },
-    { tech: 'TypeScript', category: 'frontEnd' },
-    { tech: 'Tailwind', category: 'frontEnd' },
-    { tech: 'Tailwind CSS', category: 'frontEnd' },
-    { tech: 'CSS', category: 'frontEnd' },
-    { tech: 'SCSS', category: 'frontEnd' },
-    { tech: 'HTML', category: 'frontEnd' },
-    { tech: 'Vite', category: 'frontEnd' },
-    { tech: 'Sass', category: 'frontEnd' },
+  try {
+    // Czytamy tłumaczeń polskiego (source of truth)
+    const plMessages = require('../../../frontend/src/i18n/messages/pl.json').default ||
+                       require('../../../frontend/src/i18n/messages/pl.json') ||
+                       require('../../i18n/messages/pl.json').default ||
+                       require('../../i18n/messages/pl.json');
 
-    // Backend (based on: NestJS, Node.js, GraphQL, REST API)
-    { tech: 'Node.js', category: 'backEnd' },
-    { tech: 'NestJS', category: 'backEnd' },
-    { tech: 'Laravel', category: 'backEnd' },
-    { tech: 'Symfony', category: 'backEnd' },
-    { tech: 'PHP', category: 'backEnd' },
-    { tech: 'Express', category: 'backEnd' },
-    { tech: 'GraphQL', category: 'backEnd' },
-    { tech: 'REST API', category: 'backEnd' },
-    { tech: 'REST', category: 'backEnd' },
-    { tech: 'API', category: 'backEnd' },
-    { tech: 'JWT', category: 'backEnd' },
-    { tech: 'Sessions', category: 'backEnd' },
+    // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
+    const categoryMapping: Record<string, Skill['category']> = {
+      'frontend': 'frontEnd',
+      'backend': 'backEnd',
+      'databases': 'database',
+      'devops': 'devops'
+    };
 
-    // Databases (based on: MongoDB, PostgreSQL, Prisma ORM)
-    { tech: 'MySQL', category: 'database' },
-    { tech: 'PostgreSQL', category: 'database' },
-    { tech: 'MongoDB', category: 'database' },
-    { tech: 'Prisma', category: 'database' },
-    { tech: 'Prisma ORM', category: 'database' },
-    { tech: 'SQL', category: 'database' },
-    { tech: 'NoSQL', category: 'database' },
+    const result: Record<string, Skill['category']> = {};
 
-    // DevOps/Deployment (based on: Docker, Kubernetes, AWS, GitHub Actions)
-    { tech: 'Docker', category: 'devops' },
-    { tech: 'Kubernetes', category: 'devops' },
-    { tech: 'AWS', category: 'devops' },
-    { tech: 'Render', category: 'devops' },
-    { tech: 'GitHub Actions', category: 'devops' },
-    { tech: 'CI/CD', category: 'devops' },
-    { tech: 'Passenger', category: 'devops' },
-    { tech: 'Github', category: 'devops' },
-    { tech: 'GitHub', category: 'devops' },
-    { tech: 'AWS S3', category: 'devops' },
-    { tech: 'SEO', category: 'devops' },
-    { tech: 'hCaptcha', category: 'devops' },
-  ];
+    // Dla każdej kategorii, wyciągnij technologie z tłumaczeń
+    Object.entries(categoryMapping).forEach(([translationKey, categoryType]) => {
+      const techStackText = plMessages.about?.[translationKey];
+      if (techStackText) {
+        // Rozbij text na technologie: "Next.js / React / ... TypeScript"
+        const technologies = parseTechStackString(techStackText);
 
-  // Konwertuj na record mapę
-  return mappings.reduce((map, { tech, category }) => {
-    map[tech] = category;
-    return map;
-  }, {} as Record<string, Skill['category']>);
+        // Każda technologia -> kategoria
+        technologies.forEach(tech => {
+          result[tech] = categoryType;
+        });
+      }
+    });
+
+    return result;
+  } catch (error) {
+    console.warn('Could not load i18n for dynamic categorization, using empty map');
+    return {};
+  }
+};
+
+// Parser stringu technologii: "Next.js / React / Tailwind / SCSS / JavaScript, TypeScript"
+const parseTechStackString = (techString: string): string[] => {
+  // Podziel po: "/" (slash), "," (przecinek), "(" (nawias otwarty)
+  const parts = techString
+    .split(/[\(\)]/) // Najpierw usuń content w nawiasach
+    .filter(part => !part.includes('(') && part.trim().length > 0)
+    .join(' ')
+    .split(/[/,]/) // Potem dziel po slash/przecinek
+    .map(tech => tech.trim())
+    .filter(tech => tech.length > 0)
+
+    // Normalizacja (bez hardcodowania nazw!)
+    .map(tech => tech.charAt(0).toUpperCase() + tech.slice(1).toLowerCase())
+
+    // Czyść spacje i filtry
+    .filter(tech => tech.length > 1 && !/^\s*$/.test(tech));
+
+  return parts;
 };
 
 const techToCategoryMap = createTechToCategoryMap();
