@@ -88,6 +88,125 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   }
 };
 
+// Lookup table dla standardowych nazw technologii (zachowaj oryginalną kapitalizację)
+const techNameMap: Record<string, string> = {
+  // Frontend
+  'javascript': 'JavaScript',
+  'typescript': 'TypeScript',
+  'next.js': 'Next.js',
+  'nextjs': 'Next.js',
+  'js': 'JavaScript',
+  'ts': 'TypeScript',
+  'react': 'React',
+  'vue': 'Vue.js',
+  'angular': 'Angular',
+  'svelte': 'Svelte',
+  'jquery': 'jQuery',
+  'tailwind': 'Tailwind CSS',
+  'tailwindcss': 'Tailwind CSS',
+  'bootstrap': 'Bootstrap',
+  'sass': 'SCSS',
+  'scss': 'SCSS',
+  'css': 'CSS',
+  'html': 'HTML',
+  'threejs': 'Three.js',
+  'three.js': 'Three.js',
+  'gsap': 'GSAP',
+  'framer': 'Framer Motion',
+  'framer-motion': 'Framer Motion',
+
+  // Backend
+  'php': 'PHP',
+  'node.js': 'Node.js',
+  'nodejs': 'Node.js',
+  'node': 'Node.js',
+  'nestjs': 'NestJS',
+  'nest.js': 'NestJS',
+  'express': 'Express',
+  'laravel': 'Laravel',
+  'symfony': 'Symfony',
+  'django': 'Django',
+  'flask': 'Flask',
+  'spring': 'Spring Boot',
+  'springboot': 'Spring Boot',
+  'asp.net': 'ASP.NET',
+  'dotnet': 'ASP.NET',
+  '.net': '.NET',
+  'ruby': 'Ruby',
+  'rails': 'Ruby on Rails',
+  'ror': 'Ruby on Rails',
+  'go': 'Go',
+  'golang': 'Go',
+  'python': 'Python',
+  'java': 'Java',
+  'kotlin': 'Kotlin',
+  'scala': 'Scala',
+
+  // Databases
+  'mysql': 'MySQL',
+  'postgresql': 'PostgreSQL',
+  'postgres': 'PostgreSQL',
+  'mongodb': 'MongoDB',
+  'redis': 'Redis',
+  'sqlite': 'SQLite',
+  'firebase': 'Firebase',
+  'supabase': 'Supabase',
+  'prisma': 'Prisma',
+  'drizzle': 'Drizzle',
+  'typeorm': 'TypeORM',
+  'sequelize': 'Sequelize',
+  'mongoose': 'Mongoose',
+  'nosql': 'NoSQL',
+  'sql': 'SQL',
+
+  // DevOps/Cloud
+  'docker': 'Docker',
+  'kubernetes': 'Kubernetes',
+  'k8s': 'Kubernetes',
+  'aws': 'AWS',
+  'azure': 'Azure',
+  'gcp': 'Google Cloud',
+  'google cloud': 'Google Cloud',
+  'vercel': 'Vercel',
+  'render': 'Render',
+  'heroku': 'Heroku',
+  'gitlab': 'GitLab',
+  'github': 'GitHub',
+  'github actions': 'GitHub Actions',
+  'ci/cd': 'CI/CD',
+  'cicd': 'CI/CD',
+  'jenkins': 'Jenkins',
+  'webdriver': 'Wetherby Driver',
+  'selenium': 'Selenium',
+  'cypress': 'Cypress',
+  'playwright': 'Playwright',
+  'jest': 'Jest',
+  'vitest': 'Vitest',
+  'testing-library': 'Testing Library',
+  'react testing library': 'React Testing Library',
+
+  // Other
+  'graphql': 'GraphQL',
+  'rest': 'REST',
+  'websockets': 'WebSockets',
+  'oauth': 'OAuth',
+  'jwt': 'JWT',
+  'wordpress': 'WordPress',
+  'woocommerce': 'WooCommerce',
+  'shopify': 'Shopify',
+  'figma': 'Figma',
+  'sketch': 'Sketch',
+  'adobe xd': 'Adobe XD',
+  'photoshop': 'Photoshop',
+  'illustrator': 'Illustrator'
+};
+
+// Normalizuj nazwę technologii używając lookup table
+const normalizeTechName = (tech: string): string => {
+  const lowerTech = tech.toLowerCase().replace(/\s+/g, ' ').trim();
+  return techNameMap[lowerTech] || tech; // Jeśli nie znaleziono w mapie, zostaw oryginał
+};
+
 // Parser stringu technologii: "Next.js / React / Tailwind / SCSS / JavaScript, TypeScript"
 const parseTechStackString = (techString: string): string[] => {
   // Podziel po: "/" (slash), "," (przecinek), "(" (nawias otwarty)
@@ -99,8 +218,8 @@ const parseTechStackString = (techString: string): string[] => {
     .map(tech => tech.trim())
     .filter(tech => tech.length > 0)
 
-    // Normalizacja (bez hardcodowania nazw!)
-    .map(tech => tech.charAt(0).toUpperCase() + tech.slice(1).toLowerCase())
+    // Normalizacja używając lookup table (zachowaj właściwą kapitalizację)
+    .map(normalizeTechName)
 
     // Czyść spacje i filtry
     .filter(tech => tech.length > 1 && !/^\s*$/.test(tech));
