@@ -373,9 +373,9 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     return techStackData; // fallback do statycznych danych
   }
 
-  // Użyj tych samych umiejętności co skill bars (pierwsze 12 posortowane po level)
+  // Użyj tych samych umiejętności co skill bars (pierwsze 6 posortowane po level)
   const dynamicSkills = calculateDynamicSkills(portfolio);
-  const skillBarSkills = dynamicSkills.slice(0, 12); // dokładnie te same co w skill bars
+  const skillBarSkills = dynamicSkills.slice(0, 6); // dokładnie te same co w skill bars
 
   if (skillBarSkills.length === 0) {
     return techStackData;
