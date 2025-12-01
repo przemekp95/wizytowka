@@ -19,6 +19,7 @@ async function loadTranslations(locale: string, section: string) {
 export default function ContactSection() {
   const [status, setStatus] = useState<Status>('idle');
   const [err, setErr] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
 
@@ -119,22 +120,29 @@ export default function ContactSection() {
     >
       <div>
         <label className="block text-sm font-medium" htmlFor="name">
-          {t('name')}
+          {t('name')}{' '}
+          <span className="text-red-500" aria-label="wymagane">
+            *
+          </span>
         </label>
         <input
           id="name"
           name="name"
           required
-          autoComplete="name"
-          data-testid="contact-name"
-          className="w-full border rounded-lg px-3 py-2"
+          autoComplete="given-name"
+          aria-describedby="name-error"
+          aria-invalid={fieldErrors.name ? 'true' : undefined}
+          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           suppressHydrationWarning
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium" htmlFor="email">
-          {t('email')}
+          {t('email')}{' '}
+          <span className="text-red-500" aria-label="wymagane">
+            *
+          </span>
         </label>
         <input
           type="email"
@@ -142,14 +150,19 @@ export default function ContactSection() {
           name="email"
           required
           autoComplete="email"
-          className="w-full border rounded-lg px-3 py-2"
+          aria-describedby="email-error"
+          aria-invalid={fieldErrors.email ? 'true' : undefined}
+          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           suppressHydrationWarning
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium" htmlFor="message">
-          {t('message')}
+          {t('message')}{' '}
+          <span className="text-red-500" aria-label="wymagane">
+            *
+          </span>
         </label>
         <textarea
           id="message"
@@ -157,10 +170,15 @@ export default function ContactSection() {
           rows={5}
           required
           maxLength={5000}
+          aria-describedby="message-error"
+          aria-invalid={fieldErrors.message ? 'true' : undefined}
           data-testid="contact-message"
-          className="w-full border rounded-lg px-3 py-2 resize-none"
+          className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           suppressHydrationWarning
         />
+        <p id="message-char-count" className="text-xs text-gray-500 mt-1" aria-live="polite">
+          Maksymalnie 5000 znaków
+        </p>
       </div>
 
       {/* honeypot */}
@@ -174,23 +192,52 @@ export default function ContactSection() {
         suppressHydrationWarning
       />
 
-      <div className="flex justify-center">
+      <div className="flex justify-center" role="group" aria-labelledby="submit-section">
+        <span id="submit-section" className="sr-only">
+          Akcje formularza
+        </span>
         <button
           type="submit"
           data-testid="contact-submit"
           disabled={status === 'sending'}
-          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border"
+          aria-describedby={status === 'sending' ? 'submit-description' : undefined}
+          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {status === 'sending' ? t('sending') : t('send')}
         </button>
       </div>
 
-      {status === 'error' && <p className="text-sm text-red-600">{err}</p>}
-      {status === 'sent' && (
-        <p data-testid="contact-success" className="text-sm text-green-700" aria-live="polite">
-          {t('success')}
+      {status === 'sending' && (
+        <p
+          id="submit-description"
+          className="text-sm text-gray-600 text-center"
+          aria-live="assertive"
+        >
+          Wysyłanie wiadomości...
         </p>
       )}
+
+      {/* Status announcements */}
+      <div aria-live="polite" aria-atomic="true" role="status">
+        {status === 'error' && (
+          <div role="alert" aria-describedby="error-description" className="text-center">
+            <p id="error-description" className="text-sm text-red-600">
+              {err}
+            </p>
+          </div>
+        )}
+        {status === 'sent' && (
+          <div role="alert" aria-describedby="success-description" className="text-center">
+            <p
+              id="success-description"
+              data-testid="contact-success"
+              className="text-sm text-green-700"
+            >
+              {t('success')}
+            </p>
+          </div>
+        )}
+      </div>
     </form>
   );
 }

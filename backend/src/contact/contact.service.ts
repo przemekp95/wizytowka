@@ -2,12 +2,20 @@ import { Injectable, Logger } from '@nestjs/common';
 import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 import { PrismaService } from '../prisma/prisma.service';
 
+/**
+ * Options for configuring retry logic with exponential backoff
+ */
 interface RetryOptions {
   maxRetries: number;
   baseDelay: number;
   maxDelay: number;
 }
 
+/**
+ * Converts various value types to boolean
+ * @param v - Value to convert
+ * @returns Boolean representation of the input value
+ */
 function toBool(v: unknown): boolean {
   if (typeof v === 'boolean') return v;
   if (typeof v === 'number') return v === 1;
@@ -27,12 +35,28 @@ export type CreateContactInput = {
   hcaptchaToken?: string;
 };
 
+/**
+ * Service responsible for handling contact form submissions,
+ * email notifications, and database persistence.
+ *
+ * Features:
+ * - SMTP email sending with retry logic
+ * - Database persistence with graceful degradation
+ * - Request tracking and logging
+ */
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
+  /**
+   * @param prisma - Database service for data persistence
+   */
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * SMTP transporter configured with environment variables.
+   * Uses connection pooling and rate limiting for optimal delivery.
+   */
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   private transporter: Transporter = nodemailer.createTransport(
     {
@@ -58,6 +82,15 @@ export class ContactService {
     },
   );
 
+  /**
+   * Executes an operation with exponential backoff retry logic
+   * @template T - Return type of the operation
+   * @param operation - Async function to retry on failure
+   * @param options - Retry configuration options
+   * @param requestId - Optional request identifier for logging
+   * @returns Promise resolving to the operation result
+   * @throws Last error encountered if all retries are exhausted
+   */
   private async retryWithBackoff<T>(
     operation: () => Promise<T>,
     options: RetryOptions,
@@ -101,6 +134,12 @@ export class ContactService {
     throw lastError!;
   }
 
+  /**
+   * Sends an email notification with contact form data using SMTP
+   * @param params - Contact form input data
+   * @returns Promise resolving to object containing messageId
+   * @throws Error if SMTP configuration is missing or sending fails
+   */
   async sendMail(params: CreateContactInput): Promise<{ messageId: string }> {
     const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
     const to = process.env.SMTP_TO || process.env.SMTP_USER || '';
@@ -163,6 +202,14 @@ export class ContactService {
     return result;
   }
 
+  /**
+   * Saves contact message to database and sends email notification.
+   * Uses graceful degradation - if database save fails, email is still sent.
+   * If email fails, the message may still be saved in database.
+   *
+   * @param params - Contact form input data including hCaptcha token
+   * @returns Promise resolving to operation result with IDs and status
+   */
   async createAndNotify(params: CreateContactInput): Promise<{
     ok: true;
     messageId?: string;
