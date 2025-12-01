@@ -7,6 +7,7 @@ import ContactForm from '@/app/_components/ContactForm';
 import { SkillProgress } from '@/components/SkillProgress';
 import { TechStackChart } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
+import { ThreeBackground } from '@/components/ThreeBackground';
 import { calculateDynamicSkills, calculateDynamicTechStack } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
@@ -79,12 +80,13 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
   return (
     <>
+      <ThreeBackground />
       <Header />
 
-      <main className="pt-14 bg-white text-slate-900">
+      <main className="pt-14 bg-transparent text-slate-900">
         <section
           id="home"
-          className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white"
+          className="relative overflow-hidden bg-transparent"
         >
           <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-2xl bg-indigo-200/60 blur-xl" />
           <div className="absolute -top-8 -right-8 h-28 w-28 rounded-2xl bg-fuchsia-200/60 blur-xl" />
@@ -111,13 +113,13 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               <div className="mt-8 flex flex-wrap items-center gap-3 fade-up-delayed2">
                 <a
                   href="#portfolio"
-                  className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                  className="inline-flex items-center px-6 py-3 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                 >
                   {t('hero.viewProjects')}
                 </a>
                 <a
                   href="#contact"
-                  className="btn btn-ghost border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                  className="inline-flex items-center px-6 py-3 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                 >
                   {t('hero.contactMe')}
                 </a>
@@ -126,7 +128,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="portfolio" className="py-20 md:py-28">
+        <section id="portfolio" className="py-20 md:py-28 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">
               {t('portfolio.title')}
@@ -203,7 +205,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="about" className="bg-slate-50">
+        <section id="about" className="bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
             <div className="lg:col-span-2 flex justify-center">
               <Image
@@ -246,7 +248,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="skills" className="py-20 md:py-28 bg-white">
+        <section id="skills" className="py-20 md:py-28 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
               {locale === 'en' ? 'Skills & Expertise' : 'Umiejętności i kompetencje'}
@@ -273,7 +275,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="contact" className="py-24 bg-gradient-to-b from-white to-slate-50">
+        <section id="contact" className="py-24 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">
               {t('contact.title')}

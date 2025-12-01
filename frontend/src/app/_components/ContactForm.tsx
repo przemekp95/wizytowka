@@ -132,7 +132,7 @@ export default function ContactSection() {
           autoComplete="given-name"
           aria-describedby="name-error"
           aria-invalid={fieldErrors.name ? 'true' : undefined}
-          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning
         />
       </div>
@@ -152,7 +152,7 @@ export default function ContactSection() {
           autoComplete="email"
           aria-describedby="email-error"
           aria-invalid={fieldErrors.email ? 'true' : undefined}
-          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning
         />
       </div>
@@ -173,7 +173,7 @@ export default function ContactSection() {
           aria-describedby="message-error"
           aria-invalid={fieldErrors.message ? 'true' : undefined}
           data-testid="contact-message"
-          className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           suppressHydrationWarning
         />
         <p id="message-char-count" className="text-xs text-gray-500 mt-1" aria-live="polite">
@@ -201,7 +201,7 @@ export default function ContactSection() {
           data-testid="contact-submit"
           disabled={status === 'sending'}
           aria-describedby={status === 'sending' ? 'submit-description' : undefined}
-          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
         >
           {status === 'sending' ? t('sending') : t('send')}
         </button>
