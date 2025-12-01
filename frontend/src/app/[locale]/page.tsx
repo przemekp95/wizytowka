@@ -319,7 +319,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   {locale === 'en' ? 'Top Technology Skills' : 'Główne umiejętności technologiczne'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {dynamicSkills.slice(0, 6).map((skill) => (
+                  {dynamicSkills.slice(0, 12).map((skill) => (
                     <div key={skill.id} className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border border-slate-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-slate-800 truncate">{skill.name}</span>

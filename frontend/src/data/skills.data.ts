@@ -232,9 +232,9 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     return techStackData; // fallback do statycznych danych
   }
 
-  // Użyj tych samych umiejętności co skill bars (pierwsze 6 posortowane po level)
+  // Użyj tych samych umiejętności co skill bars (pierwsze 12 posortowane po level)
   const dynamicSkills = calculateDynamicSkills(portfolio);
-  const skillBarSkills = dynamicSkills.slice(0, 6); // dokładnie te same co w skill bars
+  const skillBarSkills = dynamicSkills.slice(0, 12); // dokładnie te same co w skill bars
 
   if (skillBarSkills.length === 0) {
     return techStackData;
@@ -253,14 +253,21 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
       'rgba(16, 185, 129, 0.8)',   // emerald (green)
       'rgba(245, 158, 11, 0.8)',   // amber (yellow)
       'rgba(244, 63, 94, 0.8)',    // rose (pink)
+      'rgba(236, 72, 153, 0.8)',   // pink
+      'rgba(34, 197, 94, 0.8)',    // green
+      'rgba(251, 191, 36, 0.8)',   // yellow
+      'rgba(168, 85, 247, 0.8)',   // violet
+      'rgba(59, 130, 246, 0.8)',   // blue
+      'rgba(239, 68, 68, 0.8)',    // red
     ];
+    const color = colors[index % colors.length];
 
     return {
       id: skill.id,
       namePl: skill.name,
       nameEn: skill.name,
       percentage,
-      color: colors[index] || 'rgba(156, 163, 175, 0.8)', // gray fallback
+      color,
     };
   }).sort((a, b) => b.percentage - a.percentage);
 };
