@@ -98,7 +98,8 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
 
   // Toggle category visibility on legend click
   const handleLegendClick = (event: any, legendItem: any) => {
-    const category = visibleCategories[legendItem.index];
+    const allCategories = dataSource || [];
+    const category = allCategories[legendItem.index];
     if (!category) return;
 
     setVisibleCategoryIds(prev =>
@@ -106,6 +107,23 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
         ? prev.filter(id => id !== category.id) // Hide category
         : [...prev, category.id] // Show category
     );
+  };
+
+  // Generate legend labels with check mark for visible/hidden state
+  const generateLegendLabels = (chart: any) => {
+    return dataSource.map((category, index) => {
+      const isVisible = visibleCategoryIds.includes(category.id);
+      const marker = isVisible ? '⬜' : '⬛'; // White square for visible, black square for hidden
+      const label = isEnglish ? category.nameEn : category.namePl;
+
+      return {
+        text: `${marker} ${label}`,
+        fillStyle: isVisible ? category.color : 'rgba(128, 128, 128, 0.5)',
+        strokeStyle: isVisible ? category.color : 'rgba(128, 128, 128, 0.5)',
+        hidden: false, // Always show all categories in legend
+        index,
+      };
+    });
   };
 
   const data = {
@@ -129,11 +147,12 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
         position: 'bottom' as const,
         labels: {
           padding: 20,
-          usePointStyle: true,
+          usePointStyle: false, // Disable default point style, use our squares
           font: {
             size: 12,
             weight: 500,
           },
+          generateLabels: generateLegendLabels,
         },
         onClick: handleLegendClick,
       },
