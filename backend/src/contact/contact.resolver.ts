@@ -3,6 +3,7 @@ import { ContactResult } from './dto/contact-result.type';
 import { ContactMessageInput } from './dto/contact-message.input';
 import { ContactService } from './contact.service';
 import { Throttle } from '@nestjs/throttler';
+import { checkBotId } from 'botid/server';
 import type { Request } from 'express';
 
 @Resolver()
@@ -16,6 +17,14 @@ export class ContactResolver {
     @Context('req') req: Request,
   ): Promise<ContactResult> {
     try {
+      // Check if the request is from a bot
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const verification = await checkBotId();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (verification.isBot) {
+        return { ok: false, error: 'Bot detected. Access denied.' };
+      }
+
       const ip =
         (req.headers['x-forwarded-for'] as string | undefined)
           ?.split(',')[0]
