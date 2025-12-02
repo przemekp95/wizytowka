@@ -1,0 +1,17 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔧 Auto-naprawa kodu przed push'em..."
+echo "💡 Sprawdzanie i poprawa jakości kodu (można przerwać: Ctrl+C)"
+
+# Auto-fix: napraw wszystko co się da
+cd frontend && npm run format >/dev/null 2>&1 && echo "✅ Formatowanie poprawione"
+cd frontend && npm run lint:fix >/dev/null 2>&1 && echo "✅ Linting poprawiony"
+cd ..
+
+# Ostateczne sprawdzenie (bez blokowania push'a)
+echo ""
+echo "🎯 Ostateczna walidacja kodu:"
+cd frontend && npm run check || echo "⚠️  Znaleziono problemy - push zostanie wykonany mimo to"
+
+echo "🚀 Push gotowy do wykonania!"

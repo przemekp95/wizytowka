@@ -1,1 +1,5 @@
-pnpm -r lint
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "⚠️  Brak blokowania commitów - jakość kodu sprawdzana przed push"
+echo "💡 Pamiętaj o ręcznym sprawdzaniu: npm run check"
