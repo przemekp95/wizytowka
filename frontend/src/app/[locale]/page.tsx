@@ -123,6 +123,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') displayName = 'Mobile';
         else if (normalizedCategory === 'landing') displayName = 'Landing';
         else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') displayName = 'Tools';
+        else if (normalizedCategory === 'ai') displayName = 'AI';
       } else {
         if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') displayName = 'WEB';
         else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') displayName = 'E-COMMERCE';
@@ -130,6 +131,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') displayName = 'MOBILE';
         else if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') displayName = 'LANDING';
         else if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') displayName = 'TOOLS';
+        else if (normalizedCategory === 'ai') displayName = 'AI';
       }
 
       if (displayName) {
