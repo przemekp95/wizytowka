@@ -76,21 +76,9 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   console.log(`📅 Last 12 months: ${projectsLast12Months.length} projects`);
   console.log(`📅 Previous 12 months: ${projectsPrevious12Months.length} projects`);
 
-  // Sprawdź czy mamy wystarczającą ilość danych do sensownych porównań
-  const totalDataPoints = projectsLast12Months.length + projectsPrevious12Months.length;
-  const hasEnoughDataForTrends = totalDataPoints >= 6; // min 6 projektów total dla sensownych trendów
-
-  if (projectsLast12Months.length === 0 || !hasEnoughDataForTrends) {
-    console.log('📊 Not enough data for meaningful trend analysis, using fallback');
-    return [
-      {
-        id: 'trend-fallback',
-        name: 'Brak wystarczających danych',
-        yearOverYearChange: 0,
-        category: 'frontEnd' as const,
-        isTrend: 'stable' as const,
-      },
-    ];
+  // Proste rozwiązanie - gdy dane są niewiarygodne, ukrywa sekcję trendów całkowicie
+  if (projectsLast12Months.length === 0 || projectsPrevious12Months.length === 0) {
+    return [];
   }
 
   // Funkcja do zliczania technologii w projektach
