@@ -299,6 +299,9 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     // Debug kategorii projektach - sprawdź jakie kategorie są używane
     console.log('📂 Project categories analysis - project:', project.title, 'categories:', categoryParts);
 
+    // Jeśli projekt ma wiele kategorii, podziel jego wkład między nimi proporcjonalnie
+    const numberOfCategories = categoryParts.length;
+
     categoryParts.forEach((category) => {
       // Mapowanie polskich nazw na angielskie identyfikatory
       const categoryMapping: Record<string, keyof typeof categories> = {
@@ -328,7 +331,8 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       };
 
       const targetCategory = categoryMapping[category] || 'other';
-      categories[targetCategory].count++;
+      // Dodaj pełny wkład projektu (1.0) do każdej przynależnej kategorii - procenty mogą rozwijnąć 100%
+      categories[targetCategory].count += 1.0;
 
       // Debugowanie mapowania kategorii
       if (categoryParts.includes('mobile') || categoryParts.includes('mobilne') || categoryString.includes('mobile-apps')) {
@@ -754,10 +758,12 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     return techStackData; // fallback do statycznych danych
   }
 
-  // Use same time window as trends: last 6 months for current usage
-  const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
+  // Use same time window as trends: last 12 months vs previous 12 months for accurate comparison
+  const now = new Date();
+  const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000); // ~12 miesięcy temu
+
   const recentProjects = portfolio.filter(
-    (p) => p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
+    (p) => p.dateFrom && new Date(p.dateFrom) >= twelveMonthsAgo
   );
 
   if (recentProjects.length === 0) {
