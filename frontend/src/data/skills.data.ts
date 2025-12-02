@@ -310,10 +310,8 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     // Debug kategorii projektach - sprawdź jakie kategorie są używane
     console.log('📂 Project categories analysis - project:', project.title, 'categories:', categoryParts);
 
-  // Jeśli projekt ma wiele kategorii, podziel jego wkład między nimi proporcjonalnie
-  const numberOfCategories = categoryParts.length;
-
-  console.log(`🎯 Project "${project.title}" contributes to ${numberOfCategories} categories`);
+    // Raw count: każdy projekt dodaje +1 do KAŻDEJ swojej kategorii (bez dzielenia)
+    console.log(`🎯 Project "${project.title}" adds +1 to each of ${categoryParts.length} categories`);
 
     categoryParts.forEach((category) => {
       // Mapowanie polskich nazw na angielskie identyfikatory
@@ -339,13 +337,14 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
         'mobile-apps': 'mobile-apps',
         'mobile apps': 'mobile-apps',
         mob: 'mobile-apps',
+        ai: 'ai',
         other: 'other',
         inne: 'other',
       };
 
       const targetCategory = categoryMapping[category] || 'other';
-      // Podziel wkład projektu proporcjonalnie między wszystkie kategorie tego projektu
-      categories[targetCategory].count += 1.0 / numberOfCategories;
+      // Raw count: +1 dla KAŻDEJ kategorii (nie dziel przez liczbę kategorii)
+      categories[targetCategory].count += 1;
 
       // Debugowanie mapowania kategorii
       if (categoryParts.includes('mobile') || categoryParts.includes('mobilne') || categoryString.includes('mobile-apps')) {
@@ -356,8 +355,10 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
 
 
-  // Oblicz procenty na podstawie całkowitej liczby projektów
-  const totalProjects = portfolio.length;
+  // Oblicz procenty na podstawie sumy wszystkich wystąpisk kategorii (raw counts)
+  const totalCategoryMentions = Object.values(categories).reduce((sum, cat) => sum + cat.count, 0);
+
+  console.log(`📊 Total category mentions: ${totalCategoryMentions} (from ${portfolio.length} projects)`);
 
   // Normalizuj procenty aby zawsze sumowały się do 100%
   const categoryPercentages = Object.entries(categories)
@@ -365,8 +366,9 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       id: key,
       namePl: data.namePl,
       nameEn: data.nameEn,
-      percentage: (data.count / totalProjects) * 100, // nicht zaokrąglone jeszcze
-      rawPercentage: (data.count / totalProjects) * 100,
+      percentage: (data.count / totalCategoryMentions) * 100, // procent bazuje na wystąpiskach wszystkich kategorii
+      rawPercentage: (data.count / totalCategoryMentions) * 100,
+      rawCount: data.count, // zachowaj ilość wystąpisks dla debugowania
       color: data.color,
       descriptionPl: data.descriptionPl,
       descriptionEn: data.descriptionEn,
