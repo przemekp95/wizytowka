@@ -343,7 +343,8 @@ export const techStackData: TechStack[] = [
 // Dynamic mapowanie technologii z tłumaczeń About Me sekcji
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   try {
-    // Czytamy tłumaczeń polskiego (source of truth)
+    // Czytamy tłumaczeń polskiego (source of truth) - używamy require w runtime
+    const plMessages = require('../i18n/messages/pl.json').default || require('../i18n/messages/pl.json');
 
     // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
     const categoryMapping: Record<string, Skill['category']> = {
