@@ -40,14 +40,14 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
         id: 'trend1',
         name: 'React/Next.js',
         yearOverYearChange: 15,
-        category: 'frontend' as const,
+        category: 'frontEnd' as const,
         isTrend: 'rising' as const,
       },
       {
         id: 'trend2',
         name: 'Node.js',
         yearOverYearChange: 8,
-        category: 'backend' as const,
+        category: 'backEnd' as const,
         isTrend: 'stable' as const,
       }
     ];
@@ -297,7 +297,8 @@ export const techStackData: TechStack[] = [
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   try {
     // Czytamy tłumaczeń polskiego (source of truth)
-    import plMessages from '../i18n/messages/pl.json';
+    const plMessages = require('../i18n/messages/pl.json').default ||
+                       require('../i18n/messages/pl.json');
 
     // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
     const categoryMapping: Record<string, Skill['category']> = {
