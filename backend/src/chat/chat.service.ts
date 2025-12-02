@@ -13,9 +13,15 @@ export class ChatService {
     new Map();
 
   constructor(private readonly portfolioService: PortfolioService) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    try {
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      this.logger.log('OpenAI client initialized successfully');
+    } catch (error) {
+      this.logger.error('Failed to initialize OpenAI client:', error);
+      throw new Error('Invalid OPENAI_API_KEY configuration');
+    }
   }
 
   async sendMessage(
