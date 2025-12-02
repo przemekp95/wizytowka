@@ -80,10 +80,10 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.8 }}
-          className={`text-sm font-semibold ${changeValue >= 0 ? 'text-green-600' : 'text-red-600'}`}
+          className={`text-sm font-semibold ${trend.yearOverYearChange >= 0 ? 'text-green-600' : 'text-red-600'}`}
         >
-          {changeValue >= 0 ? '+' : ''}
-          {changeValue}%
+          {trend.yearOverYearChange >= 0 ? '+' : ''}
+          {Math.round(trend.yearOverYearChange)}%
         </motion.span>
       </div>
       <Progress.Root
