@@ -340,41 +340,74 @@ export const techStackData: TechStack[] = [
   },
 ];
 
-// Dynamic mapowanie technologii z tłumaczeń About Me sekcji
+// Statyczna mapa technologii na kategorie - hardcoded dla bezpieczeństwa produkcyjnego
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
-  try {
-    // Czytamy tłumaczeń polskiego (source of truth) - używamy require w runtime
-    const plMessages = require('../i18n/messages/pl.json').default || require('../i18n/messages/pl.json');
+  // Zakodowane mapowanie na podstawie tłumaczeń pl.json dla reliability
+  const techMap: Record<string, Skill['category']> = {
+    // Frontend
+    'Next.js': 'frontEnd',
+    'Nextjs': 'frontEnd',
+    'React': 'frontEnd',
+    'TypeScript': 'frontEnd',
+    'JavaScript': 'frontEnd',
+    'Tailwind CSS': 'frontEnd',
+    'TailwindCSS': 'frontEnd',
+    'SCSS': 'frontEnd',
+    'CSS': 'frontEnd',
+    'HTML': 'frontEnd',
+    'Three.js': 'frontEnd',
+    'GSAP': 'frontEnd',
+    'Framer Motion': 'frontEnd',
 
-    // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
-    const categoryMapping: Record<string, Skill['category']> = {
-      frontend: 'frontEnd',
-      backend: 'backEnd',
-      databases: 'database',
-      devops: 'devops',
-    };
+    // Backend
+    'Node.js': 'backEnd',
+    'NestJS': 'backEnd',
+    'Express': 'backEnd',
+    'PHP': 'backEnd',
+    'Laravel': 'backEnd',
+    'Django': 'backEnd',
+    'Spring Boot': 'backEnd',
+    'ASP.NET': 'backEnd',
+    '.NET': 'backEnd',
+    'Ruby': 'backEnd',
+    'Ruby on Rails': 'backEnd',
+    'Python': 'backEnd',
+    'Java': 'backEnd',
+    'Kotlin': 'backEnd',
+    'Scala': 'backEnd',
 
-    const result: Record<string, Skill['category']> = {};
+    // Databases
+    'MySQL': 'database',
+    'PostgreSQL': 'database',
+    'MongoDB': 'database',
+    'Redis': 'database',
+    'SQLite': 'database',
+    'Firebase': 'database',
+    'Supabase': 'database',
+    'Prisma': 'database',
+    'Drizzle': 'database',
+    'TypeORM': 'database',
+    'Sequelize': 'database',
+    'Mongoose': 'database',
+    'NoSQL': 'database',
+    'SQL': 'database',
 
-    // Dla każdej kategorii, wyciągnij technologie z tłumaczeń
-    Object.entries(categoryMapping).forEach(([translationKey, categoryType]) => {
-      const techStackText = plMessages.about?.[translationKey];
-      if (techStackText) {
-        // Rozbij text na technologie: "Next.js / React / ... TypeScript"
-        const technologies = parseTechStackString(techStackText);
+    // DevOps
+    'Docker': 'devops',
+    'Kubernetes': 'devops',
+    'AWS': 'devops',
+    'Google Cloud': 'devops',
+    'Azure': 'devops',
+    'Vercel': 'devops',
+    'Render': 'devops',
+    'Heroku': 'devops',
+    'GitLab': 'devops',
+    'GitHub': 'devops',
+    'CI/CD': 'devops',
+    'Jenkins': 'devops',
+  };
 
-        // Każda technologia -> kategoria
-        technologies.forEach((tech) => {
-          result[tech] = categoryType;
-        });
-      }
-    });
-
-    return result;
-  } catch (error) {
-    console.warn('Could not load i18n for dynamic categorization, using empty map');
-    return {};
-  }
+  return techMap;
 };
 
 // Lookup table dla standardowych nazw technologii (zachowaj oryginalną kapitalizację)
