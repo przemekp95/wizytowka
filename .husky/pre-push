@@ -4,8 +4,9 @@
 echo "🛡️ Sprawdzanie jakości kodu przed push..."
 echo "🔍 Sprawdzam ESLint..."
 
-# Run linting (ignore all exit codes - just informational)
-pnpm -r lint >/dev/null 2>&1 || true
+# Run linting and capture output for display
+pnpm -r lint 2>&1 || true
 
-echo "⚠️ Sprawdzania kodu zakończone (ostrzeżenia są tolerowane)"
+echo ""
+echo "⚠️ Sprawdzania kodu zakończone (ostrzeżenia pozwalają na push)"
 echo "💡 Push jest dozwolony - kontynuuję..."
