@@ -55,7 +55,8 @@ export function SkillProgress({ trend, monthsLabel = 'mies.', locale = 'pl' }: S
   React.useEffect(() => {
     const timer = setTimeout(() => {
       // Use absolute value for progress visualization, but show actual change
-      setProgress(Math.abs(changeValue));
+      // Clamp progress to 0-100 range since Progress component has max=100
+      setProgress(Math.min(100, Math.max(0, Math.abs(changeValue))));
     }, 300);
     return () => clearTimeout(timer);
   }, [changeValue]);
