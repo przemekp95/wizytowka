@@ -83,7 +83,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
   // Jeśli mamy mniej niż minimalną liczbę projektów, pokaż podstawowe statystyki ale bez ekstremalnych procentów
   const totalProjectsForTrends = projectsLast12Months.length + projectsPrevious12Months.length;
-  const hasLimitedData = totalProjectsForTrends < 4;
+  const _hasLimitedData = totalProjectsForTrends < 4;
 
   // Funkcja do zliczania technologii w projektach
   const countTechInProjects = (projects: PortfolioItem[]): Record<string, number> => {
