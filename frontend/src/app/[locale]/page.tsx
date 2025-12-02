@@ -387,7 +387,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   {techTrends
                     .filter(trend => trend.category === 'frontEnd' || trend.category === 'backEnd')
                     .map((trend) => (
-                      <SkillProgress key={trend.id} trend={trend} />
+                      <SkillProgress key={trend.id} trend={trend} locale={locale as 'pl' | 'en'} />
                     ))}
                 </div>
               </div>
