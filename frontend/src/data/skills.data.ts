@@ -422,6 +422,12 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
     GitHub: 'devops',
     'CI/CD': 'devops',
     Jenkins: 'devops',
+    // Testing frameworks - treating as DevOps/infrastructure
+    Jest: 'devops',
+    Cypress: 'devops',
+    Playwright: 'devops',
+    'Testing Library': 'devops',
+    Vitest: 'devops',
   };
 
   return techMap;
@@ -708,49 +714,87 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     return techStackData; // fallback do statycznych danych
   }
 
-  // Użyj tych samych umiejętności co skill bars (pierwsze 6 posortowane po level)
-  const dynamicSkills = calculateDynamicSkills(portfolio);
-  const skillBarSkills = dynamicSkills.slice(0, 6); // dokładnie te same co w skill bars
+  // Filter out MDX and collect project counts for each technology
+  const techCounts: Record<string, number> = {};
+  let totalProjects = portfolio.length;
 
-  if (skillBarSkills.length === 0) {
-    return techStackData;
-  }
+  portfolio.forEach((project) => {
+    project.tags.forEach((tag) => {
+      // Skip MDX technology
+      if (tag.toLowerCase().includes('mdx')) {
+        return; // skip this tag
+      }
 
-  // Sumuj wszystkie miesiące doświadczenia dla proporcjonalnego podziału
-  const totalExperienceMonths = skillBarSkills.reduce(
-    (sum, skill) => sum + (skill.experienceMonths || 0),
-    0
-  );
+      // Normalize tag names for counting
+      const normalizedTag =
+        Object.keys(techToCategoryMap).find(
+          (tech) =>
+            tech.toLowerCase() === tag.toLowerCase() ||
+            tag.toLowerCase().includes(tech.toLowerCase())
+        ) || tag;
 
-  // Stwórz dane wykresu na podstawie miesięcy doświadczenia (tych samych technologii)
-  return skillBarSkills
-    .map((skill, index) => {
-      const percentage = Math.round(((skill.experienceMonths || 0) / totalExperienceMonths) * 100);
+      techCounts[normalizedTag] = (techCounts[normalizedTag] || 0) + 1;
+    });
+  });
+
+  // Convert to chart data - top 6 most used technologies by project count
+  const chartData = Object.entries(techCounts)
+    .map(([techName, projectCount], index) => {
+      // Filter to only frontend and backend technologies for display
+      const category = techToCategoryMap[techName] || 'frontEnd';
+      const shouldShow = category === 'frontEnd' || category === 'backEnd';
+
+      if (!shouldShow) return null;
+
+      const percentage = Math.round((projectCount / totalProjects) * 100);
       const colors = [
-        'rgba(99, 102, 241, 0.8)', // indigo (blue)
-        'rgba(139, 92, 246, 0.8)', // purple
-        'rgba(6, 182, 212, 0.8)', // cyan
-        'rgba(16, 185, 129, 0.8)', // emerald (green)
-        'rgba(245, 158, 11, 0.8)', // amber (yellow)
-        'rgba(244, 63, 94, 0.8)', // rose (pink)
-        'rgba(236, 72, 153, 0.8)', // pink
-        'rgba(34, 197, 94, 0.8)', // green
-        'rgba(251, 191, 36, 0.8)', // yellow
-        'rgba(168, 85, 247, 0.8)', // violet
-        'rgba(59, 130, 246, 0.8)', // blue
-        'rgba(239, 68, 68, 0.8)', // red
+        'rgba(99, 102, 241, 0.8)', // indigo (blue) - Frontend
+        'rgba(139, 92, 246, 0.8)', // purple - Backend
+        'rgba(6, 182, 212, 0.8)', // cyan - Frontend
+        'rgba(16, 185, 129, 0.8)', // emerald - Backend
+        'rgba(245, 158, 11, 0.8)', // amber (yellow) - Frontend
+        'rgba(244, 63, 94, 0.8)', // rose (pink) - Backend
       ];
       const color = colors[index % colors.length];
 
       return {
-        id: skill.id,
-        namePl: skill.name,
-        nameEn: skill.name,
+        id: techName.toLowerCase().replace(/\s+/g, '-'),
+        namePl: techName,
+        nameEn: techName,
         percentage,
         color,
       };
     })
-    .sort((a, b) => b.percentage - a.percentage);
+    .filter(Boolean) as Array<{
+      id: string;
+      namePl: string;
+      nameEn: string;
+      percentage: number;
+      color: string;
+    }>;
+
+  // Sort by percentage (most used first) and take top 6
+  const sortedData = chartData
+    .sort((a, b) => b.percentage - a.percentage)
+    .slice(0, 6);
+
+  // Recalculate percentages to maintain total of ~100% for the top 6
+  if (sortedData.length > 0) {
+    const totalProjectsInTop6 = sortedData.reduce((sum, tech) => {
+      const originalCount = techCounts[tech.namePl];
+      return sum + originalCount;
+    }, 0);
+
+    sortedData.forEach(tech => {
+      const originalCount = techCounts[tech.namePl];
+      tech.percentage = Math.round((originalCount / totalProjectsInTop6) * 100);
+    });
+
+    // Re-sort after percentage recalculation
+    sortedData.sort((a, b) => b.percentage - a.percentage);
+  }
+
+  return sortedData.length > 0 ? sortedData : techStackData;
 };
 
 // Funkcja do formatowania czasu doświadczenia z tłumaczeniami
