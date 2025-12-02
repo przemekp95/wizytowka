@@ -69,9 +69,15 @@ importers:
       '@types/compression':
         specifier: ^1.8.1
         version: 1.8.1
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.3
       '@types/multer':
         specifier: ^2.0.0
         version: 2.0.0
+      '@types/node':
+        specifier: ^22.18.6
+        version: 22.18.6
       '@types/uuid':
         specifier: ^11.0.0
         version: 11.0.0
@@ -151,15 +157,9 @@ importers:
       '@swc/jest':
         specifier: ^0.2.39
         version: 0.2.39(@swc/core@1.15.3)
-      '@types/express':
-        specifier: ^5.0.0
-        version: 5.0.3
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
-      '@types/node':
-        specifier: ^22.18.6
-        version: 22.18.6
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
