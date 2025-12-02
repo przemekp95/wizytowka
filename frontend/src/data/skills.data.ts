@@ -27,7 +27,7 @@ type PortfolioItem = {
   tags: string[];
   img: string;
   isLogo?: boolean;
-  newTech?: boolean;
+  category?: string;
   repoUrl?: string | null;
   dateFrom?: Date;
   dateTo?: Date;
@@ -59,31 +59,29 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
   console.log('📊 Calculating dynamic tech trends from portfolio data');
 
-  // Grupuj technologie po latach
-  const techByYear: Record<number, Record<string, number>> = {};
+  // Użyj ostatnich 12 miesięcy: porównaj ostatnie 6 miesięcy vs poprzednie 6 miesięcy
   const now = new Date();
+  const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
+  const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000); // ~12 miesięcy temu
 
-  portfolio.forEach((project) => {
-    if (!project.dateFrom) return;
+  const projectsLast6Months = portfolio.filter(p =>
+    p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
+  );
 
-    const year = new Date(project.dateFrom).getFullYear();
-    if (!techByYear[year]) {
-      techByYear[year] = {};
-    }
+  const projectsPrevious6Months = portfolio.filter(p =>
+    p.dateFrom &&
+    new Date(p.dateFrom) >= twelveMonthsAgo &&
+    new Date(p.dateFrom) < sixMonthsAgo
+  );
 
-    project.tags.forEach((tag) => {
-      techByYear[year][tag] = (techByYear[year][tag] || 0) + 1;
-    });
-  });
+  console.log(`📅 Last 6 months: ${projectsLast6Months.length} projects`);
+  console.log(`📅 Previous 6 months: ${projectsPrevious6Months.length} projects`);
 
-  const years = Object.keys(techByYear).map(Number).sort();
-
-  if (years.length < 2) {
+  if (projectsLast6Months.length === 0) {
     return [
       {
         id: 'trend-fallback',
-        name:
-          years.length > 0 ? Object.keys(techByYear[years[0]])[0] || 'Technologie' : 'Technologie',
+        name: 'Brak danych trendów',
         yearOverYearChange: 0,
         category: 'frontEnd' as const,
         isTrend: 'stable' as const,
@@ -91,11 +89,26 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     ];
   }
 
-  // Oblicz trendy dla głównych technologii
-  const allTechs = new Set<string>();
-  years.forEach((year) => {
-    Object.keys(techByYear[year]).forEach((tech) => allTechs.add(tech));
-  });
+  // Funkcja do zliczania technologii w projektach
+  const countTechInProjects = (projects: PortfolioItem[]): Record<string, number> => {
+    const techCounts: Record<string, number> = {};
+    projects.forEach((project) => {
+      project.tags.forEach((tag) => {
+        techCounts[tag] = (techCounts[tag] || 0) + 1;
+      });
+    });
+    return techCounts;
+  };
+
+  // Zlicz technologie w obu okresach
+  const last6MonthsTech = countTechInProjects(projectsLast6Months);
+  const previous6MonthsTech = countTechInProjects(projectsPrevious6Months);
+
+  // Wszystkie technologie używane w ostatnim okresie
+  const allTechs = new Set([
+    ...Object.keys(last6MonthsTech),
+    ...Object.keys(previous6MonthsTech)
+  ]);
 
   const trends: Array<{
     id: string;
@@ -106,17 +119,14 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   }> = [];
 
   Array.from(allTechs).forEach((tech, index) => {
-    const currentYear = Math.max(...years);
-    const previousYear = currentYear - 1;
-
-    const currentCount = techByYear[currentYear]?.[tech] || 0;
-    const previousCount = techByYear[previousYear]?.[tech] || 0;
+    const currentCount = last6MonthsTech[tech] || 0;
+    const previousCount = previous6MonthsTech[tech] || 0;
 
     let change = 0;
     if (previousCount > 0) {
       change = Math.round(((currentCount - previousCount) / previousCount) * 100);
     } else if (currentCount > 0) {
-      change = 100; // nowa technologia
+      change = 100; // nowa technologia w ostatnim okresie
     }
 
     // Określ kategorię na podstawie nazwy technologii
@@ -145,7 +155,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     else if (change <= -10) isTrend = 'falling';
 
     trends.push({
-      id: `<TUTORIAL>${tech.toLowerCase().replace(/\s+/g, '-')}-${index}</TUTORIAL>`,
+      id: `${tech.toLowerCase().replace(/\s+/g, '-')}-${index}`,
       name: tech,
       yearOverYearChange: change,
       category,
@@ -203,7 +213,7 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     ];
   }
 
-  // Kategoryzacja projektów na podstawie tagów i tytułów
+  // Kategoryzacja projektów na podstawie pola category z bazy danych
   const categories: Record<
     string,
     {
@@ -222,6 +232,14 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       nameEn: 'Web Applications',
       descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
       descriptionEn: 'Full-featured web applications',
+    },
+    'ecommerce': {
+      count: 0,
+      color: 'rgba(34, 197, 94, 0.8)', // green
+      namePl: 'E-commerce',
+      nameEn: 'E-commerce',
+      descriptionPl: 'Sklepy internetowe i rozwiązania sprzedażowe',
+      descriptionEn: 'E-commerce stores and sales solutions',
     },
     api: {
       count: 0,
@@ -258,43 +276,33 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   };
 
   portfolio.forEach((project) => {
-    const titleLower = project.title.toLowerCase();
-    const tagStrings = project.tags.join(' ').toLowerCase();
+    // Użyj bezpośrednio pola category z bazy danych
+    const category = project.category?.toLowerCase() || 'other';
 
-    // Kategoryzacja na podstawie tagów i tytułów
-    if (
-      tagStrings.includes('api') ||
-      tagStrings.includes('rest') ||
-      tagStrings.includes('graphql') ||
-      tagStrings.includes('backend')
-    ) {
-      categories['api'].count++;
-    } else if (
-      tagStrings.includes('landing') ||
-      titleLower.includes('portfolio') ||
-      titleLower.includes('wizytówka')
-    ) {
-      categories['landing'].count++;
-    } else if (
-      tagStrings.includes('tool') ||
-      tagStrings.includes('cms') ||
-      tagStrings.includes('admin') ||
-      tagStrings.includes('narzędzie')
-    ) {
-      categories['tools'].count++;
-    } else if (
-      tagStrings.includes('next') ||
-      tagStrings.includes('react') ||
-      tagStrings.includes('vue') ||
-      tagStrings.includes('angular') ||
-      tagStrings.includes('wordpress') ||
-      tagStrings.includes('woocommerce') ||
-      titleLower.includes('shop')
-    ) {
-      categories['web-app'].count++;
-    } else {
-      categories['other'].count++;
-    }
+    // Mapowanie polskich nazw na angielskie identyfikatory
+    const categoryMapping: Record<string, keyof typeof categories> = {
+      'web-app': 'web-app',
+      'webapp': 'web-app',
+      'web': 'web-app',  // dla polskiego "web"
+      'ecommerce': 'ecommerce',
+      'e-commerce': 'ecommerce',
+      'ekomercyjny': 'ecommerce',
+      'sklep': 'ecommerce',
+      'api': 'api',
+      'services': 'api',
+      'usługi': 'api',
+      'tools': 'tools',
+      'narzędzia': 'tools',
+      'utilities': 'tools',
+      'landing': 'landing',
+      'portfolio': 'landing',
+      'wizytówka': 'landing',
+      'other': 'other',
+      'inne': 'other',
+    };
+
+    const targetCategory = categoryMapping[category] || 'other';
+    categories[targetCategory].count++;
   });
 
   // Oblicz procenty na podstawie całkowitej liczby projektów
