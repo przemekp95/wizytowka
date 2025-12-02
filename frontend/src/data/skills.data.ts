@@ -381,7 +381,7 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   const remainder = 100 - roundedSum;
 
   // Rozdaj pozostałe procenty do największych kategorii
-  let remainderToDistribute = remainder;
+  const remainderToDistribute = remainder;
   categoryPercentages
     .sort((a, b) => (b.percentage % 1) - (a.percentage % 1)) // sortuj wg części dziesiętnych malejąco
     .forEach((cat, index) => {
