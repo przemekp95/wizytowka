@@ -59,24 +59,24 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
   console.log('📊 Calculating dynamic tech trends from portfolio data');
 
-  // Użyj ostatnich 12 miesięcy: porównaj ostatnie 6 miesięcy vs poprzednie 6 miesięcy
+  // Użyj bardziej granularnych okresów: porównaj ostatnie 3 miesiące vs wcześniejsze 3 miesiące
   const now = new Date();
+  const threeMonthsAgo = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000); // ~3 miesiące temu
   const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
-  const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000); // ~12 miesięcy temu
 
-  const projectsLast6Months = portfolio.filter(
-    (p) => p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
+  const projectsLast3Months = portfolio.filter(
+    (p) => p.dateFrom && new Date(p.dateFrom) >= threeMonthsAgo
   );
 
-  const projectsPrevious6Months = portfolio.filter(
+  const projectsPrevious3Months = portfolio.filter(
     (p) =>
-      p.dateFrom && new Date(p.dateFrom) >= twelveMonthsAgo && new Date(p.dateFrom) < sixMonthsAgo
+      p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo && new Date(p.dateFrom) < threeMonthsAgo
   );
 
-  console.log(`📅 Last 6 months: ${projectsLast6Months.length} projects`);
-  console.log(`📅 Previous 6 months: ${projectsPrevious6Months.length} projects`);
+  console.log(`📅 Last 3 months: ${projectsLast3Months.length} projects`);
+  console.log(`📅 Previous 3 months: ${projectsPrevious3Months.length} projects`);
 
-  if (projectsLast6Months.length === 0) {
+  if (projectsLast3Months.length === 0) {
     return [
       {
         id: 'trend-fallback',
@@ -104,11 +104,11 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   };
 
   // Zlicz technologie w obu okresach
-  const last6MonthsTech = countTechInProjects(projectsLast6Months);
-  const previous6MonthsTech = countTechInProjects(projectsPrevious6Months);
+  const last3MonthsTech = countTechInProjects(projectsLast3Months);
+  const previous3MonthsTech = countTechInProjects(projectsPrevious3Months);
 
   // Wszystkie technologie używane w ostatnim okresie
-  const allTechs = new Set([...Object.keys(last6MonthsTech), ...Object.keys(previous6MonthsTech)]);
+  const allTechs = new Set([...Object.keys(last3MonthsTech), ...Object.keys(previous3MonthsTech)]);
 
   const trends: Array<{
     id: string;
@@ -119,8 +119,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   }> = [];
 
   Array.from(allTechs).forEach((tech, index) => {
-    const currentCount = last6MonthsTech[tech] || 0;
-    const previousCount = previous6MonthsTech[tech] || 0;
+    const currentCount = last3MonthsTech[tech] || 0;
+    const previousCount = previous3MonthsTech[tech] || 0;
 
     let change = 0;
     if (previousCount > 0) {
@@ -408,12 +408,13 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
     GitHub: 'devops',
     'CI/CD': 'devops',
     Jenkins: 'devops',
-    // Testing frameworks - treating as DevOps/infrastructure
+    // Testing frameworks and security tools - treating as DevOps/infrastructure
     Jest: 'devops',
     Cypress: 'devops',
     Playwright: 'devops',
     'Testing Library': 'devops',
     Vitest: 'devops',
+    Trivy: 'devops',
   };
 
   return techMap;
