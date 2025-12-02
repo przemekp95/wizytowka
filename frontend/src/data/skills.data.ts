@@ -135,6 +135,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     let isTrend: 'rising' | 'falling' | 'stable' = 'stable';
     if (change >= 10) isTrend = 'rising';
     else if (change <= -10) isTrend = 'falling';
+    // 0% change (bez zmian) też może być pokazane jako stable
 
     trends.push({
       id: `${tech.toLowerCase().replace(/\s+/g, '-')}-${index}`,
@@ -148,10 +149,30 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   // Filtruj tylko technologie frontEnd i backEnd
   const filteredTrends = trends.filter(trend => trend.category === 'frontEnd' || trend.category === 'backEnd');
 
-  // Limit to top 8 trends, sortuj po bezwzględnej wartości zmiany (największe trendy na górze)
-  return filteredTrends
-    .sort((a, b) => Math.abs(b.yearOverYearChange) - Math.abs(a.yearOverYearChange))
-    .slice(0, 8);
+  // Nowa polityka sortowania: wzrosty + spadki na końcu
+  const risingTrends = filteredTrends.filter(trend => trend.yearOverYearChange >= 0);
+  const fallingTrends = filteredTrends.filter(trend => trend.yearOverYearChange < 0);
+
+  // Sortuj wzrosty po wartości malejąco (od największych)
+  risingTrends.sort((a, b) => b.yearOverYearChange - a.yearOverYearChange);
+
+  // Sortuj spadki po absolutnej wartości malejąco (od największych spadków)
+  fallingTrends.sort((a, b) => Math.abs(b.yearOverYearChange) - Math.abs(a.yearOverYearChange));
+
+  // Weź maksymalnie 8 pozycji: wzrosty + max 2 spadki (o ile występują)
+  const maxRisingCount = 8 - Math.min(2, fallingTrends.length); // pozostałość po spadkach
+  const selectedRising = risingTrends.slice(0, maxRisingCount);
+  const selectedFalling = fallingTrends.slice(0, 2); // maksymalnie 2 spadki
+
+  // Debugowanie Dockerfile - sprawdź dlaczego może się pojawiać
+  const dockerfileTrend = filteredTrends.find(trend =>
+    trend.name.toLowerCase().includes('dockerfile') || trend.name.toLowerCase().includes('docker')
+  );
+  if (dockerfileTrend) {
+    console.log('🐳 ❌ Dockerfile trend still showing:', dockerfileTrend.name, 'category:', dockerfileTrend.category, 'change:', dockerfileTrend.yearOverYearChange);
+  }
+
+  return [...selectedRising, ...selectedFalling].slice(0, 8); // ostatecznie max 8 pozycji
 };
 
 // Rozkład kategorii projektów
