@@ -3,6 +3,7 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from 'chart.js';
 import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
+import { useState, useMemo } from 'react';
 import { techStackData, type TechStack } from '@/data/skills.data';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -68,13 +69,52 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
     },
   ];
 
+  // State for managing which categories are visible (interactive chart filtering)
+  const [visibleCategoryIds, setVisibleCategoryIds] = useState<string[]>(() =>
+    dataSource.map(cat => cat.id) // Start with all categories visible
+  );
+
+  // Filter visible categories and renormalize their percentages to sum to 100%
+  const visibleCategories = useMemo(() => {
+    const filtered = dataSource.filter(cat => visibleCategoryIds.includes(cat.id));
+    if (filtered.length === 0) return dataSource; // Fallback if no categories visible
+
+    // Calculate new percentages for visible categories (sum to 100%)
+    const totalVisiblePercentage = filtered.reduce((sum, cat) => sum + cat.percentage, 0);
+    const renormalized = filtered.map(cat => ({
+      ...cat,
+      percentage: Math.round((cat.percentage / totalVisiblePercentage) * 100)
+    }));
+
+    // Fix rounding errors to ensure sum equals 100%
+    const sum = renormalized.reduce((acc, cat) => acc + cat.percentage, 0);
+    const diff = 100 - sum;
+    if (diff !== 0 && renormalized.length > 0) {
+      renormalized[0].percentage += diff; // Add/subtract difference to first category
+    }
+
+    return renormalized;
+  }, [dataSource, visibleCategoryIds]);
+
+  // Toggle category visibility on legend click
+  const handleLegendClick = (event: any, legendItem: any) => {
+    const category = visibleCategories[legendItem.index];
+    if (!category) return;
+
+    setVisibleCategoryIds(prev =>
+      prev.includes(category.id)
+        ? prev.filter(id => id !== category.id) // Hide category
+        : [...prev, category.id] // Show category
+    );
+  };
+
   const data = {
-    labels: dataSource.map((item) => (isEnglish ? item.nameEn : item.namePl)),
+    labels: visibleCategories.map((item) => (isEnglish ? item.nameEn : item.namePl)),
     datasets: [
       {
-        data: dataSource.map((item) => item.percentage),
-        backgroundColor: dataSource.map((item) => item.color),
-        borderColor: dataSource.map((item) => item.color.replace('0.8)', '1)')),
+        data: visibleCategories.map((item) => item.percentage),
+        backgroundColor: visibleCategories.map((item) => item.color),
+        borderColor: visibleCategories.map((item) => item.color.replace('0.8)', '1)')),
         borderWidth: 2,
         hoverOffset: 12,
       },
@@ -95,6 +135,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
             weight: 500,
           },
         },
+        onClick: handleLegendClick,
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
