@@ -12,6 +12,12 @@ W bazie danych MongoDB projekty portfela powinny mieć pole `category` z następ
 "web-app", "webapp", "web"
 ```
 
+### **Aplikacje mobilne** (Mobile Apps) - zielony (rgba(34, 197, 94, 0.8))
+
+```
+"mobile-apps", "mobile", "mobilne", "mobile apps", "mob"
+```
+
 ### **E-commerce** - zielony (rgba(34, 197, 94, 0.8))
 
 ```
@@ -44,6 +50,8 @@ W bazie danych MongoDB projekty portfela powinny mieć pole `category` z następ
 
 ## Przykład dokumentu w MongoDB
 
+### Prosty przykład (jedna kategoria):
+
 ```javascript
 {
   "_id": "ObjectId(...)",
@@ -56,6 +64,32 @@ W bazie danych MongoDB projekty portfela powinny mieć pole `category` z następ
   "dateFrom": "2024-01-15",
   // ... inne pola ...
 }
+```
+
+### Przykład z wieloma kategoriami (rozdzielonymi przecinkami):
+
+```javascript
+{
+  "_id": "ObjectId(...)",
+  "title": "PWA dla supermarketu",
+  "desc": "Aplikacja mobilna i webowa dla klienta B2B",
+  "tags": ["React", "Next.js", "PWA", "TypeScript"],
+  "img": "/portfolio/pwa-shop.jpg",
+  "href": "https://shop.pwa.example.com",
+  "category": "web-app, mobile-apps",  // ← wiele kategorii po przecinku!
+  "dateFrom": "2024-02-20",
+  "dateTo": "2024-06-15",
+  // ... inne pola ...
+}
+```
+
+### Inne przykłady słów kluczowych dla kategorii:
+
+```javascript
+"category": "landing"                    // → Landing singiel
+"category": "tools, landing"            // → Narzędzia + Landing
+"category": "web-app, ecommerce"        // → Webowe + E-commerce
+"category": "mobile-apps, web-app"      // → Mobilne + Webowe
 ```
 
 ## Funkcje i ich działanie
