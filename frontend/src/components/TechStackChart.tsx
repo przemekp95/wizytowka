@@ -1,10 +1,10 @@
 'use client';
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions, ChartEvent, LegendItem, LegendElement } from 'chart.js';
 import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
 import { useState, useMemo } from 'react';
-import { techStackData, type TechStack } from '@/data/skills.data';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -97,11 +97,12 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   }, [dataSource, visibleCategoryIds]);
 
   // Toggle category visibility on legend click
-  const handleLegendClick = (event: any, legendItem: any) => {
+  const handleLegendClick = (e: ChartEvent, legendItem: LegendItem, legend: LegendElement<'pie'>) => {
     const allCategories = dataSource || [];
-    const category = allCategories[legendItem.index];
-    if (!category) return;
+    const index = legendItem.index;
+    if (typeof index !== 'number' || !allCategories[index]) return;
 
+    const category = allCategories[index];
     setVisibleCategoryIds(prev =>
       prev.includes(category.id)
         ? prev.filter(id => id !== category.id) // Hide category
