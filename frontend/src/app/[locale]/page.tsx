@@ -84,9 +84,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     '@type': 'Person',
     name: 'Przemysław Pietrzak',
     jobTitle: locale === 'en' ? 'Full Stack Web Developer' : 'Full Stack Web Developer',
-    description: locale === 'en'
-      ? 'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.'
-      : 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+    description:
+      locale === 'en'
+        ? 'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.'
+        : 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
     knowsAbout: [
       'Next.js',
       'React',
@@ -99,36 +100,36 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
       'REST API',
       'GraphQL',
       'Docker',
-      'Kubernetes'
+      'Kubernetes',
     ],
     hasOccupation: {
       '@type': 'Occupation',
       name: 'Full Stack Developer',
-      occupationalCategory: 'Software Development'
+      occupationalCategory: 'Software Development',
     },
     sameAs: [
       'https://github.com/przemekp95',
       'https://www.linkedin.com/in/przempietrzak/',
-      'https://przemyslawpietrzak.pl'
+      'https://przemyslawpietrzak.pl',
     ],
     nationality: {
       '@type': 'Country',
-      name: 'Poland'
+      name: 'Poland',
     },
     knowsLanguage: [
       {
         '@type': 'Language',
         name: 'Polish',
-        alternateName: 'pl'
+        alternateName: 'pl',
       },
       {
         '@type': 'Language',
         name: 'English',
-        alternateName: 'en'
-      }
+        alternateName: 'en',
+      },
     ],
     url: `https://przemyslawpietrzak.pl/${locale}`,
-    image: 'https://przemyslawpietrzak.pl/images/ja.jpeg'
+    image: 'https://przemyslawpietrzak.pl/images/ja.jpeg',
   };
 
   return (
@@ -137,17 +138,14 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         id="structured-data"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd)
+          __html: JSON.stringify(jsonLd),
         }}
       />
       <ThreeBackground />
       <Header />
 
       <main className="pt-14 bg-transparent text-slate-900">
-        <section
-          id="home"
-          className="relative overflow-hidden bg-transparent"
-        >
+        <section id="home" className="relative overflow-hidden bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
@@ -330,7 +328,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                 <h3 className="text-xl font-semibold text-slate-700 mb-6">
                   {locale === 'en' ? 'Portfolio Categories' : 'Kategorie projektów'}
                 </h3>
-                <TechStackChart locale={locale as 'pl' | 'en'} portfolioCategories={portfolioCategories} />
+                <TechStackChart
+                  locale={locale as 'pl' | 'en'}
+                  portfolioCategories={portfolioCategories}
+                />
               </div>
             </div>
           </div>

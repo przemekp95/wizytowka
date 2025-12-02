@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  ChartOptions,
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from 'chart.js';
 import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
 import { techStackData, type TechStack } from '@/data/skills.data';
@@ -71,12 +65,12 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   ];
 
   const data = {
-    labels: dataSource.map(item => isEnglish ? item.nameEn : item.namePl),
+    labels: dataSource.map((item) => (isEnglish ? item.nameEn : item.namePl)),
     datasets: [
       {
-        data: dataSource.map(item => item.percentage),
-        backgroundColor: dataSource.map(item => item.color),
-        borderColor: dataSource.map(item => item.color.replace('0.8)', '1)')),
+        data: dataSource.map((item) => item.percentage),
+        backgroundColor: dataSource.map((item) => item.color),
+        borderColor: dataSource.map((item) => item.color.replace('0.8)', '1)')),
         borderWidth: 2,
         hoverOffset: 12,
       },
@@ -154,7 +148,11 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
           <Pie
             data={data}
             options={options}
-            aria-label={isEnglish ? 'Technology Stack Distribution Chart' : 'Wykres rozkładu kompetencji technologicznych'}
+            aria-label={
+              isEnglish
+                ? 'Technology Stack Distribution Chart'
+                : 'Wykres rozkładu kompetencji technologicznych'
+            }
           />
         </div>
 
@@ -166,8 +164,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
         >
           {isEnglish
             ? 'Hover over segments for details'
-            : 'Najedź kursorem na segmenty dla szczegółów'
-          }
+            : 'Najedź kursorem na segmenty dla szczegółów'}
         </motion.div>
       </div>
     </motion.div>

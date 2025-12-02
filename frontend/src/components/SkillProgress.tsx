@@ -77,9 +77,7 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-700">
-            {trend.name}
-          </span>
+          <span className="text-sm font-medium text-slate-700">{trend.name}</span>
           <span className={`text-sm font-semibold ${trendIndicator.color}`}>
             {trendIndicator.symbol}
           </span>
@@ -90,7 +88,8 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
           transition={{ duration: 0.3, delay: 0.8 }}
           className={`text-sm font-semibold ${changeValue >= 0 ? 'text-green-600' : 'text-red-600'}`}
         >
-          {changeValue >= 0 ? '+' : ''}{changeValue}%
+          {changeValue >= 0 ? '+' : ''}
+          {changeValue}%
         </motion.span>
       </div>
       <Progress.Root

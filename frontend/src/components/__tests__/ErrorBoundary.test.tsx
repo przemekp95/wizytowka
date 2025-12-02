@@ -57,7 +57,7 @@ describe('ErrorBoundary', () => {
       expect(spy).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
-          componentStack: expect.any(String)
+          componentStack: expect.any(String),
         })
       );
     });
@@ -83,7 +83,7 @@ describe('ErrorBoundary', () => {
         'ErrorBoundary caught an error:',
         expect.any(Error),
         expect.objectContaining({
-          componentStack: expect.any(String)
+          componentStack: expect.any(String),
         })
       );
     });
@@ -123,7 +123,7 @@ describe('ErrorBoundary', () => {
       // Mock window.location.reload
       Object.defineProperty(window, 'location', {
         value: { reload: vi.fn() },
-        writable: true
+        writable: true,
       });
     });
 
@@ -135,7 +135,9 @@ describe('ErrorBoundary', () => {
       );
 
       expect(screen.getByText('Error Occurred')).toBeInTheDocument();
-      expect(screen.getByText('We apologize for the inconvenience. Please try refreshing the page.')).toBeInTheDocument();
+      expect(
+        screen.getByText('We apologize for the inconvenience. Please try refreshing the page.')
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /refresh page/i })).toBeInTheDocument();
     });
 
@@ -182,7 +184,7 @@ describe('ErrorBoundary', () => {
       expect(onErrorMock).toHaveBeenCalledWith(
         expect.any(Error),
         expect.objectContaining({
-          componentStack: expect.any(String)
+          componentStack: expect.any(String),
         })
       );
     });
@@ -202,8 +204,6 @@ describe('ErrorBoundary', () => {
       expect(callArgs[1]).toHaveProperty('componentStack');
     });
   });
-
-
 });
 
 describe('withErrorBoundary HOC', () => {

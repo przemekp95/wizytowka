@@ -1,4 +1,7 @@
 // Typy
+import plMessages from '../i18n/messages/pl.json';
+import enMessages from '../i18n/messages/en.json';
+
 export interface Skill {
   id: string;
   name: string;
@@ -49,7 +52,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
         yearOverYearChange: 8,
         category: 'backEnd' as const,
         isTrend: 'stable' as const,
-      }
+      },
     ];
   }
 
@@ -73,19 +76,22 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   const years = Object.keys(techByYear).map(Number).sort();
 
   if (years.length < 2) {
-    return [{
-      id: 'trend-fallback',
-      name: years.length > 0 ? Object.keys(techByYear[years[0]])[0] || 'Technologie' : 'Technologie',
-      yearOverYearChange: 0,
-      category: 'frontEnd' as const,
-      isTrend: 'stable' as const,
-    }];
+    return [
+      {
+        id: 'trend-fallback',
+        name:
+          years.length > 0 ? Object.keys(techByYear[years[0]])[0] || 'Technologie' : 'Technologie',
+        yearOverYearChange: 0,
+        category: 'frontEnd' as const,
+        isTrend: 'stable' as const,
+      },
+    ];
   }
 
   // Oblicz trendy dla głównych technologii
   const allTechs = new Set<string>();
-  years.forEach(year => {
-    Object.keys(techByYear[year]).forEach(tech => allTechs.add(tech));
+  years.forEach((year) => {
+    Object.keys(techByYear[year]).forEach((tech) => allTechs.add(tech));
   });
 
   const trends: Array<{
@@ -113,11 +119,21 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     // Określ kategorię na podstawie nazwy technologii
     let category: Skill['category'] = 'frontEnd';
     const lowerTech = tech.toLowerCase();
-    if (['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite'].some(db => lowerTech.includes(db))) {
+    if (
+      ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite'].some((db) => lowerTech.includes(db))
+    ) {
       category = 'database';
-    } else if (['docker', 'kubernetes', 'aws', 'vercel', 'github', 'ci/cd', 'jenkins'].some(devops => lowerTech.includes(devops))) {
+    } else if (
+      ['docker', 'kubernetes', 'aws', 'vercel', 'github', 'ci/cd', 'jenkins'].some((devops) =>
+        lowerTech.includes(devops)
+      )
+    ) {
       category = 'devops';
-    } else if (['node.js', 'nestjs', 'php', 'laravel', 'django', 'spring', 'express', 'api'].some(be => lowerTech.includes(be))) {
+    } else if (
+      ['node.js', 'nestjs', 'php', 'laravel', 'django', 'spring', 'express', 'api'].some((be) =>
+        lowerTech.includes(be)
+      )
+    ) {
       category = 'backEnd';
     }
 
@@ -182,47 +198,57 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   }
 
   // Kategoryzacja projektów na podstawie tagów i tytułów
-  const categories: Record<string, { count: number; color: string; namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }> = {
+  const categories: Record<
+    string,
+    {
+      count: number;
+      color: string;
+      namePl: string;
+      nameEn: string;
+      descriptionPl: string;
+      descriptionEn: string;
+    }
+  > = {
     'web-app': {
       count: 0,
       color: 'rgba(99, 102, 241, 0.8)',
       namePl: 'Aplikacje webowe',
       nameEn: 'Web Applications',
       descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
-      descriptionEn: 'Full-featured web applications'
+      descriptionEn: 'Full-featured web applications',
     },
-    'api': {
+    api: {
       count: 0,
       color: 'rgba(139, 92, 246, 0.8)',
       namePl: 'API i usługi',
       nameEn: 'APIs & Services',
       descriptionPl: 'Backend i usługi webowe',
-      descriptionEn: 'Backend services and APIs'
+      descriptionEn: 'Backend services and APIs',
     },
-    'tools': {
+    tools: {
       count: 0,
       color: 'rgba(6, 182, 212, 0.8)',
       namePl: 'Narzędzia',
       nameEn: 'Tools & Utilities',
       descriptionPl: 'Narzędzia i aplikacje pomocnicze',
-      descriptionEn: 'Helper tools and utilities'
+      descriptionEn: 'Helper tools and utilities',
     },
-    'landing': {
+    landing: {
       count: 0,
       color: 'rgba(16, 185, 129, 0.8)',
       namePl: 'Landing page',
       nameEn: 'Landing Pages',
       descriptionPl: 'Strony wizytówki i prezentacji',
-      descriptionEn: 'Presentation and landing pages'
+      descriptionEn: 'Presentation and landing pages',
     },
-    'other': {
+    other: {
       count: 0,
       color: 'rgba(245, 158, 11, 0.8)',
       namePl: 'Inne',
       nameEn: 'Other',
       descriptionPl: 'Pozostałe projekty',
-      descriptionEn: 'Other projects'
-    }
+      descriptionEn: 'Other projects',
+    },
   };
 
   portfolio.forEach((project) => {
@@ -230,14 +256,35 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     const tagStrings = project.tags.join(' ').toLowerCase();
 
     // Kategoryzacja na podstawie tagów i tytułów
-    if (tagStrings.includes('api') || tagStrings.includes('rest') || tagStrings.includes('graphql') || tagStrings.includes('backend')) {
+    if (
+      tagStrings.includes('api') ||
+      tagStrings.includes('rest') ||
+      tagStrings.includes('graphql') ||
+      tagStrings.includes('backend')
+    ) {
       categories['api'].count++;
-    } else if (tagStrings.includes('landing') || titleLower.includes('portfolio') || titleLower.includes('wizytówka')) {
+    } else if (
+      tagStrings.includes('landing') ||
+      titleLower.includes('portfolio') ||
+      titleLower.includes('wizytówka')
+    ) {
       categories['landing'].count++;
-    } else if (tagStrings.includes('tool') || tagStrings.includes('cms') || tagStrings.includes('admin') || tagStrings.includes('narzędzie')) {
+    } else if (
+      tagStrings.includes('tool') ||
+      tagStrings.includes('cms') ||
+      tagStrings.includes('admin') ||
+      tagStrings.includes('narzędzie')
+    ) {
       categories['tools'].count++;
-    } else if (tagStrings.includes('next') || tagStrings.includes('react') || tagStrings.includes('vue') || tagStrings.includes('angular') ||
-               tagStrings.includes('wordpress') || tagStrings.includes('woocommerce') || titleLower.includes('shop')) {
+    } else if (
+      tagStrings.includes('next') ||
+      tagStrings.includes('react') ||
+      tagStrings.includes('vue') ||
+      tagStrings.includes('angular') ||
+      tagStrings.includes('wordpress') ||
+      tagStrings.includes('woocommerce') ||
+      titleLower.includes('shop')
+    ) {
       categories['web-app'].count++;
     } else {
       categories['other'].count++;
@@ -246,15 +293,17 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
   // Oblicz procenty na podstawie całkowitej liczby projektów
   const totalProjects = portfolio.length;
-  return Object.entries(categories).map(([key, data]) => ({
-    id: key,
-    namePl: data.namePl,
-    nameEn: data.nameEn,
-    percentage: Math.round((data.count / totalProjects) * 100),
-    color: data.color,
-    descriptionPl: data.descriptionPl,
-    descriptionEn: data.descriptionEn,
-  })).filter(cat => cat.percentage > 0);
+  return Object.entries(categories)
+    .map(([key, data]) => ({
+      id: key,
+      namePl: data.namePl,
+      nameEn: data.nameEn,
+      percentage: Math.round((data.count / totalProjects) * 100),
+      color: data.color,
+      descriptionPl: data.descriptionPl,
+      descriptionEn: data.descriptionEn,
+    }))
+    .filter((cat) => cat.percentage > 0);
 };
 
 // Stan umiejętności - fallback do pracy jako prezentacja gdy nie ma portfolio
@@ -297,15 +346,13 @@ export const techStackData: TechStack[] = [
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   try {
     // Czytamy tłumaczeń polskiego (source of truth)
-    const plMessages = require('../i18n/messages/pl.json').default ||
-                       require('../i18n/messages/pl.json');
 
     // Mapa kategorii: klucz_tłumaczenia -> typ_kategorii
     const categoryMapping: Record<string, Skill['category']> = {
-      'frontend': 'frontEnd',
-      'backend': 'backEnd',
-      'databases': 'database',
-      'devops': 'devops'
+      frontend: 'frontEnd',
+      backend: 'backEnd',
+      databases: 'database',
+      devops: 'devops',
     };
 
     const result: Record<string, Skill['category']> = {};
@@ -318,7 +365,7 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
         const technologies = parseTechStackString(techStackText);
 
         // Każda technologia -> kategoria
-        technologies.forEach(tech => {
+        technologies.forEach((tech) => {
           result[tech] = categoryType;
         });
       }
@@ -334,114 +381,114 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
 // Lookup table dla standardowych nazw technologii (zachowaj oryginalną kapitalizację)
 const techNameMap: Record<string, string> = {
   // Frontend
-  'javascript': 'JavaScript',
-  'typescript': 'TypeScript',
+  javascript: 'JavaScript',
+  typescript: 'TypeScript',
   'next.js': 'Next.js',
-  'nextjs': 'Next.js',
-  'js': 'JavaScript',
-  'ts': 'TypeScript',
-  'react': 'React',
-  'vue': 'Vue.js',
-  'angular': 'Angular',
-  'svelte': 'Svelte',
-  'jquery': 'jQuery',
-  'tailwind': 'Tailwind CSS',
-  'tailwindcss': 'Tailwind CSS',
-  'bootstrap': 'Bootstrap',
-  'sass': 'SCSS',
-  'scss': 'SCSS',
-  'css': 'CSS',
-  'html': 'HTML',
-  'threejs': 'Three.js',
+  nextjs: 'Next.js',
+  js: 'JavaScript',
+  ts: 'TypeScript',
+  react: 'React',
+  vue: 'Vue.js',
+  angular: 'Angular',
+  svelte: 'Svelte',
+  jquery: 'jQuery',
+  tailwind: 'Tailwind CSS',
+  tailwindcss: 'Tailwind CSS',
+  bootstrap: 'Bootstrap',
+  sass: 'SCSS',
+  scss: 'SCSS',
+  css: 'CSS',
+  html: 'HTML',
+  threejs: 'Three.js',
   'three.js': 'Three.js',
-  'gsap': 'GSAP',
-  'framer': 'Framer Motion',
+  gsap: 'GSAP',
+  framer: 'Framer Motion',
   'framer-motion': 'Framer Motion',
 
   // Backend
-  'php': 'PHP',
+  php: 'PHP',
   'node.js': 'Node.js',
-  'nodejs': 'Node.js',
-  'node': 'Node.js',
-  'nestjs': 'NestJS',
+  nodejs: 'Node.js',
+  node: 'Node.js',
+  nestjs: 'NestJS',
   'nest.js': 'NestJS',
-  'express': 'Express',
-  'laravel': 'Laravel',
-  'symfony': 'Symfony',
-  'django': 'Django',
-  'flask': 'Flask',
-  'spring': 'Spring Boot',
-  'springboot': 'Spring Boot',
+  express: 'Express',
+  laravel: 'Laravel',
+  symfony: 'Symfony',
+  django: 'Django',
+  flask: 'Flask',
+  spring: 'Spring Boot',
+  springboot: 'Spring Boot',
   'asp.net': 'ASP.NET',
-  'dotnet': 'ASP.NET',
+  dotnet: 'ASP.NET',
   '.net': '.NET',
-  'ruby': 'Ruby',
-  'rails': 'Ruby on Rails',
-  'ror': 'Ruby on Rails',
-  'go': 'Go',
-  'golang': 'Go',
-  'python': 'Python',
-  'java': 'Java',
-  'kotlin': 'Kotlin',
-  'scala': 'Scala',
+  ruby: 'Ruby',
+  rails: 'Ruby on Rails',
+  ror: 'Ruby on Rails',
+  go: 'Go',
+  golang: 'Go',
+  python: 'Python',
+  java: 'Java',
+  kotlin: 'Kotlin',
+  scala: 'Scala',
 
   // Databases
-  'mysql': 'MySQL',
-  'postgresql': 'PostgreSQL',
-  'postgres': 'PostgreSQL',
-  'mongodb': 'MongoDB',
-  'redis': 'Redis',
-  'sqlite': 'SQLite',
-  'firebase': 'Firebase',
-  'supabase': 'Supabase',
-  'prisma': 'Prisma',
-  'drizzle': 'Drizzle',
-  'typeorm': 'TypeORM',
-  'sequelize': 'Sequelize',
-  'mongoose': 'Mongoose',
-  'nosql': 'NoSQL',
-  'sql': 'SQL',
+  mysql: 'MySQL',
+  postgresql: 'PostgreSQL',
+  postgres: 'PostgreSQL',
+  mongodb: 'MongoDB',
+  redis: 'Redis',
+  sqlite: 'SQLite',
+  firebase: 'Firebase',
+  supabase: 'Supabase',
+  prisma: 'Prisma',
+  drizzle: 'Drizzle',
+  typeorm: 'TypeORM',
+  sequelize: 'Sequelize',
+  mongoose: 'Mongoose',
+  nosql: 'NoSQL',
+  sql: 'SQL',
 
   // DevOps/Cloud
-  'docker': 'Docker',
-  'kubernetes': 'Kubernetes',
-  'k8s': 'Kubernetes',
-  'aws': 'AWS',
-  'azure': 'Azure',
-  'gcp': 'Google Cloud',
+  docker: 'Docker',
+  kubernetes: 'Kubernetes',
+  k8s: 'Kubernetes',
+  aws: 'AWS',
+  azure: 'Azure',
+  gcp: 'Google Cloud',
   'google cloud': 'Google Cloud',
-  'vercel': 'Vercel',
-  'render': 'Render',
-  'heroku': 'Heroku',
-  'gitlab': 'GitLab',
-  'github': 'GitHub',
+  vercel: 'Vercel',
+  render: 'Render',
+  heroku: 'Heroku',
+  gitlab: 'GitLab',
+  github: 'GitHub',
   'github actions': 'GitHub Actions',
   'ci/cd': 'CI/CD',
-  'cicd': 'CI/CD',
-  'jenkins': 'Jenkins',
-  'webdriver': 'Wetherby Driver',
-  'selenium': 'Selenium',
-  'cypress': 'Cypress',
-  'playwright': 'Playwright',
-  'jest': 'Jest',
-  'vitest': 'Vitest',
+  cicd: 'CI/CD',
+  jenkins: 'Jenkins',
+  webdriver: 'Wetherby Driver',
+  selenium: 'Selenium',
+  cypress: 'Cypress',
+  playwright: 'Playwright',
+  jest: 'Jest',
+  vitest: 'Vitest',
   'testing-library': 'Testing Library',
   'react testing library': 'React Testing Library',
 
   // Other
-  'graphql': 'GraphQL',
-  'rest': 'REST',
-  'websockets': 'WebSockets',
-  'oauth': 'OAuth',
-  'jwt': 'JWT',
-  'wordpress': 'WordPress',
-  'woocommerce': 'WooCommerce',
-  'shopify': 'Shopify',
-  'figma': 'Figma',
-  'sketch': 'Sketch',
+  graphql: 'GraphQL',
+  rest: 'REST',
+  websockets: 'WebSockets',
+  oauth: 'OAuth',
+  jwt: 'JWT',
+  wordpress: 'WordPress',
+  woocommerce: 'WooCommerce',
+  shopify: 'Shopify',
+  figma: 'Figma',
+  sketch: 'Sketch',
   'adobe xd': 'Adobe XD',
-  'photoshop': 'Photoshop',
-  'illustrator': 'Illustrator'
+  photoshop: 'Photoshop',
+  illustrator: 'Illustrator',
 };
 
 // Normalizuj nazwę technologii używając lookup table i automatycznego Title Case jako fallback
@@ -457,9 +504,13 @@ const normalizeTechName = (tech: string): string => {
   // Zamień wszystkie słowa na Title Case, chyba że to specjalne części jak .js, .net, etc.
   const words = tech.trim().split(/\s+/);
 
-  const normalizedWords = words.map(word => {
+  const normalizedWords = words.map((word) => {
     // Obsługa specjalnych przypadków (.js, .net) - zamień tylko przed kropką
-    if (word.includes('.') && word.indexOf('.') === word.lastIndexOf('.') && !word.startsWith('.')) {
+    if (
+      word.includes('.') &&
+      word.indexOf('.') === word.lastIndexOf('.') &&
+      !word.startsWith('.')
+    ) {
       // Dla pojedynczych kropek (Next.js) - zamień tylko przed kropką
       const [prefix, suffix] = word.split('.');
       return prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase() + '.' + suffix;
@@ -477,17 +528,17 @@ const parseTechStackString = (techString: string): string[] => {
   // Podziel po: "/" (slash), "," (przecinek), "(" (nawias otwarty)
   const parts = techString
     .split(/[\(\)]/) // Najpierw usuń content w nawiasach
-    .filter(part => !part.includes('(') && part.trim().length > 0)
+    .filter((part) => !part.includes('(') && part.trim().length > 0)
     .join(' ')
     .split(/[/,]/) // Potem dziel po slash/przecinek
-    .map(tech => tech.trim())
-    .filter(tech => tech.length > 0)
+    .map((tech) => tech.trim())
+    .filter((tech) => tech.length > 0)
 
     // Normalizacja używając lookup table (zachowaj właściwą kapitalizację)
     .map(normalizeTechName)
 
     // Czyść spacje i filtry
-    .filter(tech => tech.length > 1 && !/^\s*$/.test(tech));
+    .filter((tech) => tech.length > 1 && !/^\s*$/.test(tech));
 
   return parts;
 };
@@ -617,49 +668,49 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
   }
 
   // Sumuj wszystkie miesiące doświadczenia dla proporcjonalnego podziału
-  const totalExperienceMonths = skillBarSkills.reduce((sum, skill) => sum + (skill.experienceMonths || 0), 0);
+  const totalExperienceMonths = skillBarSkills.reduce(
+    (sum, skill) => sum + (skill.experienceMonths || 0),
+    0
+  );
 
   // Stwórz dane wykresu na podstawie miesięcy doświadczenia (tych samych technologii)
-  return skillBarSkills.map((skill, index) => {
-    const percentage = Math.round(((skill.experienceMonths || 0) / totalExperienceMonths) * 100);
-    const colors = [
-      'rgba(99, 102, 241, 0.8)',   // indigo (blue)
-      'rgba(139, 92, 246, 0.8)',   // purple
-      'rgba(6, 182, 212, 0.8)',    // cyan
-      'rgba(16, 185, 129, 0.8)',   // emerald (green)
-      'rgba(245, 158, 11, 0.8)',   // amber (yellow)
-      'rgba(244, 63, 94, 0.8)',    // rose (pink)
-      'rgba(236, 72, 153, 0.8)',   // pink
-      'rgba(34, 197, 94, 0.8)',    // green
-      'rgba(251, 191, 36, 0.8)',   // yellow
-      'rgba(168, 85, 247, 0.8)',   // violet
-      'rgba(59, 130, 246, 0.8)',   // blue
-      'rgba(239, 68, 68, 0.8)',    // red
-    ];
-    const color = colors[index % colors.length];
+  return skillBarSkills
+    .map((skill, index) => {
+      const percentage = Math.round(((skill.experienceMonths || 0) / totalExperienceMonths) * 100);
+      const colors = [
+        'rgba(99, 102, 241, 0.8)', // indigo (blue)
+        'rgba(139, 92, 246, 0.8)', // purple
+        'rgba(6, 182, 212, 0.8)', // cyan
+        'rgba(16, 185, 129, 0.8)', // emerald (green)
+        'rgba(245, 158, 11, 0.8)', // amber (yellow)
+        'rgba(244, 63, 94, 0.8)', // rose (pink)
+        'rgba(236, 72, 153, 0.8)', // pink
+        'rgba(34, 197, 94, 0.8)', // green
+        'rgba(251, 191, 36, 0.8)', // yellow
+        'rgba(168, 85, 247, 0.8)', // violet
+        'rgba(59, 130, 246, 0.8)', // blue
+        'rgba(239, 68, 68, 0.8)', // red
+      ];
+      const color = colors[index % colors.length];
 
-    return {
-      id: skill.id,
-      namePl: skill.name,
-      nameEn: skill.name,
-      percentage,
-      color,
-    };
-  }).sort((a, b) => b.percentage - a.percentage);
+      return {
+        id: skill.id,
+        namePl: skill.name,
+        nameEn: skill.name,
+        percentage,
+        color,
+      };
+    })
+    .sort((a, b) => b.percentage - a.percentage);
 };
 
 // Funkcja do formatowania czasu doświadczenia z tłumaczeniami
-export const formatExperienceTime = (
-  totalMonths: number,
-  locale: string = 'pl'
-): string => {
+export const formatExperienceTime = (totalMonths: number, locale: string = 'pl'): string => {
   if (totalMonths <= 0) return locale === 'en' ? '0 months' : '0 mies.';
 
   try {
     // Import tłumaczeń na podstawie aktualnego lokalizacji
-    const messages = locale === 'en'
-      ? require('../i18n/messages/en.json').default || require('../i18n/messages/en.json')
-      : require('../i18n/messages/pl.json').default || require('../i18n/messages/pl.json');
+    const messages = locale === 'en' ? enMessages : plMessages;
 
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
@@ -694,7 +745,6 @@ export const formatExperienceTime = (
       .replace('{years_form}', yearsForm)
       .replace('{months}', months.toString())
       .replace('{months_form}', monthsForm);
-
   } catch (error) {
     // Fallback na angielski jeśli błędy tłumaczeń
     const fallbackYears = Math.floor(totalMonths / 12);

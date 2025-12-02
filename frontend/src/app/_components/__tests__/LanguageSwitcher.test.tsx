@@ -29,8 +29,20 @@ vi.mock('framer-motion', () => ({
 // Mock UI components
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown-content">{children}</div>,
-  DropdownMenuItem: ({ children, onClick, disabled, ...props }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; [key: string]: unknown }) => (
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="dropdown-content">{children}</div>
+  ),
+  DropdownMenuItem: ({
+    children,
+    onClick,
+    disabled,
+    ...props
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    [key: string]: unknown;
+  }) => (
     <div
       onClick={disabled ? undefined : onClick}
       data-testid="dropdown-item"
@@ -45,7 +57,23 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, variant, size, disabled, className, 'aria-label': ariaLabel, ...props }: { children: React.ReactNode; variant?: string; size?: string; disabled?: boolean; className?: string; 'aria-label'?: string; [key: string]: unknown }) => (
+  Button: ({
+    children,
+    variant,
+    size,
+    disabled,
+    className,
+    'aria-label': ariaLabel,
+    ...props
+  }: {
+    children: React.ReactNode;
+    variant?: string;
+    size?: string;
+    disabled?: boolean;
+    className?: string;
+    'aria-label'?: string;
+    [key: string]: unknown;
+  }) => (
     <button
       className={className}
       disabled={disabled}
@@ -73,7 +101,10 @@ describe('LanguageSwitcher', () => {
       mockPathnameValue = '/pl/portfolio';
       render(<LanguageSwitcher />);
 
-      expect(screen.getByTestId('language-button')).toHaveAttribute('aria-label', 'Current language: Polski');
+      expect(screen.getByTestId('language-button')).toHaveAttribute(
+        'aria-label',
+        'Current language: Polski'
+      );
       expect(screen.getByText('🇵🇱')).toBeInTheDocument();
     });
 
@@ -81,7 +112,10 @@ describe('LanguageSwitcher', () => {
       mockPathnameValue = '/en/about';
       render(<LanguageSwitcher />);
 
-      expect(screen.getByTestId('language-button')).toHaveAttribute('aria-label', 'Current language: English');
+      expect(screen.getByTestId('language-button')).toHaveAttribute(
+        'aria-label',
+        'Current language: English'
+      );
       expect(screen.getByText('🇬🇧')).toBeInTheDocument();
     });
 
@@ -89,7 +123,10 @@ describe('LanguageSwitcher', () => {
       mockPathnameValue = '/contact';
       render(<LanguageSwitcher />);
 
-      expect(screen.getByTestId('language-button')).toHaveAttribute('aria-label', 'Current language: English');
+      expect(screen.getByTestId('language-button')).toHaveAttribute(
+        'aria-label',
+        'Current language: English'
+      );
       expect(screen.getByText('🇬🇧')).toBeInTheDocument();
     });
   });
@@ -160,8 +197,6 @@ describe('LanguageSwitcher', () => {
     });
   });
 
-
-
   describe('UI Elements', () => {
     it('should render dropdown menu structure', () => {
       mockPathnameValue = '/en/test';
@@ -194,7 +229,10 @@ describe('LanguageSwitcher', () => {
       mockPathnameValue = '/pl/test';
       render(<LanguageSwitcher />);
 
-      expect(screen.getByTestId('language-button')).toHaveAttribute('aria-label', 'Current language: Polski');
+      expect(screen.getByTestId('language-button')).toHaveAttribute(
+        'aria-label',
+        'Current language: Polski'
+      );
     });
 
     it('should be keyboard navigable', () => {
