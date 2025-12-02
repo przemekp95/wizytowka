@@ -98,9 +98,7 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
           className={`h-full ${changeValue >= 0 ? trendIndicator.bgColor : 'bg-red-500'} rounded-full`}
         />
       </Progress.Root>
-      <div className="text-xs text-slate-500 mt-1">
-        Zmiana rok do roku
-      </div>
+      <div className="text-xs text-slate-500 mt-1">Zmiana rok do roku</div>
     </motion.div>
   );
 }
