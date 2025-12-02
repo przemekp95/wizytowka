@@ -159,8 +159,13 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     });
   });
 
-  // Sortuj po bezwzględnej wartości zmiany (największe trendy na górze)
-  return trends.sort((a, b) => Math.abs(b.yearOverYearChange) - Math.abs(a.yearOverYearChange));
+  // Filtruj tylko technologie frontEnd i backEnd
+  const filteredTrends = trends.filter(trend => trend.category === 'frontEnd' || trend.category === 'backEnd');
+
+  // Limit to top 8 trends, sortuj po bezwzględnej wartości zmiany (największe trendy na górze)
+  return filteredTrends
+    .sort((a, b) => Math.abs(b.yearOverYearChange) - Math.abs(a.yearOverYearChange))
+    .slice(0, 8);
 };
 
 // Rozkład kategorii projektów
