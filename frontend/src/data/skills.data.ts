@@ -76,10 +76,14 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   console.log(`📅 Last 12 months: ${projectsLast12Months.length} projects`);
   console.log(`📅 Previous 12 months: ${projectsPrevious12Months.length} projects`);
 
-  // Proste rozwiązanie - gdy dane są niewiarygodne, ukrywa sekcję trendów całkowicie
-  if (projectsLast12Months.length === 0 || projectsPrevious12Months.length === 0) {
+  // Jeśli nie ma bieżących projektów, nie ma czego pokazać
+  if (projectsLast12Months.length === 0) {
     return [];
   }
+
+  // Jeśli mamy mniej niż minimalną liczbę projektów, pokaż podstawowe statystyki ale bez ekstremalnych procentów
+  const totalProjectsForTrends = projectsLast12Months.length + projectsPrevious12Months.length;
+  const hasLimitedData = totalProjectsForTrends < 4;
 
   // Funkcja do zliczania technologii w projektach
   const countTechInProjects = (projects: PortfolioItem[]): Record<string, number> => {
@@ -119,7 +123,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     if (previousCount > 0) {
       change = Math.round(((currentCount - previousCount) / previousCount) * 100);
     } else if (currentCount > 0) {
-      change = 100; // nowa technologia w ostatnim okresie
+      // Gdy nie mamy danych z poprzedniego okresu, ogranicz procent wzrostu by nie generować absurdalnych wartości
+      change = hasLimitedData ? Math.min(currentCount * 15, 50) : 100; // maks 50% dla ograniczonej ilości danych
     }
 
     // Use centralized category mapping
