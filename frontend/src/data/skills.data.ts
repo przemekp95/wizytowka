@@ -76,6 +76,9 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   console.log(`📅 Last 12 months: ${projectsLast12Months.length} projects`);
   console.log(`📅 Previous 12 months: ${projectsPrevious12Months.length} projects`);
 
+  // Show portfolio distributions for debugging
+  console.log('📊 OTHER CALCULATIONS ONGOING...');
+
   if (projectsLast12Months.length === 0) {
     return [
       {
@@ -333,8 +336,8 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       };
 
       const targetCategory = categoryMapping[category] || 'other';
-      // Dodaj pełny wkład projektu (1.0) do każdej przynależnej kategorii - procenty mogą rozwijnąć 100%
-      categories[targetCategory].count += 1.0;
+      // Podziel wkład projektu proporcjonalnie między wszystkie kategorie tego projektu
+      categories[targetCategory].count += 1.0 / numberOfCategories;
 
       // Debugowanie mapowania kategorii
       if (categoryParts.includes('mobile') || categoryParts.includes('mobilne') || categoryString.includes('mobile-apps')) {
