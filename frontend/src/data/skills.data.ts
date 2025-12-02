@@ -129,7 +129,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
       }
     } else if (currentCount > 0) {
       // Nowe technologie bez historii otrzymują +100% za każdy projekt
-      change = 100;
+      change = currentCount * 100;
     }
 
     // Use centralized category mapping
