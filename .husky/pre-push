@@ -2,11 +2,21 @@
 . "$(dirname "$0")/_/husky.sh"
 
 echo "🛡️ Sprawdzanie jakości kodu przed push..."
-if pnpm check 2>&1; then
-  echo "✅ Wszystkie sprawdzenia przeszły pomyślnie!"
+
+# Run linting and capture both output and exit code
+pnpm -r lint 2>&1
+exit_code=$?
+
+if [ $exit_code -eq 0 ] || [ $exit_code -eq 1 ]; then
+  if [ $exit_code -eq 0 ]; then
+    echo "✅ Wszystkie sprawdzenia przeszły pomyślnie!"
+  else
+    echo "⚠️ Znalezione ostrzeżenia (warnings) ale brak krytycznych błędów"
+    echo "💡 Ostrzeżenia nie blokują push - można pushować z warnings"
+    echo "🔄 Kontynuuję push..."
+  fi
 else
-  echo "⚠️ Znalezione problemy jakości - sprawdź logi powyżej"
-  echo "💡 To mogą być tylko ostrzeżenia (warnings) o nieużywanych zmiennych w testach"
-  echo "🔄 Kontynuuję push mimo problemów... (można zmienić w .husky/pre-push)"
-  # exit 0 # uncomment to block push on quality issues
+  echo "❌ Krytyczne błędy zostały znalezione - blokuję push!"
+  echo "🔍 Proszę naprawić błędy przed wypychaniem zmian."
+  exit 1
 fi

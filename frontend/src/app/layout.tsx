@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     siteName: 'Przemyslaw Pietrzak - Developer Portfolio',
     images: [
       {
-        url: '/images/ja.jpeg',
+        url: 'https://wizytowka.s3.eu-north-1.amazonaws.com/PP-2-JPG-01.webp',
         width: 1200,
         height: 630,
         alt: 'Przemysław Pietrzak - Full Stack Web Developer',
