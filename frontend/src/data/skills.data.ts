@@ -35,7 +35,10 @@ type PortfolioItem = {
 
 // Trendy technologii rok do roku
 export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
+  console.log('⚡ Tech trends calculation: portfolio items =', portfolio.length);
+
   if (!portfolio.length) {
+    console.log('📋 Using hardcoded fallback tech trends');
     return [
       {
         id: 'trend1',
@@ -53,6 +56,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
       },
     ];
   }
+
+  console.log('📊 Calculating dynamic tech trends from portfolio data');
 
   // Grupuj technologie po latach
   const techByYear: Record<number, Record<string, number>> = {};
@@ -154,7 +159,10 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
 // Rozkład kategorii projektów
 export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
+  console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
+
   if (!portfolio.length) {
+    console.log('📋 Using hardcoded fallback portfolio categories');
     return [
       {
         id: 'web-app',
