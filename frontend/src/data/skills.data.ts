@@ -702,7 +702,7 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
 
   // Filter out MDX and collect project counts for each technology
   const techCounts: Record<string, number> = {};
-  let totalProjects = portfolio.length;
+  const totalProjects = portfolio.length;
 
   portfolio.forEach((project) => {
     project.tags.forEach((tag) => {
