@@ -15,6 +15,7 @@ export interface PortfolioCategory {
   color: string;
   descriptionPl: string;
   descriptionEn: string;
+  newCategory?: boolean;
 }
 
 interface TechStackChartProps {
@@ -155,11 +156,22 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1 }}
-          className="text-center text-xs text-slate-500 mt-4"
+          className="text-center text-xs text-slate-500 mt-4 space-y-2"
         >
-          {isEnglish
-            ? 'Hover over segments for details'
-            : 'Najedź kursorem na segmenty dla szczegółów'}
+          {dataSource.some(cat => cat.newCategory) && (
+            <div className="text-yellow-400 flex justify-center items-center gap-1">
+              <span>★</span>
+              <span className="text-xs">
+                {isEnglish ? 'New categories highlighted' : 'Nowe kategorie wyróżnione'}
+              </span>
+              <span>★</span>
+            </div>
+          )}
+          <div>
+            {isEnglish
+              ? 'Hover over segments for details'
+              : 'Najedź kursorem na segmenty dla szczegółów'}
+          </div>
         </motion.div>
       </div>
     </motion.div>
