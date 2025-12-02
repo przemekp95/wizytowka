@@ -126,7 +126,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
       } else {
         if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') displayName = 'WEB';
         else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') displayName = 'E-COMMERCE';
-        else if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') displayName = 'API';
+        else if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') displayName = 'SERVICES';
         else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') displayName = 'MOBILE';
         else if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') displayName = 'LANDING';
         else if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') displayName = 'TOOLS';
