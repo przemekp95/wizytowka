@@ -340,22 +340,15 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   // Oblicz procenty na podstawie całkowitej liczby projektów
   const totalProjects = portfolio.length;
   return Object.entries(categories)
-    .map(([key, data]) => {
-      // Oznacz nowe kategorie (dodane niedawno)
-      const newCategories = ['ecommerce', 'mobile-apps'];
-      const newCategory = newCategories.includes(key);
-
-      return {
-        id: key,
-        namePl: data.namePl,
-        nameEn: data.nameEn,
-        percentage: Math.round((data.count / totalProjects) * 100),
-        color: data.color,
-        descriptionPl: data.descriptionPl,
-        descriptionEn: data.descriptionEn,
-        newCategory,
-      };
-    })
+    .map(([key, data]) => ({
+      id: key,
+      namePl: data.namePl,
+      nameEn: data.nameEn,
+      percentage: Math.round((data.count / totalProjects) * 100),
+      color: data.color,
+      descriptionPl: data.descriptionPl,
+      descriptionEn: data.descriptionEn,
+    }))
     .filter((cat) => cat.percentage > 0);
 };
 
