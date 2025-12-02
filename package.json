@@ -7,6 +7,7 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "start": "pnpm -r start",
+    "start:prod": "pnpm -F backend run start:prod",
     "lint": "pnpm -r lint",
     "check": "pnpm -r lint && echo '✅ Wszystkie sprawdzenia pomyślne!'",
 
