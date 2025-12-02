@@ -108,27 +108,37 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
     if (!category) return null;
 
-    // Dla wielu kategorii oddzielonych przecinkami, bierzemy pierwszą
-    const firstCategory = category.split(',')[0].toLowerCase().trim();
-    const normalizedCategory = firstCategory;
+    // Dla wielu kategorii oddzielonych przecinkami, przetwaramy każdą
+    const categories = category.split(',').map(cat => cat.trim().toLowerCase()).filter(cat => cat.length > 0);
 
-    if (locale === 'en') {
-      if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') return 'Web App';
-      if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce') return 'E-commerce';
-      if (normalizedCategory === 'api') return 'API';
-      if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') return 'Mobile';
-      if (normalizedCategory === 'landing') return 'Landing';
-      if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') return 'Tools';
-      return null;
-    } else {
-      if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') return 'WEB';
-      if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') return 'E-COMMERCE';
-      if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') return 'API';
-      if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') return 'MOBILE';
-      if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') return 'LANDING';
-      if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') return 'TOOLS';
-      return null;
+    const mappedCategories: string[] = [];
+
+    for (const normalizedCategory of categories) {
+      let displayName: string | null = null;
+
+      if (locale === 'en') {
+        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') displayName = 'Web App';
+        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce') displayName = 'E-commerce';
+        else if (normalizedCategory === 'api') displayName = 'API';
+        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') displayName = 'Mobile';
+        else if (normalizedCategory === 'landing') displayName = 'Landing';
+        else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') displayName = 'Tools';
+      } else {
+        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') displayName = 'WEB';
+        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') displayName = 'E-COMMERCE';
+        else if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') displayName = 'API';
+        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') displayName = 'MOBILE';
+        else if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') displayName = 'LANDING';
+        else if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') displayName = 'TOOLS';
+      }
+
+      if (displayName) {
+        mappedCategories.push(displayName);
+      }
     }
+
+    // Zwracamy wszystkie mapowane kategorie rozdzielone przecinkami
+    return mappedCategories.length > 0 ? mappedCategories.join(', ') : null;
   };
 
   const jsonLd = {
