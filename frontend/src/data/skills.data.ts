@@ -284,6 +284,14 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       descriptionPl: 'Strony wizytówki i prezentacji',
       descriptionEn: 'Presentation and landing pages',
     },
+    ai: {
+      count: 0,
+      color: 'rgba(147, 51, 234, 0.8)', // purple/violet for AI
+      namePl: 'AI & Machine Learning',
+      nameEn: 'AI & Machine Learning',
+      descriptionPl: 'Rozwiązania z zakresu sztucznej inteligencji',
+      descriptionEn: 'Artificial intelligence and machine learning solutions',
+    },
     other: {
       count: 0,
       color: 'rgba(245, 158, 11, 0.8)',
