@@ -61,11 +61,11 @@ export function ChatBot() {
       setChatTranslations(chatTranslations);
 
       // Update welcome message
-      setMessages(prev => prev.map(msg =>
-        msg.id === '1'
-          ? { ...msg, content: chatTranslations.welcomeMessage || msg.content }
-          : msg
-      ));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === '1' ? { ...msg, content: chatTranslations.welcomeMessage || msg.content } : msg
+        )
+      );
     };
 
     loadChatTranslations();
@@ -83,7 +83,7 @@ export function ChatBot() {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
 
@@ -118,18 +118,21 @@ export function ChatBot() {
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: error instanceof Error && error.message === 'Chat service not available'
-          ? (currentLocale === 'en' ? 'Chat service is currently unavailable. Please try again later.' : 'Usługa czatu jest obecnie niedostępna. Spróbuj ponownie później.')
-          : t('errorMessage'),
+        content:
+          error instanceof Error && error.message === 'Chat service not available'
+            ? currentLocale === 'en'
+              ? 'Chat service is currently unavailable. Please try again later.'
+              : 'Usługa czatu jest obecnie niedostępna. Spróbuj ponownie później.'
+            : t('errorMessage'),
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -198,9 +201,7 @@ export function ChatBot() {
             )}
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                message.isUser
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 text-slate-800'
+                message.isUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800'
               }`}
             >
               <p className="text-sm leading-relaxed">{message.content}</p>
