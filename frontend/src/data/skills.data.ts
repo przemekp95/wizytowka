@@ -713,19 +713,21 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
     return skillsData; // fallback do statycznych danych
   }
 
-  // Zlicz wystąpienia technologii w portfolio
+  // Zlicz wystąpienia technologii w portfolio - każdą technologię liczymy tylko raz per projekt
   const techCounts: Record<string, number> = {};
 
   portfolio.forEach((project) => {
-    project.tags.forEach((tag) => {
+    // Use Set to ensure each technology is counted only once per project (ignore duplicates in tags)
+    const uniqueTags = new Set(project.tags.map(tag =>
       // Normalize tag names for counting
-      const normalizedTag =
-        Object.keys(techToCategoryMap).find(
-          (tech) =>
-            tech.toLowerCase() === tag.toLowerCase() ||
-            tag.toLowerCase().includes(tech.toLowerCase())
-        ) || tag;
+      Object.keys(techToCategoryMap).find(
+        (tech) =>
+          tech.toLowerCase() === tag.toLowerCase() ||
+          tag.toLowerCase().includes(tech.toLowerCase())
+      ) || tag
+    ));
 
+    uniqueTags.forEach((normalizedTag) => {
       techCounts[normalizedTag] = (techCounts[normalizedTag] || 0) + 1;
     });
   });
@@ -735,9 +737,9 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   const skills: Skill[] = Object.entries(techCounts)
     .map(([techName, count]) => {
       const category = techToCategoryMap[techName] || 'frontEnd';
-      // Procent wystąpienia w projektach (bez minimum)
+      // Procent wystąpienia w projektach (bez minimum) - teraz count oznacza liczbę projektów używających danej technologii
       const projectPercentage = (count / totalProjects) * 100;
-      const level = Math.round(projectPercentage); // Bez minimalnego progu
+      const level = Math.round(projectPercentage); // Bez minimalnego progu, zawsze <= 100
       // Rzeczywiste miesiące doświadczenia na podstawie zakresów dat
       const experienceMonths = calculateSkillExperienceMonths(portfolio, techName);
 
