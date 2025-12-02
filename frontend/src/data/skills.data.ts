@@ -296,6 +296,9 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     const categoryString = project.category?.toString() || 'other';
     const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
 
+    // Debug kategorii projektach - sprawdź jakie kategorie są używane
+    console.log('📂 Project categories analysis - project:', project.title, 'categories:', categoryParts);
+
     categoryParts.forEach((category) => {
       // Mapowanie polskich nazw na angielskie identyfikatory
       const categoryMapping: Record<string, keyof typeof categories> = {
@@ -326,6 +329,11 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
       const targetCategory = categoryMapping[category] || 'other';
       categories[targetCategory].count++;
+
+      // Debugowanie mapowania kategorii
+      if (categoryParts.includes('mobile') || categoryParts.includes('mobilne') || categoryString.includes('mobile-apps')) {
+        console.log('📱 Mobile app category detected! Project:', project.title, 'original:', category, 'mapped to:', targetCategory);
+      }
     });
   });
 

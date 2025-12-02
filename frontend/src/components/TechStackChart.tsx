@@ -24,7 +24,11 @@ interface TechStackChartProps {
 
 export function TechStackChart({ locale, portfolioCategories }: TechStackChartProps) {
   const isEnglish = locale === 'en';
-  // Use portfolio categories if available, fallback to default tech stack (will be changed to portfolio cats)
+
+  // Debug - log what data source we're using
+  console.log('📊 TechStackChart - portfolioCategories:', portfolioCategories?.length || 0, 'categories provided');
+
+  // Use portfolio categories if available, fallback to default tech stack
   const dataSource = portfolioCategories || [
     {
       id: 'demo-web-apps',
