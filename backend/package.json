@@ -9,7 +9,7 @@
   },
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "dev": "nest start --watch",
     "start": "nest start",
@@ -39,7 +39,9 @@
     "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^5.22.0",
     "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.0",
     "@types/multer": "^2.0.0",
+    "@types/node": "^22.18.6",
     "@types/uuid": "^11.0.0",
     "botid": "^1.5.10",
     "class-transformer": "^0.5.1",
