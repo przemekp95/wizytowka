@@ -24,6 +24,6 @@ RUN echo "deploy skipped"
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-EXPOSE 3000
+EXPOSE 4000
 COPY --from=build /app/backend/dist ./dist
 CMD ["node","./dist/main.js"]
