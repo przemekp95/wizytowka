@@ -153,7 +153,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
       },
     ],
       url: `https://pietrzakprzemyslaw.pl/${locale}`,
-    image: 'https://pietrzakprzemyslaw.pl/images/ja.jpeg',
+    image: 'https://wizytowka.s3.eu-north-1.amazonaws.com/PP-2-JPG-01.webp',
   };
 
   return (
