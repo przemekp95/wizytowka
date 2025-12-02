@@ -76,9 +76,6 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   console.log(`📅 Last 12 months: ${projectsLast12Months.length} projects`);
   console.log(`📅 Previous 12 months: ${projectsPrevious12Months.length} projects`);
 
-  // Show portfolio distributions for debugging
-  console.log('📊 OTHER CALCULATIONS ONGOING...');
-
   if (projectsLast12Months.length === 0) {
     return [
       {
@@ -346,19 +343,47 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     });
   });
 
+
+
   // Oblicz procenty na podstawie całkowitej liczby projektów
   const totalProjects = portfolio.length;
-  return Object.entries(categories)
+
+  // Normalizuj procenty aby zawsze sumowały się do 100%
+  const categoryPercentages = Object.entries(categories)
     .map(([key, data]) => ({
       id: key,
       namePl: data.namePl,
       nameEn: data.nameEn,
-      percentage: Math.round((data.count / totalProjects) * 100),
+      percentage: (data.count / totalProjects) * 100, // nicht zaokrąglone jeszcze
+      rawPercentage: (data.count / totalProjects) * 100,
       color: data.color,
       descriptionPl: data.descriptionPl,
       descriptionEn: data.descriptionEn,
     }))
-    .filter((cat) => cat.percentage > 0);
+    .filter((cat) => cat.percentage >= 0.01); // pokaż tylko kategorie z co najmniej 1%
+
+  // Zaokrągli procenty tak aby sumowały się do 100
+  // Najpierw zaokrąglic_doc pozostałe w dół
+  const roundedSum = categoryPercentages.reduce((sum, cat) => sum + Math.floor(cat.percentage), 0);
+  const remainder = 100 - roundedSum;
+
+  // Rozdaj pozostałe procenty do największych kategorii
+  let remainderToDistribute = remainder;
+  categoryPercentages
+    .sort((a, b) => (b.percentage % 1) - (a.percentage % 1)) // sortuj wg części dziesiętnych malejąco
+    .forEach((cat, index) => {
+      if (index < remainderToDistribute) {
+        cat.percentage = Math.floor(cat.percentage) + 1;
+      } else {
+        cat.percentage = Math.floor(cat.percentage);
+      }
+    });
+
+  // Debug final percentages
+  console.log('✅ Final category percentages:', categoryPercentages.map(c => `${c.namePl}: ${c.percentage}%`).join(', '));
+  console.log('📊 Total sum:', categoryPercentages.reduce((sum, cat) => sum + cat.percentage, 0), '%');
+
+  return categoryPercentages.filter((cat) => cat.percentage > 0);
 };
 
 // Stan umiejętności - fallback do pracy jako prezentacja gdy nie ma portfolio
