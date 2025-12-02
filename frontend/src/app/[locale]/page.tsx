@@ -134,7 +134,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     sameAs: [
       'https://github.com/przemekp95',
       'https://www.linkedin.com/in/przempietrzak/',
-      'https://przemyslawpietrzak.pl',
+      'https://pietrzakprzemyslaw.pl',
     ],
     nationality: {
       '@type': 'Country',
@@ -152,8 +152,8 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         alternateName: 'en',
       },
     ],
-    url: `https://przemyslawpietrzak.pl/${locale}`,
-    image: 'https://przemyslawpietrzak.pl/images/ja.jpeg',
+      url: `https://pietrzakprzemyslaw.pl/${locale}`,
+    image: 'https://pietrzakprzemyslaw.pl/images/ja.jpeg',
   };
 
   return (

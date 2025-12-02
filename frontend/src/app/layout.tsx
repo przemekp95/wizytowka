@@ -29,15 +29,16 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://przemyslawpietrzak.pl'),
+  metadataBase: new URL('https://pietrzakprzemyslaw.pl'),
   alternates: {
-    canonical: 'https://przemyslawpietrzak.pl',
+    canonical: 'https://pietrzakprzemyslaw.pl',
   },
   openGraph: {
     title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
     description:
       'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
-    url: 'https://przemyslawpietrzak.pl',
+
+    url: 'https://pietrzakprzemyslaw.pl',
     siteName: 'Przemyslaw Pietrzak - Developer Portfolio',
     images: [
       {
