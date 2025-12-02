@@ -123,8 +123,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     if (previousCount > 0) {
       change = Math.round(((currentCount - previousCount) / previousCount) * 100);
     } else if (currentCount > 0) {
-      // Gdy nie mamy danych z poprzedniego okresu, ogranicz procent wzrostu by nie generować absurdalnych wartości
-      change = hasLimitedData ? Math.min(currentCount * 15, 50) : 100; // maks 50% dla ograniczonej ilości danych
+      // Nowe technologie bez historii otrzymują +100% za każdy projekt
+      change = 100;
     }
 
     // Use centralized category mapping

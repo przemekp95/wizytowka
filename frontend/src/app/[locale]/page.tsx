@@ -108,7 +108,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
     if (!category) return null;
 
-    const normalizedCategory = category.toLowerCase().trim();
+    // Dla wielu kategorii oddzielonych przecinkami, bierzemy pierwszą
+    const firstCategory = category.split(',')[0].toLowerCase().trim();
+    const normalizedCategory = firstCategory;
 
     if (locale === 'en') {
       if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') return 'Web App';
