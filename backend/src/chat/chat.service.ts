@@ -53,7 +53,7 @@ export class ChatService {
 
     try {
       // Get response from OpenAI
-      const completion = await this.openai.chat.completions.create({
+      const completion = await this.openai.chat.completions.create({ // eslint-disable-line @typescript-eslint/no-explicit-any
         model: 'gpt-3.5-turbo',
         messages: session.messages as any,
         max_tokens: 500,
