@@ -122,6 +122,11 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     let change = 0;
     if (previousCount > 0) {
       change = Math.round(((currentCount - previousCount) / previousCount) * 100);
+
+      // Debug dla ekstremalnych zmian procentowych
+      if (Math.abs(change) > 200) {
+        console.log(`🚨 HIGH CHANGE ALERT: ${tech} - prev:${previousCount}, curr:${currentCount}, change:${change}%`);
+      }
     } else if (currentCount > 0) {
       // Nowe technologie bez historii otrzymują +100% za każdy projekt
       change = 100;
