@@ -93,6 +93,10 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
     const techCounts: Record<string, number> = {};
     projects.forEach((project) => {
       project.tags.forEach((tag) => {
+        // Skip MDX technology
+        if (tag.toLowerCase().includes('mdx')) {
+          return; // skip this tag
+        }
         techCounts[tag] = (techCounts[tag] || 0) + 1;
       });
     });
@@ -125,26 +129,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
       change = 100; // nowa technologia w ostatnim okresie
     }
 
-    // Określ kategorię na podstawie nazwy technologii
-    let category: Skill['category'] = 'frontEnd';
-    const lowerTech = tech.toLowerCase();
-    if (
-      ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite'].some((db) => lowerTech.includes(db))
-    ) {
-      category = 'database';
-    } else if (
-      ['docker', 'kubernetes', 'aws', 'vercel', 'github', 'ci/cd', 'jenkins'].some((devops) =>
-        lowerTech.includes(devops)
-      )
-    ) {
-      category = 'devops';
-    } else if (
-      ['node.js', 'nestjs', 'php', 'laravel', 'django', 'spring', 'express', 'api'].some((be) =>
-        lowerTech.includes(be)
-      )
-    ) {
-      category = 'backEnd';
-    }
+    // Use centralized category mapping
+    const category = techToCategoryMap[tech] || 'frontEnd';
 
     let isTrend: 'rising' | 'falling' | 'stable' = 'stable';
     if (change >= 10) isTrend = 'rising';
