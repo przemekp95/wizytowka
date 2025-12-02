@@ -299,8 +299,10 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     // Debug kategorii projektach - sprawdź jakie kategorie są używane
     console.log('📂 Project categories analysis - project:', project.title, 'categories:', categoryParts);
 
-    // Jeśli projekt ma wiele kategorii, podziel jego wkład między nimi proporcjonalnie
-    const numberOfCategories = categoryParts.length;
+  // Jeśli projekt ma wiele kategorii, podziel jego wkład między nimi proporcjonalnie
+  const numberOfCategories = categoryParts.length;
+
+  console.log(`🎯 Project "${project.title}" contributes to ${numberOfCategories} categories`);
 
     categoryParts.forEach((category) => {
       // Mapowanie polskich nazw na angielskie identyfikatory
@@ -829,26 +831,10 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
       color: string;
     }>;
 
-  // Sort by percentage (most used first) and take top 6
+  // Sort by percentage (most used first) and take top 10 (not just 6, to see more technologies properly)
   const sortedData = chartData
     .sort((a, b) => b.percentage - a.percentage)
-    .slice(0, 6);
-
-  // Recalculate percentages to maintain total of ~100% for the top 6
-  if (sortedData.length > 0) {
-    const totalProjectsInTop6 = sortedData.reduce((sum, tech) => {
-      const originalCount = techCounts[tech.namePl];
-      return sum + originalCount;
-    }, 0);
-
-    sortedData.forEach(tech => {
-      const originalCount = techCounts[tech.namePl];
-      tech.percentage = Math.round((originalCount / totalProjectsInTop6) * 100);
-    });
-
-    // Re-sort after percentage recalculation
-    sortedData.sort((a, b) => b.percentage - a.percentage);
-  }
+    .slice(0, 10); // Increased from 6 to 10 to show more technologies
 
   return sortedData.length > 0 ? sortedData : techStackData;
 };
