@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export default async function LocaleLayout({
   children,
@@ -22,6 +23,7 @@ export default async function LocaleLayout({
         <div id="i18n-provider" data-locale={locale}>
           {children}
         </div>
+        <SpeedInsights />
       </body>
     </html>
   );
