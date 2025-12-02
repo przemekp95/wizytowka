@@ -299,9 +299,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                       <div className="font-semibold text-slate-800">
                         {t('portfolio.technologies')}
                       </div>
-                      <div className="mt-2 flex flex-wrap justify-center gap-2">
+                      <div className="mt-2 flex flex-wrap items-start gap-1.5 max-w-full">
                         {p.tags?.map((t) => (
-                          <span key={t} className="chip">
+                          <span key={t} className="chip shrink-0">
                             {t}
                           </span>
                         ))}

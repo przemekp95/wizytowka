@@ -108,7 +108,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
           label: (context) => {
             const label = context.label || '';
             const value = context.parsed as number;
-            return `${label}: ${value}%`;
+            return `${label}: ${value.toFixed(0)}%`;
           },
         },
       },

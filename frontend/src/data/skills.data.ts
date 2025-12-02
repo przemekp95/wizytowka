@@ -898,6 +898,13 @@ export const formatExperienceTime = async (
   }
 };
 
+// Funkcja do formatowania procentów z zapewnieniem prawidłowego wyświetlania
+export const formatPercentage = (percentage: number): string => {
+  // Upewnij się że procent jest prawidłowy (0-100)
+  const validPercentage = Math.max(0, Math.min(100, Math.round(percentage)));
+  return `${validPercentage}%`;
+};
+
 // funkcje pomocnicze (zachowane dla kompatybilności)
 export const getSkillsByCategory = (category: Skill['category'], skills?: Skill[]): Skill[] => {
   const data = skills || skillsData;
