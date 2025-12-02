@@ -3,8 +3,6 @@
 import * as Progress from '@radix-ui/react-progress';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { formatExperienceTime } from '@/data/skills.data';
-import { useTranslations } from 'next-intl';
 
 export interface TechTrend {
   id: string;
@@ -51,7 +49,6 @@ const getTrendIndicator = (isTrend: TechTrend['isTrend']) => {
 
 export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressProps) {
   const [progress, setProgress] = React.useState(0);
-  const t = useTranslations();
 
   const changeValue = trend.yearOverYearChange;
   React.useEffect(() => {
@@ -61,9 +58,6 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
     }, 300);
     return () => clearTimeout(timer);
   }, [changeValue]);
-
-  // Get current locale for formatting
-  const locale = t('language.polish') === 'Polski' ? 'en' : 'pl'; // Quick way to detect locale
 
   const colors = colorMap[trend.category];
   const trendIndicator = getTrendIndicator(trend.isTrend);
@@ -105,7 +99,7 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
         />
       </Progress.Root>
       <div className="text-xs text-slate-500 mt-1">
-        {locale === 'pl' ? 'Zmiana rok do roku' : 'Year-over-year change'}
+        Zmiana rok do roku
       </div>
     </motion.div>
   );
