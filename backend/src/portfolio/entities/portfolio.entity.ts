@@ -27,7 +27,7 @@ export class PortfolioGQL {
   isLogo?: boolean;
 
   @Field({ nullable: true })
-  newTech?: boolean;
+  category?: string;
 
   @Field({ nullable: true })
   repoUrl?: string;
