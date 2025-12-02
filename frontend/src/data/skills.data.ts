@@ -701,11 +701,21 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
     return techStackData; // fallback do statycznych danych
   }
 
+  // Use same time window as trends: last 6 months for current usage
+  const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
+  const recentProjects = portfolio.filter(
+    (p) => p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
+  );
+
+  if (recentProjects.length === 0) {
+    return techStackData; // fallback if no recent projects
+  }
+
   // Filter out MDX and collect project counts for each technology
   const techCounts: Record<string, number> = {};
-  const totalProjects = portfolio.length;
+  const totalRecentProjects = recentProjects.length;
 
-  portfolio.forEach((project) => {
+  recentProjects.forEach((project) => {
     project.tags.forEach((tag) => {
       // Skip MDX technology
       if (tag.toLowerCase().includes('mdx')) {
@@ -733,7 +743,7 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
 
       if (!shouldShow) return null;
 
-      const percentage = Math.round((projectCount / totalProjects) * 100);
+      const percentage = Math.round((projectCount / totalRecentProjects) * 100);
       const colors = [
         'rgba(99, 102, 241, 0.8)', // indigo (blue) - Frontend
         'rgba(139, 92, 246, 0.8)', // purple - Backend
