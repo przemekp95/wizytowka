@@ -11,6 +11,7 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-laravel',
+    category: 'web-app, api', // wiele kategorii oddzielone przecinkami
     dateFrom: new Date('2022-03-01'),
     dateTo: new Date('2022-07-31'),
   },
@@ -23,6 +24,7 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-nextjs',
+    category: 'web-app, landing, api', // 3 kategorie: web-app, landing, i api
     dateFrom: new Date('2022-08-01'),
     dateTo: new Date('2023-02-28'),
   },
