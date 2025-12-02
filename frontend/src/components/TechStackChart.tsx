@@ -109,25 +109,25 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
     );
   };
 
-  // Generate legend labels with check mark for visible/hidden state
+  // Generate legend labels - show all categories in legend
   const generateLegendLabels = (chart: any) => {
-    return dataSource.map((category, index) => {
-      const isVisible = visibleCategoryIds.includes(category.id);
-      const marker = isVisible ? '⬜' : '⬛'; // White square for visible, black square for hidden
-      const label = isEnglish ? category.nameEn : category.namePl;
+    return chart.config.data.labels?.map((label: string, index: number) => {
+      const category = dataSource[index];
+      const isVisible = visibleCategoryIds.includes(category?.id);
 
       return {
-        text: `${marker} ${label}`,
-        fillStyle: isVisible ? category.color : 'rgba(128, 128, 128, 0.5)',
-        strokeStyle: isVisible ? category.color : 'rgba(128, 128, 128, 0.5)',
-        hidden: false, // Always show all categories in legend
+        text: label,
+        fillStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
+        strokeStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
+        lineWidth: isVisible ? 0 : 2,
+        hidden: !isVisible, // Show/cross out based on visibility
         index,
       };
-    });
+    }) || [];
   };
 
   const data = {
-    labels: visibleCategories.map((item) => (isEnglish ? item.nameEn : item.namePl)),
+    labels: dataSource.map((category) => (isEnglish ? category.nameEn : category.namePl)),
     datasets: [
       {
         data: visibleCategories.map((item) => item.percentage),
@@ -147,7 +147,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
         position: 'bottom' as const,
         labels: {
           padding: 20,
-          usePointStyle: false, // Disable default point style, use our squares
+          usePointStyle: true, // Use colorful circle point styles
           font: {
             size: 12,
             weight: 500,
