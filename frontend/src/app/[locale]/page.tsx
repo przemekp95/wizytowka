@@ -26,6 +26,7 @@ type PortfolioItem = {
   img: string;
   isLogo?: boolean;
   newTech?: boolean;
+  category?: string;
   repoUrl?: string | null;
   dateFrom?: Date;
   dateTo?: Date;
@@ -102,6 +103,31 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   // Wyliczenie trendów technologii i kategorii projektów na podstawie portfola
   const techTrends = calculateTechTrends(items);
   const portfolioCategories = calculatePortfolioCategories(items);
+
+  // Funkcja do mapowania nazw kategorii na czytelne nazwy dla oznaczeń
+  const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
+    if (!category) return null;
+
+    const normalizedCategory = category.toLowerCase().trim();
+
+    if (locale === 'en') {
+      if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') return 'Web App';
+      if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce') return 'E-commerce';
+      if (normalizedCategory === 'api') return 'API';
+      if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') return 'Mobile';
+      if (normalizedCategory === 'landing') return 'Landing';
+      if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') return 'Tools';
+      return null;
+    } else {
+      if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') return 'WEB';
+      if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') return 'E-COMMERCE';
+      if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') return 'API';
+      if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') return 'MOBILE';
+      if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') return 'LANDING';
+      if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') return 'TOOLS';
+      return null;
+    }
+  };
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -235,7 +261,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                         sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                         unoptimized
                       />
-                      {p.newTech && <span className="badge">{t('portfolio.newTech')}</span>}
+                      {getCategoryDisplayName(p.category, locale) && (
+                        <span className="badge category">{getCategoryDisplayName(p.category, locale)}</span>
+                      )}
+                      {p.newTech && <span className="badge new-tech">{t('portfolio.newTech')}</span>}
                     </div>
                     <h3 className="mt-4 text-lg font-bold">
                       <a
