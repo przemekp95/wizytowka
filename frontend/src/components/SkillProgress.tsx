@@ -15,6 +15,7 @@ export interface TechTrend {
 interface SkillProgressProps {
   trend: TechTrend;
   monthsLabel?: string;
+  locale?: 'pl' | 'en';
 }
 
 const colorMap = {
@@ -47,7 +48,7 @@ const getTrendIndicator = (isTrend: TechTrend['isTrend']) => {
   }
 };
 
-export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressProps) {
+export function SkillProgress({ trend, monthsLabel = 'mies.', locale = 'pl' }: SkillProgressProps) {
   const [progress, setProgress] = React.useState(0);
 
   const changeValue = trend.yearOverYearChange;
@@ -98,7 +99,9 @@ export function SkillProgress({ trend, monthsLabel = 'mies.' }: SkillProgressPro
           className={`h-full ${changeValue >= 0 ? trendIndicator.bgColor : 'bg-red-500'} rounded-full`}
         />
       </Progress.Root>
-      <div className="text-xs text-slate-500 mt-1">Zmiana rok do roku</div>
+      <div className="text-xs text-slate-500 mt-1">
+        {locale === 'en' ? 'Year over year change' : 'Zmiana rok do roku'}
+      </div>
     </motion.div>
   );
 }
