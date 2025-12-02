@@ -703,14 +703,18 @@ export const calculateDynamicTechStack = (portfolio: PortfolioItem[]) => {
 };
 
 // Funkcja do formatowania czasu doświadczenia z tłumaczeniami
-export const formatExperienceTime = async (totalMonths: number, locale: string = 'pl'): Promise<string> => {
+export const formatExperienceTime = async (
+  totalMonths: number,
+  locale: string = 'pl'
+): Promise<string> => {
   if (totalMonths <= 0) return locale === 'en' ? '0 months' : '0 mies.';
 
   try {
     // Dynamiczny import tłumaczeń na podstawie lokalizacji
-    const messages = locale === 'en'
-      ? await import('../i18n/messages/en.json').then(m => m.default)
-      : await import('../i18n/messages/pl.json').then(m => m.default);
+    const messages =
+      locale === 'en'
+        ? await import('../i18n/messages/en.json').then((m) => m.default)
+        : await import('../i18n/messages/pl.json').then((m) => m.default);
 
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
