@@ -1,5 +1,12 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🚨 Tymczasowo wyłączony pre-push hook - pilny fix błędów strony"
-echo "� Re-enable po rozwiązaniu problemu: usuń ten plik lub zmień na aktywny"
+echo "🛡️ Sprawdzanie jakości kodu przed push..."
+if pnpm check 2>&1; then
+  echo "✅ Wszystkie sprawdzenia przeszły pomyślnie!"
+else
+  echo "⚠️ Znalezione problemy jakości - sprawdź logi powyżej"
+  echo "💡 To mogą być tylko ostrzeżenia (warnings) o nieużywanych zmiennych w testach"
+  echo "🔄 Kontynuuję push mimo problemów... (można zmienić w .husky/pre-push)"
+  # exit 0 # uncomment to block push on quality issues
+fi

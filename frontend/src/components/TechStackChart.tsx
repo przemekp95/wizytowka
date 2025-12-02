@@ -135,15 +135,6 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
       className="w-full max-w-md mx-auto"
     >
       <div className="relative">
-        <motion.h3
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-lg font-semibold text-center text-slate-700 mb-6"
-        >
-          {isEnglish ? 'Portfolio Categories' : 'Kategorie projektów'}
-        </motion.h3>
-
         <div className="relative h-80">
           <Pie
             data={data}

@@ -57,7 +57,7 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
       console.log('📊 First portfolio item:', {
         title: items[0].title,
         tags: items[0].tags,
-        dateFrom: items[0].dateFrom
+        dateFrom: items[0].dateFrom,
       });
     }
 
@@ -341,9 +341,11 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   {locale === 'en' ? 'Technology Trends (YoY)' : 'Trendy technologii (rok do roku)'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {techTrends.slice(0, 6).map((trend) => (
-                    <SkillProgress key={trend.id} trend={trend} />
-                  ))}
+                  {techTrends
+                    .filter(trend => trend.category === 'frontEnd' || trend.category === 'backEnd')
+                    .map((trend) => (
+                      <SkillProgress key={trend.id} trend={trend} />
+                    ))}
                 </div>
               </div>
 

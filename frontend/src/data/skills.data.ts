@@ -64,14 +64,13 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
   const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000); // ~12 miesięcy temu
 
-  const projectsLast6Months = portfolio.filter(p =>
-    p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
+  const projectsLast6Months = portfolio.filter(
+    (p) => p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo
   );
 
-  const projectsPrevious6Months = portfolio.filter(p =>
-    p.dateFrom &&
-    new Date(p.dateFrom) >= twelveMonthsAgo &&
-    new Date(p.dateFrom) < sixMonthsAgo
+  const projectsPrevious6Months = portfolio.filter(
+    (p) =>
+      p.dateFrom && new Date(p.dateFrom) >= twelveMonthsAgo && new Date(p.dateFrom) < sixMonthsAgo
   );
 
   console.log(`📅 Last 6 months: ${projectsLast6Months.length} projects`);
@@ -105,10 +104,7 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   const previous6MonthsTech = countTechInProjects(projectsPrevious6Months);
 
   // Wszystkie technologie używane w ostatnim okresie
-  const allTechs = new Set([
-    ...Object.keys(last6MonthsTech),
-    ...Object.keys(previous6MonthsTech)
-  ]);
+  const allTechs = new Set([...Object.keys(last6MonthsTech), ...Object.keys(previous6MonthsTech)]);
 
   const trends: Array<{
     id: string;
@@ -233,7 +229,7 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
       descriptionEn: 'Full-featured web applications',
     },
-    'ecommerce': {
+    ecommerce: {
       count: 0,
       color: 'rgba(34, 197, 94, 0.8)', // green
       namePl: 'E-commerce',
@@ -282,23 +278,23 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     // Mapowanie polskich nazw na angielskie identyfikatory
     const categoryMapping: Record<string, keyof typeof categories> = {
       'web-app': 'web-app',
-      'webapp': 'web-app',
-      'web': 'web-app',  // dla polskiego "web"
-      'ecommerce': 'ecommerce',
+      webapp: 'web-app',
+      web: 'web-app', // dla polskiego "web"
+      ecommerce: 'ecommerce',
       'e-commerce': 'ecommerce',
-      'ekomercyjny': 'ecommerce',
-      'sklep': 'ecommerce',
-      'api': 'api',
-      'services': 'api',
-      'usługi': 'api',
-      'tools': 'tools',
-      'narzędzia': 'tools',
-      'utilities': 'tools',
-      'landing': 'landing',
-      'portfolio': 'landing',
-      'wizytówka': 'landing',
-      'other': 'other',
-      'inne': 'other',
+      ekomercyjny: 'ecommerce',
+      sklep: 'ecommerce',
+      api: 'api',
+      services: 'api',
+      usługi: 'api',
+      tools: 'tools',
+      narzędzia: 'tools',
+      utilities: 'tools',
+      landing: 'landing',
+      portfolio: 'landing',
+      wizytówka: 'landing',
+      other: 'other',
+      inne: 'other',
     };
 
     const targetCategory = categoryMapping[category] || 'other';
@@ -362,65 +358,65 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   const techMap: Record<string, Skill['category']> = {
     // Frontend
     'Next.js': 'frontEnd',
-    'Nextjs': 'frontEnd',
-    'React': 'frontEnd',
-    'TypeScript': 'frontEnd',
-    'JavaScript': 'frontEnd',
+    Nextjs: 'frontEnd',
+    React: 'frontEnd',
+    TypeScript: 'frontEnd',
+    JavaScript: 'frontEnd',
     'Tailwind CSS': 'frontEnd',
-    'TailwindCSS': 'frontEnd',
-    'SCSS': 'frontEnd',
-    'CSS': 'frontEnd',
-    'HTML': 'frontEnd',
+    TailwindCSS: 'frontEnd',
+    SCSS: 'frontEnd',
+    CSS: 'frontEnd',
+    HTML: 'frontEnd',
     'Three.js': 'frontEnd',
-    'GSAP': 'frontEnd',
+    GSAP: 'frontEnd',
     'Framer Motion': 'frontEnd',
 
     // Backend
     'Node.js': 'backEnd',
-    'NestJS': 'backEnd',
-    'Express': 'backEnd',
-    'PHP': 'backEnd',
-    'Laravel': 'backEnd',
-    'Django': 'backEnd',
+    NestJS: 'backEnd',
+    Express: 'backEnd',
+    PHP: 'backEnd',
+    Laravel: 'backEnd',
+    Django: 'backEnd',
     'Spring Boot': 'backEnd',
     'ASP.NET': 'backEnd',
     '.NET': 'backEnd',
-    'Ruby': 'backEnd',
+    Ruby: 'backEnd',
     'Ruby on Rails': 'backEnd',
-    'Python': 'backEnd',
-    'Java': 'backEnd',
-    'Kotlin': 'backEnd',
-    'Scala': 'backEnd',
+    Python: 'backEnd',
+    Java: 'backEnd',
+    Kotlin: 'backEnd',
+    Scala: 'backEnd',
 
     // Databases
-    'MySQL': 'database',
-    'PostgreSQL': 'database',
-    'MongoDB': 'database',
-    'Redis': 'database',
-    'SQLite': 'database',
-    'Firebase': 'database',
-    'Supabase': 'database',
-    'Prisma': 'database',
-    'Drizzle': 'database',
-    'TypeORM': 'database',
-    'Sequelize': 'database',
-    'Mongoose': 'database',
-    'NoSQL': 'database',
-    'SQL': 'database',
+    MySQL: 'database',
+    PostgreSQL: 'database',
+    MongoDB: 'database',
+    Redis: 'database',
+    SQLite: 'database',
+    Firebase: 'database',
+    Supabase: 'database',
+    Prisma: 'database',
+    Drizzle: 'database',
+    TypeORM: 'database',
+    Sequelize: 'database',
+    Mongoose: 'database',
+    NoSQL: 'database',
+    SQL: 'database',
 
     // DevOps
-    'Docker': 'devops',
-    'Kubernetes': 'devops',
-    'AWS': 'devops',
+    Docker: 'devops',
+    Kubernetes: 'devops',
+    AWS: 'devops',
     'Google Cloud': 'devops',
-    'Azure': 'devops',
-    'Vercel': 'devops',
-    'Render': 'devops',
-    'Heroku': 'devops',
-    'GitLab': 'devops',
-    'GitHub': 'devops',
+    Azure: 'devops',
+    Vercel: 'devops',
+    Render: 'devops',
+    Heroku: 'devops',
+    GitLab: 'devops',
+    GitHub: 'devops',
     'CI/CD': 'devops',
-    'Jenkins': 'devops',
+    Jenkins: 'devops',
   };
 
   return techMap;
