@@ -244,6 +244,14 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
       descriptionPl: 'Narzędzia i aplikacje pomocnicze',
       descriptionEn: 'Helper tools and utilities',
     },
+    'mobile-apps': {
+      count: 0,
+      color: 'rgba(34, 197, 94, 0.8)', // green
+      namePl: 'Aplikacje mobilne',
+      nameEn: 'Mobile Apps',
+      descriptionPl: 'Aplikacje mobilne i PWA',
+      descriptionEn: 'Mobile applications and PWAs',
+    },
     landing: {
       count: 0,
       color: 'rgba(16, 185, 129, 0.8)',
@@ -263,33 +271,41 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   };
 
   portfolio.forEach((project) => {
-    // Użyj bezpośrednio pola category z bazy danych
-    const category = project.category?.toLowerCase() || 'other';
+    // Support multiple categories separated by commas
+    const categoryString = project.category?.toString() || 'other';
+    const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
 
-    // Mapowanie polskich nazw na angielskie identyfikatory
-    const categoryMapping: Record<string, keyof typeof categories> = {
-      'web-app': 'web-app',
-      webapp: 'web-app',
-      web: 'web-app', // dla polskiego "web"
-      ecommerce: 'ecommerce',
-      'e-commerce': 'ecommerce',
-      ekomercyjny: 'ecommerce',
-      sklep: 'ecommerce',
-      api: 'api',
-      services: 'api',
-      usługi: 'api',
-      tools: 'tools',
-      narzędzia: 'tools',
-      utilities: 'tools',
-      landing: 'landing',
-      portfolio: 'landing',
-      wizytówka: 'landing',
-      other: 'other',
-      inne: 'other',
-    };
+    categoryParts.forEach((category) => {
+      // Mapowanie polskich nazw na angielskie identyfikatory
+      const categoryMapping: Record<string, keyof typeof categories> = {
+        'web-app': 'web-app',
+        webapp: 'web-app',
+        web: 'web-app', // dla polskiego "web"
+        ecommerce: 'ecommerce',
+        'e-commerce': 'ecommerce',
+        ekomercyjny: 'ecommerce',
+        sklep: 'ecommerce',
+        api: 'api',
+        services: 'api',
+        usługi: 'api',
+        tools: 'tools',
+        narzędzia: 'tools',
+        utilities: 'tools',
+        landing: 'landing',
+        portfolio: 'landing',
+        wizytówka: 'landing',
+        mobile: 'mobile-apps',
+        mobilne: 'mobile-apps',
+        'mobile-apps': 'mobile-apps',
+        'mobile apps': 'mobile-apps',
+        mob: 'mobile-apps',
+        other: 'other',
+        inne: 'other',
+      };
 
-    const targetCategory = categoryMapping[category] || 'other';
-    categories[targetCategory].count++;
+      const targetCategory = categoryMapping[category] || 'other';
+      categories[targetCategory].count++;
+    });
   });
 
   // Oblicz procenty na podstawie całkowitej liczby projektów
@@ -317,28 +333,35 @@ export const techStackData: TechStack[] = [
     id: 'frontend',
     namePl: 'Frontend',
     nameEn: 'Frontend',
-    percentage: 40,
+    percentage: 35,
     color: 'rgba(99, 102, 241, 0.8)', // indigo
   },
   {
     id: 'backend',
     namePl: 'Backend',
     nameEn: 'Backend',
-    percentage: 35,
+    percentage: 30,
     color: 'rgba(139, 92, 246, 0.8)', // purple
+  },
+  {
+    id: 'mobile-apps',
+    namePl: 'Aplikacje mobilne',
+    nameEn: 'Mobile Apps',
+    percentage: 20,
+    color: 'rgba(34, 197, 94, 0.8)', // green
   },
   {
     id: 'databases',
     namePl: 'Bazy danych',
     nameEn: 'Databases',
-    percentage: 15,
+    percentage: 10,
     color: 'rgba(6, 182, 212, 0.8)', // cyan
   },
   {
     id: 'devops',
     namePl: 'DevOps',
     nameEn: 'DevOps',
-    percentage: 10,
+    percentage: 5,
     color: 'rgba(16, 185, 129, 0.8)', // emerald
   },
 ];
@@ -395,8 +418,9 @@ const createTechToCategoryMap = (): Record<string, Skill['category']> => {
     NoSQL: 'database',
     SQL: 'database',
 
-    // DevOps
+    // DevOps (moved here from FE/BE)
     Docker: 'devops',
+    Dockerfile: 'devops',
     Kubernetes: 'devops',
     AWS: 'devops',
     'Google Cloud': 'devops',
