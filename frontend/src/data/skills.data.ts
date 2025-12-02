@@ -59,24 +59,24 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
   console.log('📊 Calculating dynamic tech trends from portfolio data');
 
-  // Użyj bardziej granularnych okresów: porównaj ostatnie 3 miesiące vs wcześniejsze 3 miesiące
+  // Wróć do porównania rok do roku: ostatnie 12 miesięcy vs poprzednie 12 miesięcy
   const now = new Date();
-  const threeMonthsAgo = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000); // ~3 miesiące temu
-  const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000); // ~6 miesięcy temu
+  const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000); // ~12 miesięcy temu
+  const twentyFourMonthsAgo = new Date(now.getTime() - 24 * 30 * 24 * 60 * 60 * 1000); // ~24 miesiące temu
 
-  const projectsLast3Months = portfolio.filter(
-    (p) => p.dateFrom && new Date(p.dateFrom) >= threeMonthsAgo
+  const projectsLast12Months = portfolio.filter(
+    (p) => p.dateFrom && new Date(p.dateFrom) >= twelveMonthsAgo
   );
 
-  const projectsPrevious3Months = portfolio.filter(
+  const projectsPrevious12Months = portfolio.filter(
     (p) =>
-      p.dateFrom && new Date(p.dateFrom) >= sixMonthsAgo && new Date(p.dateFrom) < threeMonthsAgo
+      p.dateFrom && new Date(p.dateFrom) >= twentyFourMonthsAgo && new Date(p.dateFrom) < twelveMonthsAgo
   );
 
-  console.log(`📅 Last 3 months: ${projectsLast3Months.length} projects`);
-  console.log(`📅 Previous 3 months: ${projectsPrevious3Months.length} projects`);
+  console.log(`📅 Last 12 months: ${projectsLast12Months.length} projects`);
+  console.log(`📅 Previous 12 months: ${projectsPrevious12Months.length} projects`);
 
-  if (projectsLast3Months.length === 0) {
+  if (projectsLast12Months.length === 0) {
     return [
       {
         id: 'trend-fallback',
@@ -104,11 +104,11 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   };
 
   // Zlicz technologie w obu okresach
-  const last3MonthsTech = countTechInProjects(projectsLast3Months);
-  const previous3MonthsTech = countTechInProjects(projectsPrevious3Months);
+  const last12MonthsTech = countTechInProjects(projectsLast12Months);
+  const previous12MonthsTech = countTechInProjects(projectsPrevious12Months);
 
   // Wszystkie technologie używane w ostatnim okresie
-  const allTechs = new Set([...Object.keys(last3MonthsTech), ...Object.keys(previous3MonthsTech)]);
+  const allTechs = new Set([...Object.keys(last12MonthsTech), ...Object.keys(previous12MonthsTech)]);
 
   const trends: Array<{
     id: string;
@@ -119,8 +119,8 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
   }> = [];
 
   Array.from(allTechs).forEach((tech, index) => {
-    const currentCount = last3MonthsTech[tech] || 0;
-    const previousCount = previous3MonthsTech[tech] || 0;
+    const currentCount = last12MonthsTech[tech] || 0;
+    const previousCount = previous12MonthsTech[tech] || 0;
 
     let change = 0;
     if (previousCount > 0) {
@@ -340,15 +340,22 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   // Oblicz procenty na podstawie całkowitej liczby projektów
   const totalProjects = portfolio.length;
   return Object.entries(categories)
-    .map(([key, data]) => ({
-      id: key,
-      namePl: data.namePl,
-      nameEn: data.nameEn,
-      percentage: Math.round((data.count / totalProjects) * 100),
-      color: data.color,
-      descriptionPl: data.descriptionPl,
-      descriptionEn: data.descriptionEn,
-    }))
+    .map(([key, data]) => {
+      // Oznacz nowe kategorie (dodane niedawno)
+      const newCategories = ['ecommerce', 'mobile-apps'];
+      const newCategory = newCategories.includes(key);
+
+      return {
+        id: key,
+        namePl: data.namePl,
+        nameEn: data.nameEn,
+        percentage: Math.round((data.count / totalProjects) * 100),
+        color: data.color,
+        descriptionPl: data.descriptionPl,
+        descriptionEn: data.descriptionEn,
+        newCategory,
+      };
+    })
     .filter((cat) => cat.percentage > 0);
 };
 
