@@ -104,9 +104,9 @@ async function bootstrap() {
   console.log(`🌐 REST   → http://localhost:${port}/api`);
   console.log(`📖 Swagger→ http://localhost:${port}/api/docs`);
   console.log(`🔗 GraphQL→ http://localhost:${port}/graphql`);
-  console.log(`💚 Health  → http://localhost:${port}/health`);
-  console.log(`📊 Ready   → http://localhost:${port}/health/ready`);
-  console.log(`🔄 Live    → http://localhost:${port}/health/live`);
+  console.log(`💚 Health  → http://localhost:${port}/api/health`);
+  console.log(`📊 Ready   → http://localhost:${port}/api/health/ready`);
+  console.log(`🔄 Live    → http://localhost:${port}/api/health/live`);
 }
 
 bootstrap().catch((error) => {
