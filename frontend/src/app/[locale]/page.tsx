@@ -380,7 +380,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-slate-700 mb-8">
-                {locale === 'en' ? 'Technology Stack Overview' : 'Przegląd technologiczny'}
+                {locale === 'en' ? 'Skills by Technology Usage' : 'Umiejętności wg użycia technologii'}
               </h3>
               <div className="w-full max-w-4xl">
                 {dynamicSkills && dynamicSkills.length > 0 ? (
@@ -410,7 +410,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         <section id="tech-analysis" className="py-20 md:py-28 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
-              {locale === 'en' ? 'Technology Analysis' : 'Analiza technologiczna'}
+              {locale === 'en' ? 'Project Portfolio Analysis' : 'Analiza portfela projektów'}
             </h2>
 
             {/* Portfolio Categories Chart - using NEW TechStackChart component */}
