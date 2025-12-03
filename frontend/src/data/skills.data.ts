@@ -428,13 +428,13 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
   // Definiuj kolory dla commonly używanych kategorii
   const categoryColors: Record<string, string> = {
-    'web app': 'rgba(99, 102, 241, 0.8)',      // niebieski
-    webapp: 'rgba(99, 102, 241, 0.8)',         // niebieski
-    web: 'rgba(99, 102, 241, 0.8)',            // niebieski
-    'landing page': 'rgba(34, 197, 94, 0.8)',   // zielony
-    landing: 'rgba(34, 197, 94, 0.8)',          // zielony
-    'landing-page': 'rgba(34, 197, 94, 0.8)',   // zielony
-    landingpage: 'rgba(34, 197, 94, 0.8)',      // zielony
+    'web app': 'rgba(6, 182, 212, 0.8)',       // cyan - ładny i żywy kolor dla web apps
+    webapp: 'rgba(6, 182, 212, 0.8)',          // cyan - ładny i żywy kolor dla web apps
+    web: 'rgba(6, 182, 212, 0.8)',             // cyan - ładny i żywy kolor dla web apps
+    'landing page': 'rgba(34, 197, 94, 0.8)',  // zielony
+    landing: 'rgba(34, 197, 94, 0.8)',         // zielony
+    'landing-page': 'rgba(34, 197, 94, 0.8)',  // zielony
+    landingpage: 'rgba(34, 197, 94, 0.8)',     // zielony
     ai: 'rgba(168, 85, 247, 0.8)',              // fioletowy
     'e-commerce': 'rgba(251, 191, 36, 0.8)',    // żółty
     ecommerce: 'rgba(251, 191, 36, 0.8)',       // żółty
