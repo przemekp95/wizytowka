@@ -4,12 +4,18 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { PortfolioItem } from '../portfolio/portfolio.service';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define proper types for chat messages
+type ChatMessage = {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
+
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private openai: OpenAI;
 
-  private sessions: Map<string, { messages: any[]; lastActivity: Date }> =
+  private sessions: Map<string, { messages: ChatMessage[]; lastActivity: Date }> =
     new Map();
 
   constructor(private readonly portfolioService: PortfolioService) {
@@ -61,7 +67,7 @@ export class ChatService {
       // Get response from OpenAI
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: session.messages as any,
+        messages: session.messages,
         max_tokens: 500,
         temperature: 0.7,
       });
