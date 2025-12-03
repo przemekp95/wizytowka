@@ -13,16 +13,14 @@ interface ProfileImageProps {
 
 export default function ProfileImage({ src, alt, className, priority }: ProfileImageProps) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [mounted] = useState(true);
 
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className={`relative overflow-hidden rounded-xl ${mounted ? 'dark:bg-gradient-to-br dark:from-indigo-900/20 dark:to-purple-900/20 dark:border dark:border-indigo-500/20' : ''}`}>
+    <div
+      className={`relative overflow-hidden rounded-xl ${mounted ? 'dark:bg-gradient-to-br dark:from-indigo-900/20 dark:to-purple-900/20 dark:border dark:border-indigo-500/20' : ''}`}
+    >
       <Image
         src={src}
         alt={alt}
@@ -30,7 +28,7 @@ export default function ProfileImage({ src, alt, className, priority }: ProfileI
         className={`object-cover transition-all duration-500 ${mounted && isDark ? 'filter brightness-110 contrast-110' : ''} ${className || ''}`}
         priority={priority}
         style={{
-          filter: mounted && isDark ? 'brightness(1.2) contrast(1.1) saturate(1.1)' : 'none'
+          filter: mounted && isDark ? 'brightness(1.2) contrast(1.1) saturate(1.1)' : 'none',
         }}
       />
       {mounted && isDark && (

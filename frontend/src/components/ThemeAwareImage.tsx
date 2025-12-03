@@ -42,11 +42,7 @@ export default function ThemeAwareImage({
   quality,
 }: ThemeAwareImageProps) {
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [mounted] = useState(true);
 
   // Return light image during SSR and initial hydration to prevent mismatch
   if (!mounted) {
@@ -96,13 +92,7 @@ export default function ThemeAwareImage({
       priority={priority}
       placeholder={placeholder}
       blurDataURL={blurDataURL}
-      onLoadingComplete={(result) => {
-        // Ensure image is visible after loading
-        if (result?.naturalWidth > 0) {
-          setMounted(true);
-        }
-        onLoadingComplete?.();
-      }}
+      onLoadingComplete={onLoadingComplete}
       onLoad={onLoad}
       onError={onError}
       quality={quality}
