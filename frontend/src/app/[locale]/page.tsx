@@ -380,7 +380,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-slate-700 mb-8">
-                {locale === 'en' ? 'Skills by Technology Usage' : 'Umiejętności wg użycia technologii'}
+                {locale === 'en' ? 'Technology Usage Stats' : 'Statystyki użycia technologii'}
               </h3>
               <div className="w-full max-w-4xl">
                 {dynamicSkills && dynamicSkills.length > 0 ? (
