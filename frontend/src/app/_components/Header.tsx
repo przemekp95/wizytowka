@@ -59,6 +59,9 @@ export default function Header() {
           <Link className="nav-link" href="/#skills">
             {t('skills')}
           </Link>
+          <Link className="nav-link" href="/#tech-analysis">
+            {t('techAnalysis')}
+          </Link>
           <Link className="nav-link" href="/#contact">
             {t('contact')}
           </Link>
