@@ -7,7 +7,7 @@
   @apply font-bold;
 }
 .link {
-  @apply text-slate-700 hover:text-indigo-600 transition-colors;
+  @apply text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors;
 }
 
 .btn {
@@ -17,30 +17,34 @@
          border border-slate-300
          px-5 py-3
          font-medium shadow-sm
-         transition-colors
-         bg-white text-slate-900 hover:bg-slate-50
-         focus:outline-none focus:border-indigo-500;
+         transition-all duration-200 transform
+         bg-white text-slate-900 hover:bg-slate-50 hover:scale-105 hover:shadow-lg
+         active:scale-95 active:shadow-sm
+         focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20;
 }
 .btn-ghost {
   @extend .btn;
-  @apply bg-transparent hover:bg-slate-100;
+  @apply bg-transparent hover:bg-slate-100 active:bg-slate-200;
 }
 .btn-primary {
   @extend .btn;
   background: $primary;
   color: #fff;
-  &:hover {
-    background: $primary-500;
-  }
+  @apply hover:bg-indigo-700 active:bg-indigo-800;
 }
 
 .section-title {
-  @apply text-3xl md:text-4xl font-extrabold tracking-tight;
+  @apply text-3xl md:text-4xl font-extrabold tracking-tight text-black dark:text-white;
 }
 
 .card {
   @include card;
-  @apply transition-transform hover:-translate-y-0.5;
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/5;
+  &:hover {
+    .card-media .img {
+      @apply scale-105;
+    }
+  }
 }
 .card-title {
   @apply mt-4 text-lg font-semibold;
@@ -57,7 +61,7 @@
 }
 
 .chip {
-  @apply inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-700 bg-white;
+  @apply inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-700 bg-white dark:border-gray-600 dark:text-gray-300 dark:bg-gray-800;
 }
 
 .avatar {
@@ -91,16 +95,17 @@
 }
 
 .site-header {
-  @apply transition-colors duration-300;
+  @apply transition-all duration-300;
   height: 3.5rem;
   background: #0f172a;
+  @apply dark:bg-gray-900 dark:border-b dark:border-gray-800;
 
   .brand {
-    @apply text-white text-xl font-bold tracking-tight;
+    @apply text-white text-xl font-bold tracking-tight dark:text-gray-100;
   }
 
   .nav-link {
-    @apply text-slate-100 hover:text-white transition-colors;
+    @apply text-slate-100 hover:text-white transition-colors dark:text-gray-300 dark:hover:text-gray-100;
   }
 
   .nav-btn {
@@ -108,33 +113,36 @@
     background: white;
     color: black;
     &:hover {
-      @apply bg-slate-200;
+      @apply bg-slate-200 dark:bg-gray-700;
     }
     &:focus-visible {
-      @apply outline-none ring-2 ring-offset-2 ring-slate-300;
+      @apply outline-none ring-2 ring-offset-2 ring-slate-300 dark:ring-gray-600;
     }
+    @apply dark:bg-gray-800 dark:text-gray-100;
   }
 }
 
 .site-header.scrolled {
-  @apply bg-white border-b shadow-sm;
+  @apply bg-white border-b shadow-sm dark:bg-gray-900 dark:border-gray-800;
 
   .brand {
-    @apply text-slate-900;
+    @apply text-slate-900 dark:text-gray-100;
   }
 
   .nav-link {
-    @apply text-slate-800 hover:text-black;
+    @apply text-slate-800 hover:text-black dark:text-gray-300 dark:hover:text-gray-100;
   }
 
   .nav-btn {
     background: black;
     color: white;
+    @apply dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
     &:hover {
       background: #1e293b;
+      @apply dark:bg-gray-600;
     }
     &:focus-visible {
-      @apply outline-none ring-2 ring-offset-2 ring-slate-400;
+      @apply outline-none ring-2 ring-offset-2 ring-slate-400 dark:ring-gray-500;
     }
   }
 }
@@ -160,7 +168,7 @@
 }
 
 .stack-title {
-  @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
+  @apply text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
 }
 
 .contact-card {

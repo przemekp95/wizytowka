@@ -14,15 +14,8 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body
-        className="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li..."
-        suppressHydrationWarning={true}
-      >
-        <div id="i18n-provider" data-locale={locale}>
-          {children}
-        </div>
-      </body>
-    </html>
+    <div id="i18n-provider" data-locale={locale} lang={locale}>
+      {children}
+    </div>
   );
 }

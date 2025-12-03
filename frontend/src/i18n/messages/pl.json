@@ -13,13 +13,6 @@
     "viewProjects": "Zobacz projekty",
     "contactMe": "Skontaktuj się"
   },
-  "portfolio": {
-    "title": "Portfolio",
-    "noItems": "Brak pozycji do wyświetlenia.",
-    "newTech": "Nowa technologia",
-    "repository": "Repozytorium",
-    "technologies": "Technologie"
-  },
   "about": {
     "title": "O mnie",
     "description": "Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.",
@@ -35,11 +28,15 @@
     "name": "Imię i nazwisko",
     "email": "E-mail",
     "message": "Wiadomość",
+    "placeholderName": "Wpisz swoje pełne imię i nazwisko",
+    "placeholderEmail": "Wprowadź swój adres e-mail",
+    "placeholderMessage": "Napisz swoją wiadomość tutaj...",
+    "maxChars": "Maksymalnie 5000 znaków",
     "send": "Wyślij",
     "sending": "Wysyłanie...",
     "success": "Wiadomość wysłana ✅",
-    "error": "Uzupełnij wszystkie pola.",
-    "sendError": "Błąd wysyłki",
+    "error": "Wypełnij wszystkie pola.",
+    "sendError": "Błąd wysyłania",
     "unknownError": "Nieznany błąd"
   },
   "footer": {
@@ -71,6 +68,13 @@
   "language": {
     "polish": "Polski",
     "english": "English"
+  },
+  "portfolio": {
+    "title": "Moje projekty",
+    "noItems": "Brak projektów do wyświetlenia.",
+    "newTech": "Nowa technologia",
+    "repository": "Repozytorium",
+    "technologies": "Wykorzystane technologie"
   },
   "chat": {
     "openButtonLabel": "Otwórz czat z AI asystentem",

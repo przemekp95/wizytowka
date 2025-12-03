@@ -122,7 +122,7 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
   return (
     <div
       ref={containerRef}
-      className={`fixed top-14 bottom-20 left-0 right-0 z-[-1] overflow-hidden ${className}`}
+      className={`fixed top-14 bottom-20 left-0 right-0 z-[-1] ${className}`}
       style={{
         perspective: '1000px',
         transformStyle: 'preserve-3d',

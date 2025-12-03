@@ -5,8 +5,12 @@ import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
 import { useState, useMemo } from 'react';
 
-
+// Register Chart.js globally
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+// Set default white text for all chart legends globally
+ChartJS.defaults.color = '#ffffff';
+ChartJS.defaults.plugins.legend.labels.color = '#ffffff';
 
 export interface PortfolioCategory {
   id: string;
@@ -126,6 +130,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
           lineWidth: isVisible ? 0 : 2,
           hidden: !isVisible, // Show/cross out based on visibility
           index,
+          fontColor: '#ffffff',
         });
       }
     }
@@ -154,6 +159,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
         labels: {
           padding: 20,
           usePointStyle: true, // Use colorful circle point styles
+          color: 'white', // White text for legend below chart
           font: {
             size: 12,
             weight: 500,
@@ -221,7 +227,7 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1 }}
-          className="text-center text-xs text-slate-500 mt-4"
+          className="text-center text-xs text-white mt-4"
         >
           {isEnglish
             ? 'Hover over segments for details'
