@@ -63,10 +63,14 @@ backend-build:
 # Render.com deployment (frontend only)
 render-build-frontend: frontend-build-render
 
-# Docker builds
-docker-build:
-	docker build -f backend/Dockerfile -t portfolio-backend .
-	docker build -f frontend/Dockerfile -t portfolio-frontend .
+# 🎯 RENDER.COM FIX - Copy this to your Render.com Build Command field:
+# make render-frontend-build
+# OR directly: cd frontend && corepack enable pnpm && pnpm build
+
+# Simple Render command (copy this to Render.com build field)
+render-simple: frontend-build-render
+
+# Render.com ready command - just copy this to build field:
 
 docker-run:
 	docker-compose up --build
