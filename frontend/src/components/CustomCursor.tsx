@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 interface CursorTrail {
@@ -16,23 +16,31 @@ export function CustomCursor() {
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  // Optimized spring settings for better performance
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  // Smooth spring animation
+  const springX = useSpring(mouseX, { stiffness: 400, damping: 35, mass: 0.1 });
+  const springY = useSpring(mouseY, { stiffness: 400, damping: 35, mass: 0.1 });
 
   const [isVisible, setIsVisible] = useState(true);
   const [isClickable, setIsClickable] = useState(false);
   const [trails, setTrails] = useState<CursorTrail[]>([]);
   const [theme, setTheme] = useState('dark');
 
-  // Throttle trail creation
+  // Use useCallback for stable references
+  const updateCursorPosition = useCallback((x: number, y: number) => {
+    mouseX.set(x);
+    mouseY.set(y);
+  }, [mouseX, mouseY]);
+
+  // Throttle trail creation more aggressively
   const lastTrailTimeRef = useRef(0);
 
   useEffect(() => {
-    // Detect theme changes
+    // Detect theme changes less frequently
     const handleThemeChange = () => {
       const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      setTheme(currentTheme);
+      if (currentTheme !== theme) {
+        setTheme(currentTheme);
+      }
     };
 
     handleThemeChange();
@@ -43,20 +51,22 @@ export function CustomCursor() {
       const x = e.clientX;
       const y = e.clientY;
 
-      mouseX.set(x);
-      mouseY.set(y);
+      // Always update cursor position for smooth movement
+      updateCursorPosition(x, y);
 
-      // Throttled trail creation - only every 50ms for better performance
+      // Throttled trail creation - reduced to 80ms for better performance
       const now = Date.now();
-      if (now - lastTrailTimeRef.current > 50) {
-        setTrails(prev => {
-          const newTrail: CursorTrail = {
-            id: Date.now().toString(),
-            x,
-            y,
-            timestamp: now,
-          };
-          return [...prev.slice(-8), newTrail]; // Keep only last 8 trails
+      if (now - lastTrailTimeRef.current > 80) {
+        requestAnimationFrame(() => {
+          setTrails(prev => {
+            const newTrail: CursorTrail = {
+              id: now.toString(),
+              x,
+              y,
+              timestamp: now,
+            };
+            return [...prev.slice(-6), newTrail]; // Reduced to 6 trails
+          });
         });
         lastTrailTimeRef.current = now;
       }
