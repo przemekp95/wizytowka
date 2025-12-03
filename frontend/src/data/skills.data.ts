@@ -768,7 +768,7 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
 
       return {
         id: techName.toLowerCase().replace(/\s+/g, '-'),
-        name: techName,
+        name: normalizeTechName(techName),
         level, // Keeping level as percentage for backward compatibility
         projectCount: count, // Number of projects using this technology
         category,
