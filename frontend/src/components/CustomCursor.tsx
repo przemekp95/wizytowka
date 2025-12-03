@@ -68,8 +68,9 @@ export function CustomCursor() {
       setIsClickable(!!isClickableElement);
     };
 
-    // Add global styles to hide native cursor
+    // Add global styles to hide native cursor and apply custom cursor class
     document.body.style.cursor = 'none';
+    document.body.classList.add('custom-cursor-active');
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseenter', handleMouseEnter);
@@ -82,6 +83,7 @@ export function CustomCursor() {
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseover', handleMouseOver);
       document.body.style.cursor = 'auto';
+      document.body.classList.remove('custom-cursor-active');
       observer.disconnect();
     };
   }, [mouseX, mouseY]);

@@ -147,4 +147,32 @@ section[id],
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom cursor styles - override all default browser cursors */
+  .custom-cursor-active,
+  .custom-cursor-active *,
+  .custom-cursor-active a:hover,
+  .custom-cursor-active button:hover,
+  .custom-cursor-active [cursor="pointer"]:hover,
+  .custom-cursor-active [onclick]:hover {
+    cursor: none !important;
+  }
+
+  /* Force cursor none on all interactive and form elements */
+  .custom-cursor-active input,
+  .custom-cursor-active textarea,
+  .custom-cursor-active select,
+  .custom-cursor-active button,
+  .custom-cursor-active a,
+  .custom-cursor-active label,
+  .custom-cursor-active [role="button"],
+  .custom-cursor-active [tabindex]:focus {
+    cursor: none !important;
+  }
+
+  /* Override any Tailwind or other CSS cursor utilities */
+  .custom-cursor-active .cursor-pointer,
+  .custom-cursor-active .cursor-text {
+    cursor: none !important;
+  }
 }
