@@ -48,7 +48,7 @@ const getTrendIndicator = (isTrend: TechTrend['isTrend']) => {
   }
 };
 
-export function SkillProgress({ trend, monthsLabel = 'mies.', locale = 'pl' }: SkillProgressProps) {
+export function SkillProgress({ trend, locale = 'pl' }: Omit<SkillProgressProps, 'monthsLabel'>) {
   const [progress, setProgress] = React.useState(0);
 
   const changeValue = trend.yearOverYearChange;
@@ -61,7 +61,6 @@ export function SkillProgress({ trend, monthsLabel = 'mies.', locale = 'pl' }: S
     return () => clearTimeout(timer);
   }, [changeValue]);
 
-  const colors = colorMap[trend.category];
   const trendIndicator = getTrendIndicator(trend.isTrend);
 
   return (

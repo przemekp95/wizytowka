@@ -1,6 +1,6 @@
 'use client';
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions, ChartEvent, LegendItem, LegendElement } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions, ChartEvent, LegendItem, LegendElement, PieController } from 'chart.js';
 import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
 import { useState, useMemo } from 'react';
@@ -111,20 +111,25 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   };
 
   // Generate legend labels - show all categories in legend
-  const generateLegendLabels = (chart: any) => {
-    return chart.config.data.labels?.map((label: string, index: number) => {
-      const category = dataSource[index];
-      const isVisible = visibleCategoryIds.includes(category?.id);
+  const generateLegendLabels = (chart: ChartJS<'pie', number[], unknown>) => {
+    const labels: LegendItem[] = [];
+    if (chart.config.data.labels) {
+      for (let index = 0; index < chart.config.data.labels.length; index++) {
+        const label = chart.config.data.labels[index] as string;
+        const category = dataSource[index];
+        const isVisible = visibleCategoryIds.includes(category?.id);
 
-      return {
-        text: label,
-        fillStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
-        strokeStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
-        lineWidth: isVisible ? 0 : 2,
-        hidden: !isVisible, // Show/cross out based on visibility
-        index,
-      };
-    }) || [];
+        labels.push({
+          text: label,
+          fillStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
+          strokeStyle: isVisible ? category?.color : 'rgba(128, 128, 128, 0.5)',
+          lineWidth: isVisible ? 0 : 2,
+          hidden: !isVisible, // Show/cross out based on visibility
+          index,
+        });
+      }
+    }
+    return labels;
   };
 
   const data = {
