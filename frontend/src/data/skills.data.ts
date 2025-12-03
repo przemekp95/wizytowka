@@ -418,13 +418,19 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   const categoryCounts: Record<string, number> = {};
   portfolio.forEach((project) => {
     const categoryString = project.category?.toString() || '';
+    console.log(`🏷️ Project "${project.title}": categories = "${categoryString}"`);
     if (categoryString) {
       const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
+      console.log(`   ➡️ Parsed categories: ${JSON.stringify(categoryParts)}`);
       categoryParts.forEach((category) => {
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
       });
+    } else {
+      console.log(`   ❌ No categories defined for this project`);
     }
   });
+
+  console.log('📈 Final category counts:', categoryCounts);
 
   // Definiuj kolory dla commonly używanych kategorii
   const categoryColors: Record<string, string> = {
