@@ -13,9 +13,9 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    // Optymalizacja - mniej obiektów, ale większe kluczowe kształty
+    // Zwiększona liczba kafelków 3D dla lepszego efektu
     const isMobile = window.innerWidth < 768;
-    const shapeCount = isMobile ? 15 : 30; // Znacznie mniej obiektów
+    const shapeCount = isMobile ? 25 : 50; // Więcej kafelków!
     const shapes: HTMLDivElement[] = [];
 
     // Główna pętla tworzenia obiektów
@@ -87,19 +87,19 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
       const mouseX = e.clientX / window.innerWidth;
       const mouseY = e.clientY / window.innerHeight;
 
-      // Aktualizuj tylko główne duże kształty podczas ruchu myszki dla lepszej wydajności
-      shapes.slice(0, 8).forEach((shape, index) => {
-        const speed = ((index % 3) + 1) * 0.3; // Zmniejszone prędkości
+      // Wszystkie kafelki reagują na kursor dla lepszej interaktywności!
+      shapes.forEach((shape, index) => {
+        const speed = ((index % 4) + 1) * 0.5; // Zwiększona prędkość reakcji!
         const x = parseFloat(shape.style.transform.split('translate3d(')[1]?.split('px')[0] || '0');
         const y = parseFloat(shape.style.transform.split(',')[1]?.split('px')[0] || '0');
 
-        // Pre-kalkulowane kierunki dla dodatkowych oszczędności
-        const shouldReverse = index < 3; // Tylko główne 3 kształty mają przeciwną reakcję
+        // Różne kierunki ruchu dla różnych grup kształtów
+        const shouldReverse = index < shapeCount / 3; // Pierwsza trzecia ma przeciwną reakcję
         const directionX = shouldReverse ? -1 : 1;
         const directionY = shouldReverse ? -1 : 1;
 
-        const newX = x + (mouseX - 0.5) * speed * directionX * 3; // Zmniejszony współczynnik ruchu
-        const newY = y + (mouseY - 0.5) * speed * directionY * 3;
+        const newX = x + (mouseX - 0.5) * speed * directionX * 6; // Znacznie zwiększony współczynnik ruchu!
+        const newY = y + (mouseY - 0.5) * speed * directionY * 6;
 
         const rotationMatch = shape.style.transform.match(
           /rotateX\([^)]+\)\s+rotateY\([^)]+\)\s+rotateZ\([^)]+\)/
