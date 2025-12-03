@@ -29,10 +29,11 @@ export function CustomCursor() {
   const updateCursorPosition = useCallback((x: number, y: number) => {
     mouseX.set(x);
     mouseY.set(y);
-  }, [mouseX, mouseY]);
+  }, []);
 
-  // Throttle trail creation more aggressively
+  // Throttle trail creation aggressively for 60fps smoothness
   const lastTrailTimeRef = useRef(0);
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // Detect theme changes less frequently
@@ -54,21 +55,25 @@ export function CustomCursor() {
       // Always update cursor position for smooth movement
       updateCursorPosition(x, y);
 
-      // Throttled trail creation - reduced to 80ms for better performance
+      // Extremely throttled trail creation - 120ms for ultra smooth performance
       const now = Date.now();
-      if (now - lastTrailTimeRef.current > 80) {
-        requestAnimationFrame(() => {
-          setTrails(prev => {
-            const newTrail: CursorTrail = {
-              id: now.toString(),
-              x,
-              y,
-              timestamp: now,
-            };
-            return [...prev.slice(-6), newTrail]; // Reduced to 6 trails
+      if (now - lastTrailTimeRef.current > 120) {
+        // Use single animation frame to batch updates
+        if (!animationFrameRef.current) {
+          animationFrameRef.current = requestAnimationFrame(() => {
+            setTrails(prev => {
+              const newTrail: CursorTrail = {
+                id: now.toString(),
+                x,
+                y,
+                timestamp: now,
+              };
+              return [...prev.slice(-4), newTrail]; // Reduced to 4 minimal trails
+            });
+            lastTrailTimeRef.current = now;
+            animationFrameRef.current = undefined;
           });
-        });
-        lastTrailTimeRef.current = now;
+        }
       }
     };
 
