@@ -16,9 +16,9 @@ export function CustomCursor() {
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  // Smooth spring animation
-  const springX = useSpring(mouseX, { stiffness: 400, damping: 35, mass: 0.1 });
-  const springY = useSpring(mouseY, { stiffness: 400, damping: 35, mass: 0.1 });
+  // Ultra smooth spring animation for zero lag
+  const springX = useSpring(mouseX, { stiffness: 350, damping: 45, mass: 0.05 });
+  const springY = useSpring(mouseY, { stiffness: 350, damping: 45, mass: 0.05 });
 
   const [isVisible, setIsVisible] = useState(true);
   const [isClickable, setIsClickable] = useState(false);
