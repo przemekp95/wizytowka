@@ -428,9 +428,9 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
   // Definiuj kolory dla commonly używanych kategorii
   const categoryColors: Record<string, string> = {
-    'web app': 'rgba(6, 182, 212, 0.8)',       // cyan - ładny i żywy kolor dla web apps
-    webapp: 'rgba(6, 182, 212, 0.8)',          // cyan - ładny i żywy kolor dla web apps
-    web: 'rgba(6, 182, 212, 0.8)',             // cyan - ładny i żywy kolor dla web apps
+    'web app': 'rgba(236, 72, 153, 0.8)',      // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    webapp: 'rgba(236, 72, 153, 0.8)',         // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    web: 'rgba(236, 72, 153, 0.8)',            // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
     'landing page': 'rgba(34, 197, 94, 0.8)',  // zielony
     landing: 'rgba(34, 197, 94, 0.8)',         // zielony
     'landing-page': 'rgba(34, 197, 94, 0.8)',  // zielony
