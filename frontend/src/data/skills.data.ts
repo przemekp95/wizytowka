@@ -429,8 +429,10 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     }
   });
 
+
   // Definiuj kolory dla wszystkich rzeczywistych kategorii z portfolio
   const categoryColors: Record<string, string> = {
+    'web-app': 'rgba(236, 72, 153, 0.8)',       // FIXED! HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
     'web app': 'rgba(236, 72, 153, 0.8)',      // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
     webapp: 'rgba(236, 72, 153, 0.8)',         // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
     web: 'rgba(236, 72, 153, 0.8)',            // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
@@ -457,6 +459,12 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
 
   // Najpierw tłumaczenia dla najczęściej używanych kategorii
   const categoryTranslations: Record<string, { namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }> = {
+    'web-app': {
+      namePl: 'Aplikacje Webowe',
+      nameEn: 'Web Applications',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications',
+    },
     'web app': {
       namePl: 'Aplikacje Webowe',
       nameEn: 'Web Applications',
@@ -536,7 +544,7 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     const color = categoryColors[normalizedKey] ||
                   fallbackColors[index % fallbackColors.length];
 
-    console.log(`🏷️ Category "${categoryKey}" (normalized: "${normalizedKey}") ➡️ Color: ${color}`);
+
 
     // Tłumaczenia - najpierw predefined, potem generyczne z tytułu
     const translation = categoryTranslations[normalizedKey] || {
