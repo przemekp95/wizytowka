@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 interface CursorTrail {
@@ -26,10 +26,13 @@ export function CustomCursor() {
   const [theme, setTheme] = useState('dark');
 
   // Use useCallback for stable references
-  const updateCursorPosition = useCallback((x: number, y: number) => {
-    mouseX.set(x);
-    mouseY.set(y);
-  }, []);
+  const updateCursorPosition = useCallback(
+    (x: number, y: number) => {
+      mouseX.set(x);
+      mouseY.set(y);
+    },
+    [mouseX, mouseY]
+  );
 
   // Throttle trail creation aggressively for 60fps smoothness
   const lastTrailTimeRef = useRef(0);
@@ -61,7 +64,7 @@ export function CustomCursor() {
         // Use single animation frame to batch updates
         if (!animationFrameRef.current) {
           animationFrameRef.current = requestAnimationFrame(() => {
-            setTrails(prev => {
+            setTrails((prev) => {
               const newTrail: CursorTrail = {
                 id: now.toString(),
                 x,
@@ -138,11 +141,38 @@ export function CustomCursor() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setTrails(prev => prev.filter(trail => now - trail.timestamp < 400)); // Keep trails for 400ms
+      setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 400)); // Keep trails for 400ms
     }, 200); // Very infrequent cleanup - once every 200ms
 
     return () => clearInterval(interval);
   }, []);
+
+  // Use separate state for trail animations to avoid Date.now in render
+  const [trailAnimations, setTrailAnimations] = useState<{
+    [key: string]: { opacity: number; scale: number };
+  }>({});
+
+  // Update animations whenever trails change or periodically
+  useEffect(() => {
+    const updateAnimations = () => {
+      const currentTime = Date.now();
+      const newAnimations: { [key: string]: { opacity: number; scale: number } } = {};
+      trails.forEach((trail) => {
+        const age = currentTime - trail.timestamp;
+        newAnimations[trail.id] = {
+          opacity: Math.max(0, 1 - age / 500),
+          scale: Math.max(0.3, 1 - (age / 500) * 0.7),
+        };
+      });
+      setTrailAnimations(newAnimations);
+    };
+
+    updateAnimations();
+
+    // Update animations every 100ms for smooth trail fadeout
+    const interval = setInterval(updateAnimations, 100);
+    return () => clearInterval(interval);
+  }, [trails]);
 
   if (!isVisible) return null;
 
@@ -155,10 +185,7 @@ export function CustomCursor() {
         style={{ mixBlendMode: theme === 'dark' ? 'difference' : 'normal' }}
       >
         {trails.map((trail, index) => {
-          const age = Date.now() - trail.timestamp;
-          const opacity = Math.max(0, 1 - (age / 500));
-          const scale = Math.max(0.3, 1 - (age / 500) * 0.7);
-
+          const animation = trailAnimations[trail.id] || { scale: 0, opacity: 0 };
           return (
             <motion.div
               key={trail.id}
@@ -171,8 +198,8 @@ export function CustomCursor() {
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{
-                scale: scale,
-                opacity: opacity * 0.6,
+                scale: animation.scale,
+                opacity: animation.opacity * 0.6,
               }}
               transition={{
                 duration: 0.1,
@@ -187,9 +214,7 @@ export function CustomCursor() {
       <motion.div
         ref={cursorRef}
         className={`fixed w-6 h-6 pointer-events-none z-50 ${
-          theme === 'dark'
-            ? 'border-2 border-white'
-            : 'border-2 border-gray-800 bg-white'
+          theme === 'dark' ? 'border-2 border-white' : 'border-2 border-gray-800 bg-white'
         }`}
         style={{
           left: springX,
