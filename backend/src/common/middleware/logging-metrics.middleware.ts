@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { LoggingService } from '../../logging/logging.service';
 import { MetricsService } from '../../metrics/metrics.service';
 
+// Type-safe middleware with optional requestId
+
 @Injectable()
 export class LoggingMetricsMiddleware implements NestMiddleware {
   constructor(
@@ -13,7 +15,7 @@ export class LoggingMetricsMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
     const startTime = Date.now();
     const { method, originalUrl: url } = req;
-    const requestId = (req as any).requestId;
+    const requestId = req.requestId || 'unknown';
 
     // Log request start
     this.loggingService.info(`Request started: ${method} ${url}`, {
