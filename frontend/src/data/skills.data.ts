@@ -84,7 +84,6 @@ export const calculateTechTrends = (portfolio: PortfolioItem[]) => {
 
   // Jeśli mamy mniej niż minimalną liczbę projektów, pokaż podstawowe statystyki ale bez ekstremalnych procentów
   const totalProjectsForTrends = projectsLast12Months.length + projectsPrevious12Months.length;
-  const _hasLimitedData = totalProjectsForTrends < 4;
 
   // Funkcja do zliczania technologii w projektach
   const countTechInProjects = (projects: PortfolioItem[]): Record<string, number> => {
@@ -666,25 +665,7 @@ const normalizeTechName = (tech: string): string => {
   return normalizedWords.join(' ');
 };
 
-// Parser stringu technologii: "Next.js / React / Tailwind / SCSS / JavaScript, TypeScript"
-const parseTechStackString = (techString: string): string[] => {
-  // Podziel po: "/" (slash), "," (przecinek), "(" (nawias otwarty)
-  const parts = techString
-    .split(/[\(\)]/) // Najpierw usuń content w nawiasach
-    .filter((part) => !part.includes('(') && part.trim().length > 0)
-    .join(' ')
-    .split(/[/,]/) // Potem dziel po slash/przecinek
-    .map((tech) => tech.trim())
-    .filter((tech) => tech.length > 0)
 
-    // Normalizacja używając lookup table (zachowaj właściwą kapitalizację)
-    .map(normalizeTechName)
-
-    // Czyść spacje i filtry
-    .filter((tech) => tech.length > 1 && !/^\s*$/.test(tech));
-
-  return parts;
-};
 
 const techToCategoryMap = createTechToCategoryMap();
 
@@ -931,7 +912,7 @@ export const formatExperienceTime = async (
       .replace('{years_form}', yearsForm)
       .replace('{months}', months.toString())
       .replace('{months_form}', monthsForm);
-  } catch (error) {
+  } catch {
     // Fallback na angielski jeśli błędy tłumaczeń
     const fallbackYears = Math.floor(totalMonths / 12);
     const fallbackMonths = totalMonths % 12;
