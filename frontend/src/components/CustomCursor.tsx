@@ -72,6 +72,27 @@ export function CustomCursor() {
     document.body.style.cursor = 'none';
     document.body.classList.add('custom-cursor-active');
 
+    // Apply cursor: none to all elements via CSS injection
+    const styleId = 'custom-cursor-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .custom-cursor-active,
+        .custom-cursor-active *,
+        .custom-cursor-active a,
+        .custom-cursor-active button,
+        .custom-cursor-active input,
+        .custom-cursor-active textarea,
+        .custom-cursor-active select,
+        .custom-cursor-active [role="button"],
+        .custom-cursor-active [tabindex]:focus {
+          cursor: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseenter', handleMouseEnter);
     document.addEventListener('mouseleave', handleMouseLeave);

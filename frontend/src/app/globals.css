@@ -148,31 +148,33 @@ section[id],
     @apply bg-background text-foreground;
   }
 
-  /* Custom cursor styles - override all default browser cursors */
-  .custom-cursor-active,
-  .custom-cursor-active *,
-  .custom-cursor-active a:hover,
-  .custom-cursor-active button:hover,
-  .custom-cursor-active [cursor="pointer"]:hover,
-  .custom-cursor-active [onclick]:hover {
+  /* DISABLE ALL BROWSER CURSOR STYLES WHEN CUSTOM CURSOR IS ACTIVE */
+  .custom-cursor-active * {
     cursor: none !important;
   }
 
-  /* Force cursor none on all interactive and form elements */
+  /* Specific overrides for Tailwind cursor utilities */
+  .custom-cursor-active *[class*="cursor-"] {
+    cursor: none !important;
+  }
+
+  /* Force override on interaction hotspots */
+  .custom-cursor-active a,
+  .custom-cursor-active button,
   .custom-cursor-active input,
   .custom-cursor-active textarea,
   .custom-cursor-active select,
-  .custom-cursor-active button,
-  .custom-cursor-active a,
   .custom-cursor-active label,
   .custom-cursor-active [role="button"],
-  .custom-cursor-active [tabindex]:focus {
+  .custom-cursor-active [tabindex] {
     cursor: none !important;
   }
 
-  /* Override any Tailwind or other CSS cursor utilities */
-  .custom-cursor-active .cursor-pointer,
-  .custom-cursor-active .cursor-text {
+  .custom-cursor-active a:hover,
+  .custom-cursor-active button:hover,
+  .custom-cursor-active input:focus,
+  .custom-cursor-active textarea:focus,
+  .custom-cursor-active select:focus {
     cursor: none !important;
   }
 }
