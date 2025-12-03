@@ -17,13 +17,16 @@ export function CustomCursor() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   // Optimized spring settings for better performance
-  const springX = useSpring(mouseX, { stiffness: 200, damping: 25 });
-  const springY = useSpring(mouseY, { stiffness: 200, damping: 25 });
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
 
-  const [isVisible, setIsVisible] = useState(true); // Show cursor by default - fixes production issue
+  const [isVisible, setIsVisible] = useState(true);
   const [isClickable, setIsClickable] = useState(false);
   const [trails, setTrails] = useState<CursorTrail[]>([]);
-  const [theme, setTheme] = useState('dark'); // Default to dark theme for app
+  const [theme, setTheme] = useState('dark');
+
+  // Throttle trail creation
+  const lastTrailTimeRef = useRef(0);
 
   useEffect(() => {
     // Detect theme changes
@@ -36,29 +39,28 @@ export function CustomCursor() {
     const observer = new MutationObserver(handleThemeChange);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const x = e.clientX;
-    const y = e.clientY;
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = e.clientX;
+      const y = e.clientY;
 
-    mouseX.set(x);
-    mouseY.set(y);
+      mouseX.set(x);
+      mouseY.set(y);
 
-    // Add trail dot less frequently for better performance
-    setTrails(prev => {
-      // Only add trail if there are less than 10 or last trail is more than 30ms old
-      const lastTrail = prev[prev.length - 1];
-      if (prev.length < 10 || (lastTrail && Date.now() - lastTrail.timestamp > 30)) {
-        const newTrail: CursorTrail = {
-          id: Math.random().toString(36).substring(7),
-          x,
-          y,
-          timestamp: Date.now(),
-        };
-        return [...prev.slice(-12), newTrail]; // Keep only last 12 trails
+      // Throttled trail creation - only every 50ms for better performance
+      const now = Date.now();
+      if (now - lastTrailTimeRef.current > 50) {
+        setTrails(prev => {
+          const newTrail: CursorTrail = {
+            id: Date.now().toString(),
+            x,
+            y,
+            timestamp: now,
+          };
+          return [...prev.slice(-8), newTrail]; // Keep only last 8 trails
+        });
+        lastTrailTimeRef.current = now;
       }
-      return prev;
-    });
-  };
+    };
 
     const handleMouseEnter = () => setIsVisible(true);
     const handleMouseLeave = () => setIsVisible(false);
@@ -100,10 +102,11 @@ export function CustomCursor() {
       document.head.appendChild(style);
     }
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseenter', handleMouseEnter);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseover', handleMouseOver);
+    // Use passive event listeners for better performance
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    document.addEventListener('mouseover', handleMouseOver, { passive: true });
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -116,12 +119,12 @@ export function CustomCursor() {
     };
   }, [mouseX, mouseY]);
 
-  // Clean up old trails
+  // Clean up old trails less frequently
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setTrails(prev => prev.filter(trail => now - trail.timestamp < 500)); // Keep trails for 500ms
-    }, 50);
+      setTrails(prev => prev.filter(trail => now - trail.timestamp < 400)); // Keep trails for 400ms
+    }, 100); // Less frequent cleanup
 
     return () => clearInterval(interval);
   }, []);
