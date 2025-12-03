@@ -8,6 +8,16 @@ import {
 import type { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 
+// Define type for the select result
+type ContactMessageItem = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  ip: string | null;
+  createdAt: Date;
+};
+
 @Controller('contact')
 export class ContactAdminController {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,7 +35,7 @@ export class ContactAdminController {
 
     const take = Math.max(1, Math.min(Number(limit) || 20, 100));
 
-    const items = await this.prisma.contactMessage.findMany({
+    const items: ContactMessageItem[] = await this.prisma.contactMessage.findMany({
       take,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       orderBy: { createdAt: 'desc' },

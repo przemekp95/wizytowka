@@ -15,8 +15,10 @@ export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private openai: OpenAI;
 
-  private sessions: Map<string, { messages: ChatMessage[]; lastActivity: Date }> =
-    new Map();
+  private sessions: Map<
+    string,
+    { messages: ChatMessage[]; lastActivity: Date }
+  > = new Map();
 
   constructor(private readonly portfolioService: PortfolioService) {
     try {
