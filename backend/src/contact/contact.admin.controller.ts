@@ -35,8 +35,9 @@ export class ContactAdminController {
 
     const take = Math.max(1, Math.min(Number(limit) || 20, 100));
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const items: ContactMessageItem[] =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       await this.prisma.contactMessage.findMany({
         take,
         ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
