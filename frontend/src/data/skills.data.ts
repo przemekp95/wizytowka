@@ -478,8 +478,23 @@ export const getTotalSkillCategories = (skills?: Skill[]): Record<string, number
 };
 
 const categoryMapping: Record<string, string> = {
+  // Kategorie główne - mapuj na 'web-app'
   'web-app': 'web-app',
   webapp: 'web-app',
   web: 'web-app',
-  other: 'web-app',
+
+  // Aplikacje mobilne i inne - do 'other'
+  'mobile': 'other',
+  mobile: 'other',
+  'landing page': 'other',
+  landing: 'other',
+  'landing-page': 'other',
+  landingpage: 'other',
+  'e-commerce': 'other',
+  ecommerce: 'other',
+  'ai-enhanced': 'other',
+  ai: 'other',
+
+  // Wszystkie inne kategorie - do 'other'
+  default: 'other',
 };
