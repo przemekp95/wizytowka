@@ -135,7 +135,7 @@ export function CustomCursor() {
       document.body.classList.remove('custom-cursor-active');
       observer.disconnect();
     };
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, updateCursorPosition, theme]);
 
   // Aggressive cleanup for ultra-responsive trails - prevents accumulation during fast movements
   useEffect(() => {
