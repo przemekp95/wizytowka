@@ -325,7 +325,6 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
             <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">
               {t('contact.title')}
             </h2>
-            <p className="mt-2 text-center text-gray-300">{t('contact.description')}</p>
             <div className="mt-10 flex justify-center">
               <ContactForm />
             </div>
