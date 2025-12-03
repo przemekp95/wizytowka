@@ -224,7 +224,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <div className="bg-gray-800/30">
+        <div id="portfolio" className="bg-gray-800/30">
           <PortfolioSection items={items} locale={locale} />
         </div>
 
