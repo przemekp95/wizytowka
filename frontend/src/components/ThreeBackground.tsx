@@ -13,9 +13,9 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    // Zwiększona liczba kafelków 3D dla lepszego efektu
+    // Mniejsza liczba kafelków dla płynniejszego ruchu + automatyczne animacje zamiast ruchu myszki
     const isMobile = window.innerWidth < 768;
-    const shapeCount = isMobile ? 25 : 50; // Więcej kafelków!
+    const shapeCount = isMobile ? 18 : 30; // Mniej kafelków dla płynności!
     const shapes: HTMLDivElement[] = [];
 
     // Główna pętla tworzenia obiektów
@@ -75,43 +75,42 @@ export function ThreeBackground({ className = '' }: ThreeBackgroundProps) {
       shapes.push(shape);
     }
 
-    // Funkcja śledzenia kursora myszy dla interaktywności - zoptymalizowana
-    let lastUpdate = 0;
-    const throttleMs = 32; // ~30fps zamiast 60fps
+    // Dodajemy różnorodne automatyczne animacje animowanym objekcie prezentującym cały model.
+    shapes.forEach((shape, index) => {
+      // Diverse automatyčne animacje dla różnych kształtów
+      const animationType = index % 6;
+      let animationName = '';
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const now = Date.now();
-      if (now - lastUpdate < throttleMs) return;
-      lastUpdate = now;
+      switch (animationType) {
+        case 0:
+          animationName = 'floatUpSlow'; // Powolne unnoszenie w górę
+          break;
+        case 1:
+          animationName = 'floatDownSlow'; // Powolne opadanie w dół
+          break;
+        case 2:
+          animationName = 'floatUpFast'; // Szybkie unnoszenie
+          break;
+        case 3:
+          animationName = 'floatDownFast'; // Szybkie opadanie
+          break;
+        case 4:
+          animationName = 'rotateSlow'; // Powolny obrót
+          break;
+        case 5:
+          animationName = 'rotateWithFloat'; // Obrót z unoszeniem
+          break;
+      }
 
-      const mouseX = e.clientX / window.innerWidth;
-      const mouseY = e.clientY / window.innerHeight;
+      const animationDuration = `${8 + Math.random() * 12}s`; // Dłuższe animacje 8-20s
 
-      // Wszystkie kafelki reagują na kursor dla lepszej interaktywności!
-      shapes.forEach((shape, index) => {
-        const speed = ((index % 4) + 1) * 0.5; // Zwiększona prędkość reakcji!
-        const x = parseFloat(shape.style.transform.split('translate3d(')[1]?.split('px')[0] || '0');
-        const y = parseFloat(shape.style.transform.split(',')[1]?.split('px')[0] || '0');
+      shape.style.animation = `${animationName} ${animationDuration} ease-in-out infinite alternate`;
+    });
 
-        // Różne kierunki ruchu dla różnych grup kształtów
-        const shouldReverse = index < shapeCount / 3; // Pierwsza trzecia ma przeciwną reakcję
-        const directionX = shouldReverse ? -1 : 1;
-        const directionY = shouldReverse ? -1 : 1;
-
-        const newX = x + (mouseX - 0.5) * speed * directionX * 6; // Znacznie zwiększony współczynnik ruchu!
-        const newY = y + (mouseY - 0.5) * speed * directionY * 6;
-
-        const rotationMatch = shape.style.transform.match(
-          /rotateX\([^)]+\)\s+rotateY\([^)]+\)\s+rotateZ\([^)]+\)/
-        );
-        shape.style.transform = `translate3d(${newX}px, ${newY}px, ${shape.style.transform.split(',')[2]?.split('px')[0]}px) ${rotationMatch ? rotationMatch[0] : ''}`;
-      });
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
+    // Brak słuchacza ruchu myszki - kafelki poruszają się samodzielnie!
+    // To jest spokojnieszep East, bardziej płynne i less obciążające procesor.
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
       shapes.forEach((shape) => {
         if (container.contains(shape)) {
           container.removeChild(shape);
