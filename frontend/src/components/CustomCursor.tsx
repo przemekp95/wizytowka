@@ -58,9 +58,9 @@ export function CustomCursor() {
       // Always update cursor position for smooth movement
       updateCursorPosition(x, y);
 
-      // Optimized throttling - 80ms for longer trails, more responsive in complex sections
+      // Ultra-low throttling - 40ms for ultra-responsive trails in intense portfolio sections
       const now = Date.now();
-      if (now - lastTrailTimeRef.current > 80) {
+      if (now - lastTrailTimeRef.current > 40) {
         // Use single animation frame to batch updates
         if (!animationFrameRef.current) {
           animationFrameRef.current = requestAnimationFrame(() => {
@@ -137,12 +137,12 @@ export function CustomCursor() {
     };
   }, [mouseX, mouseY]);
 
-  // Optimized cleanup for smooth performance - more frequent in complex sections
+  // Aggressive cleanup for ultra-responsive trails - prevents accumulation during fast movements
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 600)); // Extended trail lifetime to 600ms for longer visibility
-    }, 150); // More frequent cleanup - every 150ms to prevent accumulation
+    }, 80); // Ultra-frequent cleanup - every 80ms matches throttling speed to prevent buildup
 
     return () => clearInterval(interval);
   }, []);
