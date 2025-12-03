@@ -1,4 +1,4 @@
-o'use client';
+'use client';
 
 import * as Progress from '@radix-ui/react-progress';
 import { motion } from 'framer-motion';
@@ -8,7 +8,6 @@ interface SkillBarProps {
   skill: {
     id: string;
     name: string;
-    level: number;
     projectCount: number;
     category: 'frontEnd' | 'backEnd' | 'database' | 'devops';
     experienceMonths?: number;
