@@ -396,7 +396,7 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   return skills;
 };
 
-// Statyczna mapa technologii na kategorie - hardcoded dla bezpieczeństwa produkcji
+// Dynamiczne tworzenie kategorii na podstawie tagów z portfolio
 export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
 
@@ -414,43 +414,147 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     ];
   }
 
-  const categories: Record<string, any> = {
-    'web-app': {
-      count: 0,
-      color: 'rgba(99, 102, 241, 0.8)',
-      namePl: 'Aplikacje webowe',
+  // Zbierz wszystkie unikalne kategorie z portfolio
+  const categoryCounts: Record<string, number> = {};
+  portfolio.forEach((project) => {
+    const categoryString = project.category?.toString() || '';
+    if (categoryString) {
+      const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
+      categoryParts.forEach((category) => {
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+      });
+    }
+  });
+
+  // Definiuj kolory dla commonly używanych kategorii
+  const categoryColors: Record<string, string> = {
+    'web app': 'rgba(99, 102, 241, 0.8)',      // niebieski
+    webapp: 'rgba(99, 102, 241, 0.8)',         // niebieski
+    web: 'rgba(99, 102, 241, 0.8)',            // niebieski
+    'landing page': 'rgba(34, 197, 94, 0.8)',   // zielony
+    landing: 'rgba(34, 197, 94, 0.8)',          // zielony
+    'landing-page': 'rgba(34, 197, 94, 0.8)',   // zielony
+    landingpage: 'rgba(34, 197, 94, 0.8)',      // zielony
+    ai: 'rgba(168, 85, 247, 0.8)',              // fioletowy
+    'e-commerce': 'rgba(251, 191, 36, 0.8)',    // żółty
+    ecommerce: 'rgba(251, 191, 36, 0.8)',       // żółty
+    mobile: 'rgba(239, 68, 68, 0.8)',           // czerwony
+  };
+
+  // Palette kolorów dla nieznanych kategorii
+  const fallbackColors = [
+    'rgba(156, 163, 175, 0.8)', // szary
+    'rgba(245, 158, 11, 0.8)',  // ciemny żółty
+    'rgba(59, 130, 246, 0.8)',   // jasny niebieski
+    'rgba(16, 185, 129, 0.8)',   // ciemny zielony
+    'rgba(236, 72, 153, 0.8)',   // różowy
+    'rgba(139, 69, 19, 0.8)',    // brązowy
+  ];
+
+  // Najpierw tłumaczenia dla najczęściej używanych kategorii
+  const categoryTranslations: Record<string, { namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }> = {
+    'web app': {
+      namePl: 'Aplikacje Webowe',
       nameEn: 'Web Applications',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications',
     },
-    'other': {
-      count: 0,
-      color: 'rgba(156, 163, 175, 0.8)',
-      namePl: 'Inne',
-      nameEn: 'Other',
+    webapp: {
+      namePl: 'Aplikacje Webowe',
+      nameEn: 'Web Applications',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications',
+    },
+    web: {
+      namePl: 'Aplikacje Webowe',
+      nameEn: 'Web Applications',
+      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+      descriptionEn: 'Full-featured web applications',
+    },
+    'landing page': {
+      namePl: 'Strony Landingowe',
+      nameEn: 'Landing Pages',
+      descriptionPl: 'Strony reklamowe i produktowe',
+      descriptionEn: 'Promotional and product pages',
+    },
+    landing: {
+      namePl: 'Strony Landingowe',
+      nameEn: 'Landing Pages',
+      descriptionPl: 'Strony reklamowe i produktowe',
+      descriptionEn: 'Promotional and product pages',
+    },
+    'landing-page': {
+      namePl: 'Strony Landingowe',
+      nameEn: 'Landing Pages',
+      descriptionPl: 'Strony reklamowe i produktowe',
+      descriptionEn: 'Promotional and product pages',
+    },
+    landingpage: {
+      namePl: 'Strony Landingowe',
+      nameEn: 'Landing Pages',
+      descriptionPl: 'Strony reklamowe i produktowe',
+      descriptionEn: 'Promotional and product pages',
+    },
+    ai: {
+      namePl: 'Rozwiązania AI',
+      nameEn: 'AI Solutions',
+      descriptionPl: 'Aplikacje zintegrowane ze sztuczną inteligencją',
+      descriptionEn: 'Applications integrated with artificial intelligence',
+    },
+    'e-commerce': {
+      namePl: 'E-commerce',
+      nameEn: 'E-commerce',
+      descriptionPl: 'Platformy handlu elektronicznego',
+      descriptionEn: 'Electronic commerce platforms',
+    },
+    ecommerce: {
+      namePl: 'E-commerce',
+      nameEn: 'E-commerce',
+      descriptionPl: 'Platformy handlu elektronicznego',
+      descriptionEn: 'Electronic commerce platforms',
+    },
+    mobile: {
+      namePl: 'Aplikacje Mobilne',
+      nameEn: 'Mobile Applications',
+      descriptionPl: 'Aplikacje na urządzenia mobilne',
+      descriptionEn: 'Mobile device applications',
     },
   };
 
-  portfolio.forEach((project) => {
-    const categoryString = project.category?.toString() || 'other';
-    const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
-    categoryParts.forEach((category) => {
-      const targetCategory = categoryMapping[category] || 'other';
-      categories[targetCategory].count += 1;
-    });
+  const totalCategoryMentions = Object.values(categoryCounts)
+    .reduce((sum: number, count: number) => sum + count, 0);
+
+  // Utwórz kategorie dla każdej znalezionej kategorii
+  const categories = Object.entries(categoryCounts).map(([categoryKey, count], index) => {
+    const normalizedKey = categoryKey.toLowerCase();
+
+    // Wybierz kolor - najpierw predefined, potem z palette
+    const color = categoryColors[normalizedKey] ||
+                  fallbackColors[index % fallbackColors.length];
+
+    // Tłumaczenia - najpierw predefined, potem generyczne z tytułu
+    const translation = categoryTranslations[normalizedKey] || {
+      namePl: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
+      nameEn: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
+      descriptionPl: `Projekty w kategorii: ${categoryKey}`,
+      descriptionEn: `Projects in category: ${categoryKey}`,
+    };
+
+    return {
+      id: normalizedKey.replace(/\s+/g, '-'),
+      namePl: translation.namePl,
+      nameEn: translation.nameEn,
+      percentage: (count / totalCategoryMentions) * 100,
+      color: color,
+      descriptionPl: translation.descriptionPl,
+      descriptionEn: translation.descriptionEn,
+    };
   });
 
-  const totalCategoryMentions = Object.values(categories).reduce((sum: number, cat: any) => sum + cat.count, 0);
-
-  return Object.entries(categories)
-    .map(([key, data]: [string, any]) => ({
-      id: key,
-      namePl: data.namePl,
-      nameEn: data.nameEn,
-      percentage: (data.count / totalCategoryMentions) * 100,
-      color: data.color,
-      descriptionPl: data.descriptionPl || data.namePl,
-      descriptionEn: data.descriptionEn || data.nameEn,
-    }))
-    .filter((cat: any) => cat.percentage >= 0.01);
+  // Posortuj wg procentu (malejąco)
+  return categories
+    .filter((cat: any) => cat.percentage >= 0.01)
+    .sort((a, b) => b.percentage - a.percentage);
 };
 
 // Stała fallback nazwa dla technologii bez doświadczeniem
@@ -475,26 +579,4 @@ export const getTotalSkillCategories = (skills?: Skill[]): Record<string, number
     },
     {} as Record<string, number>
   );
-};
-
-const categoryMapping: Record<string, string> = {
-  // Kategorie główne - mapuj na 'web-app'
-  'web-app': 'web-app',
-  webapp: 'web-app',
-  web: 'web-app',
-
-  // Aplikacje mobilne i inne - do 'other'
-  'mobile': 'other',
-  mobile: 'other',
-  'landing page': 'other',
-  landing: 'other',
-  'landing-page': 'other',
-  landingpage: 'other',
-  'e-commerce': 'other',
-  ecommerce: 'other',
-  'ai-enhanced': 'other',
-  ai: 'other',
-
-  // Wszystkie inne kategorie - do 'other'
-  default: 'other',
 };
