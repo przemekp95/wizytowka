@@ -76,13 +76,6 @@
     "polish": "Polski",
     "english": "English"
   },
-  "portfolio": {
-    "title": "Portfolio",
-    "noItems": "No items to display.",
-    "newTech": "New technology",
-    "repository": "Repository",
-    "technologies": "Technologies"
-  },
   "chat": {
     "openButtonLabel": "Open chat with AI assistant",
     "closeButtonLabel": "Close chat",
