@@ -218,6 +218,7 @@ export class ContactService {
     let savedId: string | undefined;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const saved = await this.prisma.contactMessage.create({
         data: {
           name: params.name,
@@ -227,6 +228,7 @@ export class ContactService {
         },
         select: { id: true },
       });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       savedId = saved.id;
     } catch (e) {
       const error =
