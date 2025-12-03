@@ -10,13 +10,13 @@ const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/gr
 
 // Validation schema
 const contactSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(2, 'Imię musi mieć przynajmniej 2 znaki')
     .max(50, 'Imię nie może być dłuższe niż 50 znaków'),
-  email: z.string()
-    .email('Nieprawidłowy adres email')
-    .min(1, 'Adres email jest wymagany'),
-  message: z.string()
+  email: z.string().email('Nieprawidłowy adres email').min(1, 'Adres email jest wymagany'),
+  message: z
+    .string()
     .min(10, 'Wiadomość musi mieć przynajmniej 10 znaków')
     .max(5000, 'Wiadomość nie może być dłuższa niż 5000 znaków'),
 });
@@ -94,7 +94,7 @@ export default function ContactSection() {
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + Math.random() * 30, 90));
+        setProgress((prev) => Math.min(prev + Math.random() * 30, 90));
       }, 200);
 
       // Honeypot check
@@ -144,7 +144,6 @@ export default function ContactSection() {
 
       // Auto-hide success after 5 seconds
       setTimeout(() => setStatus('idle'), 5000);
-
     } catch (e) {
       setStatus('error');
       setErr(e instanceof Error ? e.message : t('unknownError'));
@@ -162,8 +161,7 @@ export default function ContactSection() {
       viewport={{ once: true }}
     >
       {/* Header */}
-      <div className="text-center mb-8">
-      </div>
+      <div className="text-center mb-8"></div>
 
       {/* Name Field */}
       <motion.div
