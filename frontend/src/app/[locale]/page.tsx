@@ -6,10 +6,11 @@ import { notFound } from 'next/navigation';
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
 import { SkillProgress, TechTrend } from '@/components/SkillProgress';
+import { SkillBar } from '@/components/SkillBar';
 import { TechStackChart, PortfolioCategory } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
-import { calculateTechTrends, calculatePortfolioCategories } from '@/data/skills.data';
+import { calculateTechTrends, calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -100,9 +101,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const items = await fetchPortfolio();
   const t = await getTranslations(locale);
 
-  // Wyliczenie trendów technologii i kategorii projektów na podstawie portfola
+  // Wyliczenie trendów technologii, kategorii projektów i umiejętności na podstawie portfola
   const techTrends = calculateTechTrends(items);
   const portfolioCategories = calculatePortfolioCategories(items);
+  const dynamicSkills = calculateDynamicSkills(items);
 
   // Funkcja do mapowania nazw kategorii na czytelne nazwy dla oznaczeń
   const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
@@ -371,7 +373,43 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
+        {/* Skills section - showing top technologies by project count */}
         <section id="skills" className="py-20 md:py-28 bg-transparent">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
+              {locale === 'en' ? 'Skills & Technologies' : 'Umiejętności i technologie'}
+            </h2>
+
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-semibold text-slate-700 mb-8">
+                {locale === 'en' ? 'Technologies by Project Count' : 'Technologie wg liczby projektów'}
+              </h3>
+              <div className="w-full max-w-4xl">
+                {dynamicSkills && dynamicSkills.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {dynamicSkills
+                      .filter(skill => skill.category === 'frontEnd' || skill.category === 'backEnd')
+                      .slice(0, 10)
+                      .map((skill) => (
+                        <SkillBar
+                          key={skill.id}
+                          skill={skill}
+                          locale={locale as 'pl' | 'en'}
+                          maxProjects={Math.max(...dynamicSkills.map(s => s.projectCount))}
+                        />
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-500">
+                    {locale === 'en' ? 'No skills data available' : 'Brak danych o umiejętnościach'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tech-analysis" className="py-20 md:py-28 bg-transparent">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
               {locale === 'en' ? 'Technology Analysis' : 'Analiza technologiczna'}

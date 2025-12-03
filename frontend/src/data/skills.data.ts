@@ -4,6 +4,7 @@ export interface Skill {
   id: string;
   name: string;
   level: number;
+  projectCount: number; // new field for number of projects
   category: 'frontEnd' | 'backEnd' | 'database' | 'devops';
   experienceMonths?: number;
 }
@@ -787,7 +788,8 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
       return {
         id: techName.toLowerCase().replace(/\s+/g, '-'),
         name: techName,
-        level,
+        level, // Keeping level as percentage for backward compatibility
+        projectCount: count, // Number of projects using this technology
         category,
         experienceMonths,
       };
