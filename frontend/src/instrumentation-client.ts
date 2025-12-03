@@ -10,7 +10,7 @@ import { initBotId } from 'botid/client/core';
 initBotId({
   protect: [
     {
-      path: '/graphql',
+      path: 'https://wizytowka-046t.onrender.com/graphql',
       method: 'POST',
     },
   ],
