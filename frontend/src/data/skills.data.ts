@@ -398,7 +398,10 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
 
 // Dynamiczne tworzenie kategorii na podstawie tagów z portfolio
 export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
-  console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
+  // Debugowanie włączone tylko w development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
+  }
 
   if (!portfolio.length) {
     return [
@@ -418,20 +421,13 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   const categoryCounts: Record<string, number> = {};
   portfolio.forEach((project) => {
     const categoryString = project.category?.toString() || '';
-    console.log(`🏷️ Project "${project.title}": categories = "${categoryString}"`);
     if (categoryString) {
       const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
-      console.log(`   ➡️ Parsed categories: ${JSON.stringify(categoryParts)}`);
       categoryParts.forEach((category) => {
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
       });
-    } else {
-      console.log(`   ❌ No categories defined for this project`);
     }
   });
-
-  console.log('📈 Final category counts:', categoryCounts);
-  console.log('🎨 Final categories to render:', Object.keys(categoryCounts).length, 'categories');
 
   // Definiuj kolory dla wszystkich rzeczywistych kategorii z portfolio
   const categoryColors: Record<string, string> = {
@@ -539,6 +535,8 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     // Wybierz kolor - najpierw predefined, potem z palette
     const color = categoryColors[normalizedKey] ||
                   fallbackColors[index % fallbackColors.length];
+
+    console.log(`🏷️ Category "${categoryKey}" (normalized: "${normalizedKey}") ➡️ Color: ${color}`);
 
     // Tłumaczenia - najpierw predefined, potem generyczne z tytułu
     const translation = categoryTranslations[normalizedKey] || {
