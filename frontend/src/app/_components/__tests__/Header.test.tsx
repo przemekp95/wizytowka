@@ -5,19 +5,19 @@ import Header from '../Header';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
       <div {...props}>{children}</div>
     ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     nav: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
       <nav {...props}>{children}</nav>
     ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     ul: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
       <ul {...props}>{children}</ul>
     ),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     li: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
       <li {...props}>{children}</li>
     ),
