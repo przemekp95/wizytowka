@@ -9,8 +9,9 @@ import { LinksController } from './links.controller';
 import { ContactModule } from './contact/contact.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
+// TEMP: Disabled global throttling for testing
+// import { APP_GUARD } from '@nestjs/core';
+// import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { PortfolioApiController } from './portfolio/portfolio.controller';
 import { AwsModule } from './aws/aws.module';
@@ -77,7 +78,8 @@ function createImports() {
   providers: [
     AppService,
     HelloResolver,
-    { provide: APP_GUARD, useClass: GqlThrottlerGuard },
+    // TEMP: Disabled global throttling for testing
+    // { provide: APP_GUARD, useClass: GqlThrottlerGuard },
   ],
 })
 export class AppModule {}
