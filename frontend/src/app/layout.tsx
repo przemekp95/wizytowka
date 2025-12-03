@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { AOSInitializer } from '../components/AOSInitializer';
+import { CustomCursor } from '../components/CustomCursor';
 import './globals.css';
 
 const geistSans = Geist({
@@ -86,9 +88,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html className="dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100`}>
+        <AOSInitializer />
         <ErrorBoundary>{children}</ErrorBoundary>
+        <CustomCursor />
         <Analytics />
         <SpeedInsights />
       </body>

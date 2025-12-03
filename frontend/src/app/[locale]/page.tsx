@@ -10,6 +10,10 @@ import { TechStackChart, PortfolioCategory } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
 import { calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
+import dynamicImport from 'next/dynamic';
+
+// Import PortfolioSection as client component
+const PortfolioSection = dynamicImport(() => import('@/components/PortfolioSection'));
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -97,51 +101,17 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     notFound();
   }
 
-  const items = await fetchPortfolio();
-  const t = await getTranslations(locale);
+  // Fetch portfolio data - this will be used on the server side
+  const itemsPromise = fetchPortfolio();
+  const tPromise = getTranslations(locale);
+
+  const [items, t] = await Promise.all([itemsPromise, tPromise]);
 
   // Wyliczenie kategorii projektów i umiejętności na podstawie portfola
   const portfolioCategories = calculatePortfolioCategories(items);
   const dynamicSkills = calculateDynamicSkills(items);
 
-  // Funkcja do mapowania nazw kategorii na czytelne nazwy dla oznaczeń
-  const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
-    if (!category) return null;
-
-    // Dla wielu kategorii oddzielonych przecinkami, przetwaramy każdą
-    const categories = category.split(',').map(cat => cat.trim().toLowerCase()).filter(cat => cat.length > 0);
-
-    const mappedCategories: string[] = [];
-
-    for (const normalizedCategory of categories) {
-      let displayName: string | null = null;
-
-      if (locale === 'en') {
-        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') displayName = 'Web App';
-        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce') displayName = 'E-commerce';
-        else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') displayName = 'Mobile';
-        else if (normalizedCategory === 'landing') displayName = 'Landing';
-        else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') displayName = 'Tools';
-        else if (normalizedCategory === 'ai') displayName = 'AI';
-      } else {
-        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') displayName = 'WEB';
-        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') displayName = 'E-COMMERCE';
-        else if (normalizedCategory === 'api' || normalizedCategory === 'services' || normalizedCategory === 'usługi') displayName = 'SERVICES';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') displayName = 'MOBILE';
-        else if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') displayName = 'LANDING';
-        else if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') displayName = 'TOOLS';
-        else if (normalizedCategory === 'ai') displayName = 'AI';
-      }
-
-      if (displayName) {
-        mappedCategories.push(displayName);
-      }
-    }
-
-    // Zwracamy wszystkie mapowane kategorie rozdzielone przecinkami
-    return mappedCategories.length > 0 ? mappedCategories.join(', ') : null;
-  };
+  // Removed duplicate getCategoryDisplayName function - use component version instead
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -208,38 +178,44 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
       <ThreeBackground />
       <Header />
 
-      <main className="pt-14 bg-transparent text-slate-900">
+      <main className="pt-14 bg-transparent">
         <section id="home" className="relative overflow-hidden bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
-            <div className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+            <div className="relative w-full max-w-md mx-auto" data-aos="fade-right">
+              <div className="absolute inset-0 bg-white bg-opacity-10 rounded-xl -z-10 transform scale-105" />
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-500/20 aspect-[4/3]">
                 <Image
                   src="/images/PP-2-JPG-01.webp"
                   alt="Przemysław Pietrzak"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-all duration-500 brightness-110 contrast-110 saturate-110"
                   priority
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
               </div>
             </div>
 
-            <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight fade-up">
+            <div data-aos="fade-left" data-aos-delay="200">
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-white fade-up">
                 {t('hero.title')}
               </h1>
-              <p className="mt-5 max-w-prose text-lg text-slate-600 fade-up-delayed">
+              <p className="mt-5 max-w-prose text-lg text-gray-300 fade-up-delayed">
                 {t('hero.description')}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3 fade-up-delayed2">
                 <a
                   href="#portfolio"
-                  className="inline-flex items-center px-6 py-3 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  className="inline-flex items-center px-6 py-3 bg-gray-800 border border-gray-600 rounded-lg font-medium text-gray-100 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  data-aos="zoom-in"
+                  data-aos-delay="400"
                 >
                   {t('hero.viewProjects')}
                 </a>
                 <a
                   href="#contact"
-                  className="inline-flex items-center px-6 py-3 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  className="inline-flex items-center px-6 py-3 bg-gray-800 border border-gray-600 rounded-lg font-medium text-gray-100 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  data-aos="zoom-in"
+                  data-aos-delay="600"
                 >
                   {t('hero.contactMe')}
                 </a>
@@ -248,87 +224,11 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="portfolio" className="py-20 md:py-28 bg-transparent">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">
-              {t('portfolio.title')}
-            </h2>
+        <div className="bg-gray-800/30">
+          <PortfolioSection items={items} locale={locale} />
+        </div>
 
-            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
-              {items.length === 0 && (
-                <p className="col-span-full text-center text-slate-500">{t('portfolio.noItems')}</p>
-              )}
-
-              {items.map((p) => {
-                const imgClasses = p.isLogo ? 'object-contain bg-white p-6' : 'object-cover';
-                const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
-                const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
-
-                return (
-                  <article key={p._id} className="card group flex flex-col h-full text-center">
-                    <div className="relative overflow-hidden rounded-xl h-64 sm:h-72 lg:h-80">
-                      <Image
-                        src={p.img}
-                        alt={displayTitle}
-                        fill
-                        className={`${imgClasses} transition-transform duration-500 group-hover:scale-[1.02]`}
-                        sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                        unoptimized
-                      />
-                      {getCategoryDisplayName(p.category, locale) && (
-                        <span className="badge category">{getCategoryDisplayName(p.category, locale)}</span>
-                      )}
-                      {p.newTech && <span className="badge new-tech">{t('portfolio.newTech')}</span>}
-                    </div>
-                    <h3 className="mt-4 text-lg font-bold">
-                      <a
-                        href={p.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group/link underline-offset-4 hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-sm"
-                      >
-                        {displayTitle}
-                      </a>
-                    </h3>
-                    <p className="mt-2 text-sm text-slate-600">{displayDesc}</p>
-
-                    {p.repoUrl?.trim() && (
-                      <div className="mt-4">
-                        <div className="text-xs uppercase tracking-wide text-slate-500">
-                          {t('portfolio.repository')}
-                        </div>
-                        <a
-                          href={p.repoUrl!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium underline underline-offset-4 hover:no-underline break-all"
-                          aria-label={`Repozytorium ${p.title}`}
-                        >
-                          {p.repoUrl}
-                        </a>
-                      </div>
-                    )}
-
-                    <div className="mt-4">
-                      <div className="font-semibold text-slate-800">
-                        {t('portfolio.technologies')}
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-start gap-1.5 max-w-full">
-                        {p.tags?.map((t) => (
-                          <span key={t} className="chip shrink-0">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="about" className="bg-transparent">
+        <section id="about" className="bg-gray-800/60">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
             <div className="lg:col-span-2 flex justify-center">
               <Image
@@ -341,18 +241,18 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               />
             </div>
             <div className="lg:col-span-3">
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
                 {t('about.title')}
               </h2>
-              <p className="mt-3 text-slate-700 leading-relaxed text-justify">
+              <p className="mt-3 text-gray-300 leading-relaxed text-justify">
                 {t('about.description')}
               </p>
 
               <div className="mt-8">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
                   {t('about.techStack')}
                 </h3>
-                <ul className="mt-4 space-y-3">
+                <ul className="mt-4 space-y-3 text-gray-300">
                   <li className="bullet">
                     <strong>{t('about.frontend')}</strong>
                   </li>
@@ -372,16 +272,13 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         </section>
 
         {/* Skills section - showing top technologies by project count */}
-        <section id="skills" className="py-20 md:py-28 bg-transparent">
+        <section id="skills" className="py-20 md:py-28 bg-transparent text-white">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center text-white mb-16">
               {locale === 'en' ? 'Skills & Technologies' : 'Umiejętności i technologie'}
             </h2>
 
             <div className="flex flex-col items-center">
-              <h3 className="text-xl font-semibold text-slate-700 mb-8">
-                {locale === 'en' ? 'Skills by Frequency' : 'Umiejętności wg częstości użycia'}
-              </h3>
               <div className="w-full max-w-4xl">
                 {dynamicSkills && dynamicSkills.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,7 +295,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                       ))}
                   </div>
                 ) : (
-                  <p className="text-center text-slate-500">
+                  <p className="text-center text-gray-500">
                     {locale === 'en' ? 'No skills data available' : 'Brak danych o umiejętnościach'}
                   </p>
                 )}
@@ -407,9 +304,9 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="tech-analysis" className="py-20 md:py-28 bg-transparent">
+        <section id="tech-analysis" className="py-20 md:py-28 bg-transparent text-white">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center text-white mb-16">
               {locale === 'en' ? 'Project Portfolio Analysis' : 'Analiza portfela projektów'}
             </h2>
 
@@ -423,12 +320,12 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           </div>
         </section>
 
-        <section id="contact" className="py-24 bg-transparent">
+        <section id="contact" className="py-24 bg-transparent text-white">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight">
+            <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">
               {t('contact.title')}
             </h2>
-            <p className="mt-2 text-center text-slate-600">{t('contact.description')}</p>
+            <p className="mt-2 text-center text-gray-300">{t('contact.description')}</p>
             <div className="mt-10 flex justify-center">
               <ContactForm />
             </div>
@@ -436,14 +333,14 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+      <footer className="bg-gray-900 border-t border-gray-800">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-300 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-gray-100">{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           <div className="flex items-center gap-4">
-            <a className="link" href="https://github.com/przemekp95">
+            <a className="text-gray-300 hover:text-gray-100 transition-colors" href="https://github.com/przemekp95">
               {t('footer.github')}
             </a>
-            <a className="link" href="https://www.linkedin.com/in/przempietrzak/">
+            <a className="text-gray-300 hover:text-gray-100 transition-colors" href="https://www.linkedin.com/in/przempietrzak/">
               {t('footer.linkedin')}
             </a>
           </div>

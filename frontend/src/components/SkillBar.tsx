@@ -69,7 +69,7 @@ export function SkillBar({ skill, locale = 'pl', maxProjects }: SkillBarProps) {
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-700">{skill.name}</span>
+          <span className="text-sm font-medium text-gray-100">{skill.name}</span>
           <span className={`text-xs font-semibold ${colors.text}`}>
             {skill.projectCount}
           </span>
@@ -85,7 +85,7 @@ export function SkillBar({ skill, locale = 'pl', maxProjects }: SkillBarProps) {
       </div>
       <Progress.Root
         value={progress}
-        className="relative w-full h-3 bg-slate-200 rounded-full overflow-hidden"
+        className="relative w-full h-3 bg-slate-200 dark:bg-slate-300 rounded-full overflow-hidden"
         aria-label={`${skill.name}: ${pluralizeProjects(skill.projectCount, locale)}`}
       >
         <motion.div
@@ -95,7 +95,7 @@ export function SkillBar({ skill, locale = 'pl', maxProjects }: SkillBarProps) {
           className={`h-full ${colors.indicator} rounded-full`}
         />
       </Progress.Root>
-      <div className="text-xs text-slate-500 mt-1">
+      <div className="text-xs text-black dark:text-slate-500 mt-1">
         {locale === 'en'
           ? `Used in ${pluralizeProjects(skill.projectCount, locale).toLowerCase()}`
           : pluralizeProjects(skill.projectCount, locale)}

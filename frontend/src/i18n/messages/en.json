@@ -35,6 +35,9 @@
     "name": "Full name",
     "email": "E-mail",
     "message": "Message",
+    "namePlaceholder": "Enter your full name",
+    "emailPlaceholder": "Enter your email address",
+    "messagePlaceholder": "Write your message here...",
     "maxChars": "Maximum 5000 characters",
     "send": "Send",
     "sending": "Sending...",
@@ -71,6 +74,13 @@
   "language": {
     "polish": "Polski",
     "english": "English"
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "noItems": "No items to display.",
+    "newTech": "New technology",
+    "repository": "Repository",
+    "technologies": "Technologies"
   },
   "chat": {
     "openButtonLabel": "Open chat with AI assistant",

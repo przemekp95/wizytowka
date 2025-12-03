@@ -1,14 +1,32 @@
 'use client';
-import { useRef, useState, type FormEvent, useEffect } from 'react';
-
-type Status = 'idle' | 'sending' | 'sent' | 'error';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, AlertCircle, Loader2, Mail, User, MessageSquare } from 'lucide-react';
 
 const GQL_API = process.env.NEXT_PUBLIC_GRAPHQL_URL ?? 'http://localhost:4000/graphql';
+
+// Validation schema
+const contactSchema = z.object({
+  name: z.string()
+    .min(2, 'Imię musi mieć przynajmniej 2 znaki')
+    .max(50, 'Imię nie może być dłuższe niż 50 znaków'),
+  email: z.string()
+    .email('Nieprawidłowy adres email')
+    .min(1, 'Adres email jest wymagany'),
+  message: z.string()
+    .min(10, 'Wiadomość musi mieć przynajmniej 10 znaków')
+    .max(5000, 'Wiadomość nie może być dłuższa niż 5000 znaków'),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
 
 // Internal function for loading translations
 async function loadTranslations(locale: string, section: string) {
   try {
-    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
+    const messages = (await import(`../../i18n/messages/${locale}.json`)).default;
     const sectionData = messages[section] || {};
     return sectionData;
   } catch {
@@ -17,10 +35,25 @@ async function loadTranslations(locale: string, section: string) {
 }
 
 export default function ContactSection() {
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [progress, setProgress] = useState(0);
   const [err, setErr] = useState('');
-  const formRef = useRef<HTMLFormElement | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    mode: 'onChange',
+  });
+
+  const messageLength = watch('message')?.length || 0;
+  const maxLength = 5000;
+  const messageProgress = (messageLength / maxLength) * 100;
 
   useEffect(() => {
     const loadContactTranslations = async () => {
@@ -32,7 +65,6 @@ export default function ContactSection() {
     loadContactTranslations();
   }, []);
 
-  // render occurs immediately; no loading guard
   const t = (key: string) =>
     translations[key] ??
     {
@@ -46,36 +78,41 @@ export default function ContactSection() {
       error: 'Uzupełnij wszystkie pola.',
       sendError: 'Błąd wysyłki',
       unknownError: 'Nieznany błąd',
+      title: 'Kontakt',
+      description: 'Napisz wiadomość – odpowiem możliwie szybko.',
+      namePlaceholder: 'Imię i nazwisko',
+      emailPlaceholder: 'E-mail',
+      messagePlaceholder: 'Treść wiadomości...',
     }[key] ??
     key;
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!formRef.current || status === 'sending') return;
-
+  const onSubmit = async (data: ContactFormData) => {
     setStatus('sending');
     setErr('');
+    setProgress(0);
 
     try {
-      const fd = new FormData(formRef.current);
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + Math.random() * 30, 90));
+      }, 200);
 
-      const website = String(fd.get('website') ?? '');
-      if (website.trim() !== '') {
+      // Honeypot check
+      const website = data.name.toLowerCase();
+      if (website.includes('website') || website.includes('http')) {
+        clearInterval(progressInterval);
         setStatus('sent');
-        formRef.current.reset();
+        setProgress(100);
+        reset();
         return;
       }
 
       const input = {
-        name: String(fd.get('name') ?? '').trim(),
-        email: String(fd.get('email') ?? '').trim(),
-        message: String(fd.get('message') ?? '').trim(),
+        name: data.name.trim(),
+        email: data.email.trim(),
+        message: data.message.trim(),
         hcaptchaToken: '',
       };
-
-      if (!input.name || !input.email || !input.message) {
-        throw new Error(t('error'));
-      }
 
       const query = `
         mutation SendContact($input: ContactMessageInput!) {
@@ -93,6 +130,9 @@ export default function ContactSection() {
         cache: 'no-store',
       });
 
+      clearInterval(progressInterval);
+      setProgress(100);
+
       const j = await r.json().catch(() => ({}));
 
       if (!r.ok || j?.errors || j?.data?.sendContact?.ok === false) {
@@ -100,141 +140,236 @@ export default function ContactSection() {
       }
 
       setStatus('sent');
-      formRef.current.reset();
+      reset();
+
+      // Auto-hide success after 5 seconds
+      setTimeout(() => setStatus('idle'), 5000);
+
     } catch (e) {
       setStatus('error');
       setErr(e instanceof Error ? e.message : t('unknownError'));
-    } finally {
-      // Keep status visible for tests; do not auto-hide
+      setProgress(0);
     }
   };
 
   return (
-    <form
-      ref={formRef}
-      className="w-full max-w-xl space-y-4"
-      onSubmit={onSubmit}
-      noValidate
-      aria-busy={status === 'sending'}
-      suppressHydrationWarning
+    <motion.form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full max-w-xl mx-auto space-y-6 bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
     >
-      <div>
-        <label className="block text-sm font-medium" htmlFor="name">
-          {t('name')}{' '}
-          <span className="text-red-500" aria-label="wymagane">
-            *
-          </span>
-        </label>
-        <input
-          id="name"
-          name="name"
-          required
-          autoComplete="given-name"
-          aria-describedby="name-error"
-          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-          suppressHydrationWarning
-        />
+      {/* Header */}
+      <div className="text-center mb-8">
+        <motion.h3
+          className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          viewport={{ once: true }}
+        >
+          {t('title') || 'Contact Me'}
+        </motion.h3>
+        <motion.p
+          className="text-gray-600 dark:text-gray-300"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          viewport={{ once: true }}
+        >
+          {t('description') || 'Let\'s work together!'}
+        </motion.p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="email">
-          {t('email')}{' '}
-          <span className="text-red-500" aria-label="wymagane">
-            *
-          </span>
+      {/* Name Field */}
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        viewport={{ once: true }}
+      >
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <User className="w-4 h-4 mr-2 text-indigo-500" />
+          {t('name')}
+          <span className="text-red-500 ml-1">*</span>
         </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          autoComplete="email"
-          aria-describedby="email-error"
-          className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-          suppressHydrationWarning
-        />
-      </div>
+        <div className="relative">
+          <input
+            {...register('name')}
+            className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+            placeholder={t('namePlaceholder') || 'John Doe'}
+            data-testid="contact-name"
+          />
+          <AnimatePresence>
+            {errors.name && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center"
+              >
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.name.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="message">
-          {t('message')}{' '}
-          <span className="text-red-500" aria-label="wymagane">
-            *
-          </span>
+      {/* Email Field */}
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        viewport={{ once: true }}
+      >
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <Mail className="w-4 h-4 mr-2 text-indigo-500" />
+          {t('email')}
+          <span className="text-red-500 ml-1">*</span>
         </label>
-        <textarea
-          id="message"
-          name="message"
-          rows={5}
-          required
-          maxLength={5000}
-          aria-describedby="message-error"
-          data-testid="contact-message"
-          className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-          suppressHydrationWarning
-        />
-        <p id="message-char-count" className="text-xs text-gray-500 mt-1" aria-live="polite">
-          {t('maxChars') || 'Maksymalnie 5000 znaków'}
-        </p>
-      </div>
+        <div className="relative">
+          <input
+            type="email"
+            {...register('email')}
+            className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
+            placeholder={t('emailPlaceholder') || 'john@example.com'}
+            data-testid="contact-email"
+          />
+          <AnimatePresence>
+            {errors.email && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center"
+              >
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.email.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
 
-      {/* honeypot */}
-      <input
-        type="text"
-        name="website"
-        className="hidden"
-        autoComplete="off"
-        tabIndex={-1}
-        aria-hidden="true"
-        suppressHydrationWarning
-      />
+      {/* Message Field */}
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        viewport={{ once: true }}
+      >
+        <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <MessageSquare className="w-4 h-4 mr-2 text-indigo-500" />
+          {t('message')}
+          <span className="text-red-500 ml-1">*</span>
+        </label>
+        <div className="relative">
+          <textarea
+            {...register('message')}
+            rows={5}
+            className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none resize-none"
+            placeholder={t('messagePlaceholder') || 'Your message here...'}
+            data-testid="contact-message"
+          />
 
-      <div className="flex justify-center" role="group" aria-labelledby="submit-section">
-        <span id="submit-section" className="sr-only">
-          Akcje formularza
-        </span>
+          {/* Progress bar for message length */}
+          <div className="absolute bottom-2 left-4 right-4">
+            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1">
+              <motion.div
+                className="bg-indigo-500 h-1 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(messageProgress, 100)}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+              {messageLength}/{maxLength}
+            </p>
+          </div>
+
+          <AnimatePresence>
+            {errors.message && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute -bottom-12 left-0 text-red-500 text-xs flex items-center"
+              >
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {errors.message.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* Submit Button with Progress */}
+      <motion.div
+        className="flex justify-center pt-6"
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        viewport={{ once: true }}
+      >
         <button
           type="submit"
+          disabled={status === 'sending' || !isValid}
+          className="relative w-full py-4 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
           data-testid="contact-submit"
-          disabled={status === 'sending'}
-          aria-describedby={status === 'sending' ? 'submit-description' : undefined}
-          className="inline-flex items-center px-4 py-3 rounded-xl font-semibold border focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white"
         >
-          {status === 'sending' ? t('sending') : t('send')}
+          {status === 'sending' ? (
+            <>
+              <div className="flex items-center justify-center">
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <span className="animate-pulse">{t('sending')}</span>
+              </div>
+              <div className="absolute bottom-0 left-0 h-1 bg-white/20 rounded-full">
+                <motion.div
+                  className="h-full bg-white rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </>
+          ) : (
+            t('send')
+          )}
         </button>
-      </div>
+      </motion.div>
 
-      {status === 'sending' && (
-        <p
-          id="submit-description"
-          className="text-sm text-gray-600 text-center"
-          aria-live="assertive"
-        >
-          Wysyłanie wiadomości...
-        </p>
-      )}
-
-      {/* Status announcements */}
-      <div aria-live="polite" aria-atomic="true" role="status">
-        {status === 'error' && (
-          <div role="alert" aria-describedby="error-description" className="text-center">
-            <p id="error-description" className="text-sm text-red-600">
-              {err}
-            </p>
-          </div>
-        )}
+      {/* Status Messages */}
+      <AnimatePresence>
         {status === 'sent' && (
-          <div role="alert" aria-describedby="success-description" className="text-center">
-            <p
-              id="success-description"
-              data-testid="contact-success"
-              className="text-sm text-green-700"
-            >
-              {t('success')}
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            className="flex items-center justify-center text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 rounded-lg p-4"
+          >
+            <CheckCircle className="w-5 h-5 mr-2 animate-bounce" />
+            <span className="font-medium">{t('success')}</span>
+          </motion.div>
         )}
-      </div>
-    </form>
+
+        {status === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            className="flex items-center justify-center text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg p-4"
+          >
+            <AlertCircle className="w-5 h-5 mr-2" />
+            <span className="font-medium">{err}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.form>
   );
 }

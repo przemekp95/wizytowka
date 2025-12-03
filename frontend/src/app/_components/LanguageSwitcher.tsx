@@ -48,7 +48,7 @@ export default function LanguageSwitcher() {
           variant="outline"
           size="sm"
           disabled={isPending}
-          className="gap-2"
+          className="gap-2 text-slate-100 border-slate-300 bg-slate-900 hover:bg-slate-800"
           aria-label={`Current language: ${currentLocaleInfo.name}`}
         >
           <span className="text-base">{currentLocaleInfo.flag}</span>
