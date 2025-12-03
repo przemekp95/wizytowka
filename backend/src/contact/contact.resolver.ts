@@ -2,8 +2,8 @@ import { Resolver, Mutation, Args, Context } from '@nestjs/graphql';
 import { ContactResult } from './dto/contact-result.type';
 import { ContactMessageInput } from './dto/contact-message.input';
 import { ContactService } from './contact.service';
-import { Throttle } from '@nestjs/throttler';
-// TEMP: Bot detection disabled for testing
+// TEMP: Bot detection and throttling disabled for testing
+// import { Throttle } from '@nestjs/throttler';
 // import { checkBotId } from 'botid/server';
 import type { Request } from 'express';
 
@@ -11,7 +11,7 @@ import type { Request } from 'express';
 export class ContactResolver {
   constructor(private readonly contactService: ContactService) {}
 
-  @Throttle({ default: { limit: 5, ttl: 60 } })
+  // @Throttle({ default: { limit: 5, ttl: 60 } }) // TEMP: Disabled throttling for testing
   @Mutation(() => ContactResult)
   async sendContact(
     @Args('input') input: ContactMessageInput,
