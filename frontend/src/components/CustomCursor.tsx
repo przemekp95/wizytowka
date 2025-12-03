@@ -16,9 +16,9 @@ export function CustomCursor() {
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  // Ultra smooth spring animation for zero lag
-  const springX = useSpring(mouseX, { stiffness: 350, damping: 45, mass: 0.05 });
-  const springY = useSpring(mouseY, { stiffness: 350, damping: 45, mass: 0.05 });
+  // Optimized spring for balanced performance - reduced stiffness for lightweight feel
+  const springX = useSpring(mouseX, { stiffness: 300, damping: 45, mass: 0.05 });
+  const springY = useSpring(mouseY, { stiffness: 300, damping: 45, mass: 0.05 });
 
   const [isVisible, setIsVisible] = useState(true);
   const [isClickable, setIsClickable] = useState(false);
@@ -55,9 +55,9 @@ export function CustomCursor() {
       // Always update cursor position for smooth movement
       updateCursorPosition(x, y);
 
-      // Balanced trail creation - 85ms for visible trail length
+      // Aggressive throttling - 110ms for lightweight performance
       const now = Date.now();
-      if (now - lastTrailTimeRef.current > 85) {
+      if (now - lastTrailTimeRef.current > 110) {
         // Use single animation frame to batch updates
         if (!animationFrameRef.current) {
           animationFrameRef.current = requestAnimationFrame(() => {
@@ -68,7 +68,7 @@ export function CustomCursor() {
                 y,
                 timestamp: now,
               };
-              return [...prev.slice(-8), newTrail]; // Back to 8 trails for visible trail
+              return [...prev.slice(-6), newTrail]; // Reduced to 6 trails for better performance
             });
             lastTrailTimeRef.current = now;
             animationFrameRef.current = undefined;
@@ -134,12 +134,12 @@ export function CustomCursor() {
     };
   }, [mouseX, mouseY]);
 
-  // Clean up old trails less frequently
+  // Ultra-lightweight cleanup for minimal CPU usage
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       setTrails(prev => prev.filter(trail => now - trail.timestamp < 400)); // Keep trails for 400ms
-    }, 100); // Less frequent cleanup
+    }, 200); // Very infrequent cleanup - once every 200ms
 
     return () => clearInterval(interval);
   }, []);
