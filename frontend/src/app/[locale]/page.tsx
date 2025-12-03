@@ -5,12 +5,11 @@ import { notFound } from 'next/navigation';
 
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
-import { SkillProgress, TechTrend } from '@/components/SkillProgress';
 import { SkillBar } from '@/components/SkillBar';
 import { TechStackChart, PortfolioCategory } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
-import { calculateTechTrends, calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
+import { calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
 
 export const dynamic = 'force-static';
 export const revalidate = 300;
@@ -101,8 +100,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const items = await fetchPortfolio();
   const t = await getTranslations(locale);
 
-  // Wyliczenie trendów technologii, kategorii projektów i umiejętności na podstawie portfola
-  const techTrends = calculateTechTrends(items);
+  // Wyliczenie kategorii projektów i umiejętności na podstawie portfola
   const portfolioCategories = calculatePortfolioCategories(items);
   const dynamicSkills = calculateDynamicSkills(items);
 
@@ -382,7 +380,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-slate-700 mb-8">
-                {locale === 'en' ? 'Technologies by Project Count' : 'Technologie wg liczby projektów'}
+                {locale === 'en' ? 'Technology Stack Overview' : 'Przegląd technologiczny'}
               </h3>
               <div className="w-full max-w-4xl">
                 {dynamicSkills && dynamicSkills.length > 0 ? (
@@ -415,31 +413,12 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               {locale === 'en' ? 'Technology Analysis' : 'Analiza technologiczna'}
             </h2>
 
-            <div className="grid gap-12 lg:grid-cols-2 items-start">
-              {/* Technology Trends year-over-year - using NEW SkillProgress component */}
-              <div>
-                <h3 className="text-xl font-semibold text-slate-700 mb-6">
-                  {locale === 'en' ? 'Technology Trends (YoY)' : 'Trendy technologii (rok do roku)'}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {techTrends
-                    .filter(trend => trend.category === 'frontEnd' || trend.category === 'backEnd')
-                    .map((trend) => (
-                      <SkillProgress key={trend.id} trend={trend} locale={locale as 'pl' | 'en'} />
-                    ))}
-                </div>
-              </div>
-
-              {/* Portfolio Categories Chart - using NEW TechStackChart component */}
-              <div className="flex flex-col items-center">
-                <h3 className="text-xl font-semibold text-slate-700 mb-6">
-                  {locale === 'en' ? 'Portfolio Categories' : 'Kategorie projektów'}
-                </h3>
-                <TechStackChart
-                  locale={locale as 'pl' | 'en'}
-                  portfolioCategories={portfolioCategories}
-                />
-              </div>
+            {/* Portfolio Categories Chart - using NEW TechStackChart component */}
+            <div className="flex flex-col items-center">
+              <TechStackChart
+                locale={locale as 'pl' | 'en'}
+                portfolioCategories={portfolioCategories}
+              />
             </div>
           </div>
         </section>
