@@ -88,7 +88,7 @@ export function ChatBot() {
     setIsLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(`${baseUrl}/chat/message`, {
         method: 'POST',
         headers: {
