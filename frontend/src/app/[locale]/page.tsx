@@ -183,7 +183,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
             <div className="relative w-full max-w-md mx-auto" data-aos="fade-right">
               <div className="absolute inset-0 bg-white bg-opacity-10 rounded-xl -z-10 transform scale-105" />
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-500/20 aspect-[4/3]">
+              <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 aspect-[4/3]">
                 <Image
                   src="/images/PP-2-JPG-01.webp"
                   alt="Przemysław Pietrzak"
