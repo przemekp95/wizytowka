@@ -30,7 +30,7 @@ function createImports() {
       envFilePath: ['.env'], // backend/.env
     }),
 
-    ThrottlerModule.forRoot([{ ttl: 60, limit: 20 }]),
+    ThrottlerModule.forRoot([{ ttl: 60, limit: 30 }]),
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -77,6 +77,7 @@ function createImports() {
   providers: [
     AppService,
     HelloResolver,
+    // Re-enabled throttling for basic protection (10 requests per minute)
     { provide: APP_GUARD, useClass: GqlThrottlerGuard },
   ],
 })
