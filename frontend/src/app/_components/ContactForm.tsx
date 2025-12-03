@@ -163,16 +163,6 @@ export default function ContactSection() {
     >
       {/* Header */}
       <div className="text-center mb-8">
-        <motion.h3
-          className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          {t('title') || 'Contact Me'}
-        </motion.h3>
-
       </div>
 
       {/* Name Field */}
