@@ -89,7 +89,9 @@ export default function RootLayout({
 }>) {
   return (
     <html className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100`}
+      >
         <AOSInitializer />
         <ErrorBoundary>{children}</ErrorBoundary>
         <CustomCursor />

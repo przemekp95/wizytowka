@@ -154,7 +154,7 @@ section[id],
   }
 
   /* Specific overrides for Tailwind cursor utilities */
-  .custom-cursor-active *[class*="cursor-"] {
+  .custom-cursor-active *[class*='cursor-'] {
     cursor: none !important;
   }
 
@@ -165,7 +165,7 @@ section[id],
   .custom-cursor-active textarea,
   .custom-cursor-active select,
   .custom-cursor-active label,
-  .custom-cursor-active [role="button"],
+  .custom-cursor-active [role='button'],
   .custom-cursor-active [tabindex] {
     cursor: none !important;
   }

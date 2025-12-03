@@ -112,7 +112,7 @@ const techNameMap: Record<string, string> = {
   angular: 'Angular',
   svelte: 'Svelte',
   jquery: 'jQuery',
-  'jQuery': 'jQuery',
+  jQuery: 'jQuery',
   tailwind: 'Tailwind CSS',
   tailwindcss: 'Tailwind CSS',
   TailwindCSS: 'Tailwind CSS',
@@ -425,43 +425,45 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   portfolio.forEach((project) => {
     const categoryString = project.category?.toString() || '';
     if (categoryString) {
-      const categoryParts = categoryString.split(',').map(cat => cat.trim().toLowerCase());
+      const categoryParts = categoryString.split(',').map((cat) => cat.trim().toLowerCase());
       categoryParts.forEach((category) => {
         categoryCounts[category] = (categoryCounts[category] || 0) + 1;
       });
     }
   });
 
-
   // Definiuj kolory dla wszystkich rzeczywistych kategorii z portfolio
   const categoryColors: Record<string, string> = {
-    'web-app': 'rgba(236, 72, 153, 0.8)',       // FIXED! HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    'web app': 'rgba(236, 72, 153, 0.8)',      // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    webapp: 'rgba(236, 72, 153, 0.8)',         // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    web: 'rgba(236, 72, 153, 0.8)',            // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    'landing page': 'rgba(34, 197, 94, 0.8)',  // zielony 🌿
-    landing: 'rgba(34, 197, 94, 0.8)',         // zielony 🌿
-    ai: 'rgba(168, 85, 247, 0.8)',              // fioletowy 🟣
-    'mobile-apps': 'rgba(239, 68, 68, 0.8)',   // czerwony 🔥
-    'mobile apps': 'rgba(239, 68, 68, 0.8)',   // czerwony 🔥
-    mobile: 'rgba(239, 68, 68, 0.8)',           // czerwony 🔥
-    services: 'rgba(251, 191, 36, 0.8)',        // żółty ☀️
-    ecommerce: 'rgba(59, 130, 246, 0.8)',       // niebieski 🌊
+    'web-app': 'rgba(236, 72, 153, 0.8)', // FIXED! HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    'web app': 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    webapp: 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    web: 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
+    'landing page': 'rgba(34, 197, 94, 0.8)', // zielony 🌿
+    landing: 'rgba(34, 197, 94, 0.8)', // zielony 🌿
+    ai: 'rgba(168, 85, 247, 0.8)', // fioletowy 🟣
+    'mobile-apps': 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
+    'mobile apps': 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
+    mobile: 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
+    services: 'rgba(251, 191, 36, 0.8)', // żółty ☀️
+    ecommerce: 'rgba(59, 130, 246, 0.8)', // niebieski 🌊
     'web app, services': 'rgba(16, 185, 129, 0.8)', // turkus - dla projektów łączących web-app i services 🔗
   };
 
   // Palette kolorów dla nieznanych kategorii
   const fallbackColors = [
     'rgba(156, 163, 175, 0.8)', // szary
-    'rgba(245, 158, 11, 0.8)',  // ciemny żółty
-    'rgba(59, 130, 246, 0.8)',   // jasny niebieski
-    'rgba(16, 185, 129, 0.8)',   // ciemny zielony
-    'rgba(236, 72, 153, 0.8)',   // różowy
-    'rgba(139, 69, 19, 0.8)',    // brązowy
+    'rgba(245, 158, 11, 0.8)', // ciemny żółty
+    'rgba(59, 130, 246, 0.8)', // jasny niebieski
+    'rgba(16, 185, 129, 0.8)', // ciemny zielony
+    'rgba(236, 72, 153, 0.8)', // różowy
+    'rgba(139, 69, 19, 0.8)', // brązowy
   ];
 
   // Najpierw tłumaczenia dla najczęściej używanych kategorii
-  const categoryTranslations: Record<string, { namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }> = {
+  const categoryTranslations: Record<
+    string,
+    { namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }
+  > = {
     'web-app': {
       namePl: 'Aplikacje Webowe',
       nameEn: 'Web Applications',
@@ -536,18 +538,17 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     },
   };
 
-  const totalCategoryMentions = Object.values(categoryCounts)
-    .reduce((sum: number, count: number) => sum + count, 0);
+  const totalCategoryMentions = Object.values(categoryCounts).reduce(
+    (sum: number, count: number) => sum + count,
+    0
+  );
 
   // Utwórz kategorie dla każdej znalezionej kategorii
   const categories = Object.entries(categoryCounts).map(([categoryKey, count], index) => {
     const normalizedKey = categoryKey.toLowerCase();
 
     // Wybierz kolor - najpierw predefined, potem z palette
-    const color = categoryColors[normalizedKey] ||
-                  fallbackColors[index % fallbackColors.length];
-
-
+    const color = categoryColors[normalizedKey] || fallbackColors[index % fallbackColors.length];
 
     // Tłumaczenia - najpierw predefined, potem generyczne z tytułu
     const translation = categoryTranslations[normalizedKey] || {

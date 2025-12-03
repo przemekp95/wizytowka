@@ -1,6 +1,16 @@
 'use client';
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions, ChartEvent, LegendItem, LegendElement, PieController } from 'chart.js';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+  ChartEvent,
+  LegendItem,
+  LegendElement,
+  PieController,
+} from 'chart.js';
 import { motion } from 'framer-motion';
 import { Pie } from 'react-chartjs-2';
 import { useState, useMemo } from 'react';
@@ -31,7 +41,11 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   const isEnglish = locale === 'en';
 
   // Debug - log what data source we're using
-  console.log('📊 TechStackChart - portfolioCategories:', portfolioCategories?.length || 0, 'categories provided');
+  console.log(
+    '📊 TechStackChart - portfolioCategories:',
+    portfolioCategories?.length || 0,
+    'categories provided'
+  );
 
   // Use portfolio categories if available, fallback to default tech stack
   const dataSource = portfolioCategories || [
@@ -74,20 +88,20 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   ];
 
   // State for managing which categories are visible (interactive chart filtering)
-  const [visibleCategoryIds, setVisibleCategoryIds] = useState<string[]>(() =>
-    dataSource.map(cat => cat.id) // Start with all categories visible
+  const [visibleCategoryIds, setVisibleCategoryIds] = useState<string[]>(
+    () => dataSource.map((cat) => cat.id) // Start with all categories visible
   );
 
   // Filter visible categories and renormalize their percentages to sum to 100%
   const visibleCategories = useMemo(() => {
-    const filtered = dataSource.filter(cat => visibleCategoryIds.includes(cat.id));
+    const filtered = dataSource.filter((cat) => visibleCategoryIds.includes(cat.id));
     if (filtered.length === 0) return dataSource; // Fallback if no categories visible
 
     // Calculate new percentages for visible categories (sum to 100%)
     const totalVisiblePercentage = filtered.reduce((sum, cat) => sum + cat.percentage, 0);
-    const renormalized = filtered.map(cat => ({
+    const renormalized = filtered.map((cat) => ({
       ...cat,
-      percentage: Math.round((cat.percentage / totalVisiblePercentage) * 100)
+      percentage: Math.round((cat.percentage / totalVisiblePercentage) * 100),
     }));
 
     // Fix rounding errors to ensure sum equals 100%
@@ -101,16 +115,21 @@ export function TechStackChart({ locale, portfolioCategories }: TechStackChartPr
   }, [dataSource, visibleCategoryIds]);
 
   // Toggle category visibility on legend click
-  const handleLegendClick = (e: ChartEvent, legendItem: LegendItem, legend: LegendElement<'pie'>) => {
+  const handleLegendClick = (
+    e: ChartEvent,
+    legendItem: LegendItem,
+    legend: LegendElement<'pie'>
+  ) => {
     const allCategories = dataSource || [];
     const index = legendItem.index;
     if (typeof index !== 'number' || !allCategories[index]) return;
 
     const category = allCategories[index];
-    setVisibleCategoryIds(prev =>
-      prev.includes(category.id)
-        ? prev.filter(id => id !== category.id) // Hide category
-        : [...prev, category.id] // Show category
+    setVisibleCategoryIds(
+      (prev) =>
+        prev.includes(category.id)
+          ? prev.filter((id) => id !== category.id) // Hide category
+          : [...prev, category.id] // Show category
     );
   };
 

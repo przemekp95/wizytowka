@@ -58,11 +58,14 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
   // Extract all unique categories from portfolio items
   const allCategories = useMemo(() => {
     const categorySet = new Set<string>();
-    items.forEach(item => {
+    items.forEach((item) => {
       if (item.category) {
         // Split by comma and process each category
-        const categories = item.category.split(',').map(cat => cat.trim().toLowerCase()).filter(cat => cat.length > 0);
-        categories.forEach(cat => categorySet.add(cat));
+        const categories = item.category
+          .split(',')
+          .map((cat) => cat.trim().toLowerCase())
+          .filter((cat) => cat.length > 0);
+        categories.forEach((cat) => categorySet.add(cat));
       }
     });
     return Array.from(categorySet).sort();
@@ -71,9 +74,12 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
   // Filter items based on active filter
   const filteredItems = useMemo(() => {
     if (activeFilter === 'all') return items;
-    return items.filter(item => {
+    return items.filter((item) => {
       if (!item.category) return false;
-      const itemCategories = item.category.split(',').map(cat => cat.trim().toLowerCase()).filter(cat => cat.length > 0);
+      const itemCategories = item.category
+        .split(',')
+        .map((cat) => cat.trim().toLowerCase())
+        .filter((cat) => cat.length > 0);
       return itemCategories.includes(activeFilter);
     });
   }, [items, activeFilter]);
@@ -81,29 +87,62 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
   const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
     if (!category) return null;
 
-    const categories = category.split(',').map(cat => cat.trim().toLowerCase()).filter(cat => cat.length > 0);
+    const categories = category
+      .split(',')
+      .map((cat) => cat.trim().toLowerCase())
+      .filter((cat) => cat.length > 0);
     const mappedCategories: string[] = [];
 
     for (const normalizedCategory of categories) {
       let displayName: string | null = null;
 
       if (locale === 'en') {
-        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp') displayName = 'Web App';
-        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce') displayName = 'E-commerce';
+        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp')
+          displayName = 'Web App';
+        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce')
+          displayName = 'E-commerce';
         else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile') displayName = 'Mobile';
+        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile')
+          displayName = 'Mobile';
         else if (normalizedCategory === 'landing') displayName = 'Landing';
-        else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities') displayName = 'Tools';
+        else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities')
+          displayName = 'Tools';
         else if (normalizedCategory === 'services') displayName = 'Services';
         else if (normalizedCategory === 'ai') displayName = 'AI';
       } else {
-        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp' || normalizedCategory === 'web') displayName = 'Web';
-        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce' || normalizedCategory === 'sklep') displayName = 'E-commerce';
+        if (
+          normalizedCategory === 'web-app' ||
+          normalizedCategory === 'webapp' ||
+          normalizedCategory === 'web'
+        )
+          displayName = 'Web';
+        else if (
+          normalizedCategory === 'ecommerce' ||
+          normalizedCategory === 'e-commerce' ||
+          normalizedCategory === 'sklep'
+        )
+          displayName = 'E-commerce';
         else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'services' || normalizedCategory === 'usługi') displayName = 'Services';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobilne') displayName = 'Mobile';
-        else if (normalizedCategory === 'landing' || normalizedCategory === 'portfolio' || normalizedCategory === 'wizytówka') displayName = 'Landing';
-        else if (normalizedCategory === 'tools' || normalizedCategory === 'narzędzia' || normalizedCategory === 'utilities') displayName = 'Tools';
+        else if (normalizedCategory === 'services' || normalizedCategory === 'usługi')
+          displayName = 'Services';
+        else if (
+          normalizedCategory === 'mobile-apps' ||
+          normalizedCategory === 'mobile' ||
+          normalizedCategory === 'mobilne'
+        )
+          displayName = 'Mobile';
+        else if (
+          normalizedCategory === 'landing' ||
+          normalizedCategory === 'portfolio' ||
+          normalizedCategory === 'wizytówka'
+        )
+          displayName = 'Landing';
+        else if (
+          normalizedCategory === 'tools' ||
+          normalizedCategory === 'narzędzia' ||
+          normalizedCategory === 'utilities'
+        )
+          displayName = 'Tools';
         else if (normalizedCategory === 'ai') displayName = 'AI';
       }
 
@@ -147,7 +186,9 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
             {locale === 'en' ? 'All' : 'Wszystkie'}
           </button>
           {allCategories.slice(0, 8).map((category) => {
-            const displayName = getCategoryDisplayName(category, locale) || category.charAt(0).toUpperCase() + category.slice(1);
+            const displayName =
+              getCategoryDisplayName(category, locale) ||
+              category.charAt(0).toUpperCase() + category.slice(1);
             return (
               <button
                 key={category}
@@ -181,7 +222,9 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                {locale === 'en' ? 'No projects found for this filter.' : 'Nie znaleziono projektów dla tego filtru.'}
+                {locale === 'en'
+                  ? 'No projects found for this filter.'
+                  : 'Nie znaleziono projektów dla tego filtru.'}
               </motion.p>
             ) : (
               filteredItems.map((p, index) => {
@@ -198,11 +241,11 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                     transition={{
                       duration: 0.6,
                       delay: index * 0.1,
-                      ease: [0.4, 0.0, 0.2, 1]
+                      ease: [0.4, 0.0, 0.2, 1],
                     }}
                     whileHover={{
                       y: -5,
-                      transition: { duration: 0.2 }
+                      transition: { duration: 0.2 },
                     }}
                   >
                     <div className="relative overflow-hidden rounded-xl h-64 sm:h-72 lg:h-80">
@@ -215,7 +258,9 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                         unoptimized
                       />
                       {getCategoryDisplayName(p.category, locale) && (
-                        <span className="badge category">{getCategoryDisplayName(p.category, locale)}</span>
+                        <span className="badge category">
+                          {getCategoryDisplayName(p.category, locale)}
+                        </span>
                       )}
                       {p.newTech && <span className="badge new-tech">{t('newTech')}</span>}
                     </div>
@@ -255,9 +300,7 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                     )}
 
                     <div className="mt-4 flex-1 flex flex-col justify-end">
-                      <div className="font-semibold text-black mb-2">
-                        {t('technologies')}
-                      </div>
+                      <div className="font-semibold text-black mb-2">{t('technologies')}</div>
                       <div className="flex flex-wrap items-start gap-1.5">
                         {p.tags?.map((tag) => (
                           <motion.span

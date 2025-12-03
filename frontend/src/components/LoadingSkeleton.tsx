@@ -65,7 +65,7 @@ export function SkeletonText({ className = '', lines = 3 }: SkeletonProps) {
           className="h-4 bg-slate-200 dark:bg-gray-700 rounded animate-pulse"
           style={{
             width: i === lines - 1 ? '70%' : '100%',
-            animationDelay: `${i * 0.1}s`
+            animationDelay: `${i * 0.1}s`,
           }}
         />
       ))}

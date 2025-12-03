@@ -162,7 +162,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         alternateName: 'en',
       },
     ],
-      url: `https://pietrzakprzemyslaw.pl/${locale}`,
+    url: `https://pietrzakprzemyslaw.pl/${locale}`,
     image: 'https://wizytowka.s3.eu-north-1.amazonaws.com/PP-2-JPG-01.webp',
   };
 
@@ -283,14 +283,16 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                 {dynamicSkills && dynamicSkills.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {dynamicSkills
-                      .filter(skill => skill.category === 'frontEnd' || skill.category === 'backEnd')
+                      .filter(
+                        (skill) => skill.category === 'frontEnd' || skill.category === 'backEnd'
+                      )
                       .slice(0, 10)
                       .map((skill) => (
                         <SkillBar
                           key={skill.id}
                           skill={skill}
                           locale={locale as 'pl' | 'en'}
-                          maxProjects={Math.max(...dynamicSkills.map(s => s.projectCount))}
+                          maxProjects={Math.max(...dynamicSkills.map((s) => s.projectCount))}
                         />
                       ))}
                   </div>
@@ -334,12 +336,20 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
       <footer className="bg-gray-900 border-t border-gray-800">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-300 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-gray-100">{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+          <p className="text-gray-100">
+            {t('footer.copyright', { year: new Date().getFullYear() })}
+          </p>
           <div className="flex items-center gap-4">
-            <a className="text-gray-300 hover:text-gray-100 transition-colors" href="https://github.com/przemekp95">
+            <a
+              className="text-gray-300 hover:text-gray-100 transition-colors"
+              href="https://github.com/przemekp95"
+            >
               {t('footer.github')}
             </a>
-            <a className="text-gray-300 hover:text-gray-100 transition-colors" href="https://www.linkedin.com/in/przempietrzak/">
+            <a
+              className="text-gray-300 hover:text-gray-100 transition-colors"
+              href="https://www.linkedin.com/in/przempietrzak/"
+            >
               {t('footer.linkedin')}
             </a>
           </div>

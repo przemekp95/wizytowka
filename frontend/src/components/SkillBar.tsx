@@ -70,9 +70,7 @@ export function SkillBar({ skill, locale = 'pl', maxProjects }: SkillBarProps) {
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-100">{skill.name}</span>
-          <span className={`text-xs font-semibold ${colors.text}`}>
-            {skill.projectCount}
-          </span>
+          <span className={`text-xs font-semibold ${colors.text}`}>{skill.projectCount}</span>
         </div>
         <motion.span
           initial={{ opacity: 0, scale: 0.8 }}
