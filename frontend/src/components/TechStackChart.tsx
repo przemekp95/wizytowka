@@ -40,52 +40,50 @@ interface TechStackChartProps {
 export function TechStackChart({ locale, portfolioCategories }: TechStackChartProps) {
   const isEnglish = locale === 'en';
 
-  // Debug - log what data source we're using
-  console.log(
-    '📊 TechStackChart - portfolioCategories:',
-    portfolioCategories?.length || 0,
-    'categories provided'
-  );
-
   // Use portfolio categories if available, fallback to default tech stack
-  const dataSource = portfolioCategories || [
-    {
-      id: 'demo-web-apps',
-      namePl: 'Aplikacje webowe',
-      nameEn: 'Web Applications',
-      percentage: 60,
-      color: 'rgba(99, 102, 241, 0.8)',
-      descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
-      descriptionEn: 'Full-featured web applications',
-    },
-    {
-      id: 'demo-api',
-      namePl: 'API i usługi',
-      nameEn: 'APIs & Services',
-      percentage: 25,
-      color: 'rgba(139, 92, 246, 0.8)',
-      descriptionPl: 'Backend i usługi webowe',
-      descriptionEn: 'Backend services and APIs',
-    },
-    {
-      id: 'demo-tools',
-      namePl: 'Narzędzia',
-      nameEn: 'Tools & Utilities',
-      percentage: 10,
-      color: 'rgba(6, 182, 212, 0.8)',
-      descriptionPl: 'Narzędzia i aplikacje pomocnicze',
-      descriptionEn: 'Helper tools and utilities',
-    },
-    {
-      id: 'demo-other',
-      namePl: 'Inne',
-      nameEn: 'Other',
-      percentage: 5,
-      color: 'rgba(16, 185, 129, 0.8)',
-      descriptionPl: 'Pozostałe projekty',
-      descriptionEn: 'Other projects',
-    },
-  ];
+  const dataSource = useMemo(() => {
+    if (portfolioCategories && portfolioCategories.length > 0) {
+      return portfolioCategories;
+    }
+    return [
+      {
+        id: 'demo-web-apps',
+        namePl: 'Aplikacje webowe',
+        nameEn: 'Web Applications',
+        percentage: 60,
+        color: 'rgba(99, 102, 241, 0.8)',
+        descriptionPl: 'Pełnofunkcjonalne aplikacje internetowe',
+        descriptionEn: 'Full-featured web applications',
+      },
+      {
+        id: 'demo-api',
+        namePl: 'API i usługi',
+        nameEn: 'APIs & Services',
+        percentage: 25,
+        color: 'rgba(139, 92, 246, 0.8)',
+        descriptionPl: 'Backend i usługi webowe',
+        descriptionEn: 'Backend services and APIs',
+      },
+      {
+        id: 'demo-tools',
+        namePl: 'Narzędzia',
+        nameEn: 'Tools & Utilities',
+        percentage: 10,
+        color: 'rgba(6, 182, 212, 0.8)',
+        descriptionPl: 'Narzędzia i aplikacje pomocnicze',
+        descriptionEn: 'Helper tools and utilities',
+      },
+      {
+        id: 'demo-other',
+        namePl: 'Inne',
+        nameEn: 'Other',
+        percentage: 5,
+        color: 'rgba(16, 185, 129, 0.8)',
+        descriptionPl: 'Pozostałe projekty',
+        descriptionEn: 'Other projects',
+      },
+    ];
+  }, [portfolioCategories]);
 
   // State for managing which categories are visible (interactive chart filtering)
   const [visibleCategoryIds, setVisibleCategoryIds] = useState<string[]>(
