@@ -364,14 +364,7 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
 
   portfolio.forEach((project) => {
     // Use Set to ensure each technology is counted only once per project (ignore duplicates in tags)
-    const uniqueTags = new Set(project.tags.map(tag =>
-      // Normalize tag names for counting
-      Object.keys(techToCategoryMap).find(
-        (tech) =>
-          tech.toLowerCase() === tag.toLowerCase() ||
-          tag.toLowerCase().includes(tech.toLowerCase())
-      ) || tag
-    ));
+    const uniqueTags = new Set(project.tags);
 
     uniqueTags.forEach((normalizedTag) => {
       techCounts[normalizedTag] = (techCounts[normalizedTag] || 0) + 1;
