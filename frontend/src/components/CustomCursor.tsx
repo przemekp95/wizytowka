@@ -55,9 +55,9 @@ export function CustomCursor() {
       // Always update cursor position for smooth movement
       updateCursorPosition(x, y);
 
-      // Extremely throttled trail creation - 120ms for ultra smooth performance
+      // Balanced trail creation - 85ms for visible trail length
       const now = Date.now();
-      if (now - lastTrailTimeRef.current > 120) {
+      if (now - lastTrailTimeRef.current > 85) {
         // Use single animation frame to batch updates
         if (!animationFrameRef.current) {
           animationFrameRef.current = requestAnimationFrame(() => {
@@ -68,7 +68,7 @@ export function CustomCursor() {
                 y,
                 timestamp: now,
               };
-              return [...prev.slice(-4), newTrail]; // Reduced to 4 minimal trails
+              return [...prev.slice(-8), newTrail]; // Back to 8 trails for visible trail
             });
             lastTrailTimeRef.current = now;
             animationFrameRef.current = undefined;
