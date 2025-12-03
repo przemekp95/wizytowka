@@ -403,6 +403,9 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
   }
 
+  // Sprawdź czy jesteśmy w trybie produkcyjnym
+  console.log('🚀 APP ENVIRONMENT: NODE_ENV =', process.env.NODE_ENV || 'undefined');
+
   if (!portfolio.length) {
     return [
       {
