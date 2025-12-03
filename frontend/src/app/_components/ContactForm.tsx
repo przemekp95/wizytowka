@@ -39,6 +39,7 @@ export default function ContactSection() {
       name: 'Imię i nazwisko',
       email: 'E-mail',
       message: 'Wiadomość',
+      maxChars: 'Maksymalnie 5000 znaków',
       send: 'Wyślij',
       sending: 'Wysyłanie...',
       success: 'Wiadomość wysłana ✅',
@@ -173,7 +174,7 @@ export default function ContactSection() {
           suppressHydrationWarning
         />
         <p id="message-char-count" className="text-xs text-gray-500 mt-1" aria-live="polite">
-          Maksymalnie 5000 znaków
+          {t('maxChars') || 'Maksymalnie 5000 znaków'}
         </p>
       </div>
 

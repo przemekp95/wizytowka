@@ -35,6 +35,7 @@
     "name": "Full name",
     "email": "E-mail",
     "message": "Message",
+    "maxChars": "Maximum 5000 characters",
     "send": "Send",
     "sending": "Sending...",
     "success": "Message sent ✅",
