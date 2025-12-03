@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://przemyslawpietrzak.pl/sitemap.xml
+Sitemap: https://pietrzakprzemyslaw.pl/sitemap.xml

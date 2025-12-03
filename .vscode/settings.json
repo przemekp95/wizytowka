@@ -31,5 +31,7 @@
   },
 
   // Git settings for large monorepo
-  "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "WillLuke.nextjs.addTypesOnSave": true,
+  "WillLuke.nextjs.hasPrompted": true
 }
