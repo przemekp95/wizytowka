@@ -19,10 +19,10 @@ export function CustomCursor() {
   const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
   const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
 
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Show cursor by default - fixes production issue
   const [isClickable, setIsClickable] = useState(false);
   const [trails, setTrails] = useState<CursorTrail[]>([]);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark'); // Default to dark theme for app
 
   useEffect(() => {
     // Detect theme changes
