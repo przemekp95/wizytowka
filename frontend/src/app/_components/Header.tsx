@@ -109,11 +109,7 @@ export default function Header() {
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle mobile menu"
         >
-          {isMobileMenuOpen ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <Menu className="w-5 h-5" />
-          )}
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </nav>
 
@@ -129,7 +125,7 @@ export default function Header() {
               duration: 0.3,
               ease: 'easeInOut',
               opacity: { duration: 0.2 },
-              height: { duration: 0.25 }
+              height: { duration: 0.25 },
             }}
           >
             <div className="px-4 py-6 flex flex-col space-y-4">
@@ -147,7 +143,7 @@ export default function Header() {
                 { href: '/#about', key: 'about' },
                 { href: '/#skills', key: 'skills' },
                 { href: '/#tech-analysis', key: 'techAnalysis' },
-                { href: '/#contact', key: 'contact' }
+                { href: '/#contact', key: 'contact' },
               ].map((item, index) => (
                 <motion.div
                   key={item.key}
