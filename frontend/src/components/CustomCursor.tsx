@@ -16,8 +16,9 @@ export function CustomCursor() {
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30 });
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  // Optimized spring settings for better performance
+  const springX = useSpring(mouseX, { stiffness: 200, damping: 25 });
+  const springY = useSpring(mouseY, { stiffness: 200, damping: 25 });
 
   const [isVisible, setIsVisible] = useState(true); // Show cursor by default - fixes production issue
   const [isClickable, setIsClickable] = useState(false);
@@ -35,23 +36,29 @@ export function CustomCursor() {
     const observer = new MutationObserver(handleThemeChange);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX;
-      const y = e.clientY;
+  const handleMouseMove = (e: MouseEvent) => {
+    const x = e.clientX;
+    const y = e.clientY;
 
-      mouseX.set(x);
-      mouseY.set(y);
+    mouseX.set(x);
+    mouseY.set(y);
 
-      // Add trail dot
-      const newTrail: CursorTrail = {
-        id: Math.random().toString(36).substring(7),
-        x,
-        y,
-        timestamp: Date.now(),
-      };
-
-      setTrails(prev => [...prev.slice(-15), newTrail]); // Keep only last 15 trails
-    };
+    // Add trail dot less frequently for better performance
+    setTrails(prev => {
+      // Only add trail if there are less than 10 or last trail is more than 30ms old
+      const lastTrail = prev[prev.length - 1];
+      if (prev.length < 10 || (lastTrail && Date.now() - lastTrail.timestamp > 30)) {
+        const newTrail: CursorTrail = {
+          id: Math.random().toString(36).substring(7),
+          x,
+          y,
+          timestamp: Date.now(),
+        };
+        return [...prev.slice(-12), newTrail]; // Keep only last 12 trails
+      }
+      return prev;
+    });
+  };
 
     const handleMouseEnter = () => setIsVisible(true);
     const handleMouseLeave = () => setIsVisible(false);
