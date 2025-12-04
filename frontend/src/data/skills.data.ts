@@ -441,9 +441,10 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     'landing page': 'rgba(34, 197, 94, 0.8)', // zielony 🌿
     landing: 'rgba(34, 197, 94, 0.8)', // zielony 🌿
     ai: 'rgba(168, 85, 247, 0.8)', // fioletowy 🟣
-    'mobile-apps': 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
-    'mobile apps': 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
-    mobile: 'rgba(239, 68, 68, 0.8)', // czerwony 🔥
+    'mobile-apps': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
+    'mobile apps': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
+    mobile: 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
+    'mobile-app': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
     services: 'rgba(251, 191, 36, 0.8)', // żółty ☀️
     ecommerce: 'rgba(59, 130, 246, 0.8)', // niebieski 🌊
     'web app, services': 'rgba(16, 185, 129, 0.8)', // turkus - dla projektów łączących web-app i services 🔗
