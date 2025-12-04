@@ -91,6 +91,7 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
       .split(',')
       .map((cat) => cat.trim().toLowerCase())
       .filter((cat) => cat.length > 0);
+
     const mappedCategories: string[] = [];
 
     for (const normalizedCategory of categories) {
@@ -102,7 +103,7 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
         else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce')
           displayName = 'E-commerce';
         else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile')
+        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobile-app')
           displayName = 'Mobile';
         else if (normalizedCategory === 'landing') displayName = 'Landing';
         else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities')
@@ -151,7 +152,7 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
       }
     }
 
-    return mappedCategories.length > 0 ? mappedCategories.join(', ') : null;
+    return mappedCategories.length > 0 ? mappedCategories.join('\n') : null;
   };
 
   return (
@@ -232,6 +233,10 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                 const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
                 const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
 
+                // Debug logging for categories
+                const categoryResult = getCategoryDisplayName(p.category, locale);
+                console.log(`PROJECT: "${p.title}", raw: "${p.category}", processed: "${categoryResult}", should show: ${!!categoryResult}`);
+
                 return (
                   <motion.article
                     key={p._id}
@@ -263,6 +268,7 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                         </span>
                       )}
                       {p.newTech && <span className="badge new-tech">{t('newTech')}</span>}
+
                     </div>
 
                     <motion.h3
