@@ -49,7 +49,6 @@ async function bootstrap() {
 
   app.use(
     helmet({
-      contentSecurityPolicy: isProd ? undefined : false,
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
