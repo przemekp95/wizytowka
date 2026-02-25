@@ -103,7 +103,11 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
         else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce')
           displayName = 'E-commerce';
         else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'mobile-apps' || normalizedCategory === 'mobile' || normalizedCategory === 'mobile-app')
+        else if (
+          normalizedCategory === 'mobile-apps' ||
+          normalizedCategory === 'mobile' ||
+          normalizedCategory === 'mobile-app'
+        )
           displayName = 'Mobile';
         else if (normalizedCategory === 'landing') displayName = 'Landing';
         else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities')
@@ -235,7 +239,9 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
 
                 // Debug logging for categories
                 const categoryResult = getCategoryDisplayName(p.category, locale);
-                console.log(`PROJECT: "${p.title}", raw: "${p.category}", processed: "${categoryResult}", should show: ${!!categoryResult}`);
+                console.log(
+                  `PROJECT: "${p.title}", raw: "${p.category}", processed: "${categoryResult}", should show: ${!!categoryResult}`
+                );
 
                 return (
                   <motion.article
@@ -268,7 +274,6 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                         </span>
                       )}
                       {p.newTech && <span className="badge new-tech">{t('newTech')}</span>}
-
                     </div>
 
                     <motion.h3

@@ -16,7 +16,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
-  const isProd = process.env.NODE_ENV === 'production';
 
   console.log('✅ NestJS app created successfully');
 
