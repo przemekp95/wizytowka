@@ -398,14 +398,6 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
 
 // Dynamiczne tworzenie kategorii na podstawie tagów z portfolio
 export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
-  // Debugowanie włączone tylko w development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📊 Portfolio categories calculation: portfolio items =', portfolio.length);
-  }
-
-  // Sprawdź czy jesteśmy w trybie produkcyjnym
-  console.log('🚀 APP ENVIRONMENT: NODE_ENV =', process.env.NODE_ENV || 'undefined');
-
   if (!portfolio.length) {
     return [
       {

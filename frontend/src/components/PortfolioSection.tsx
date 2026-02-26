@@ -237,12 +237,6 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                 const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
                 const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
 
-                // Debug logging for categories
-                const categoryResult = getCategoryDisplayName(p.category, locale);
-                console.log(
-                  `PROJECT: "${p.title}", raw: "${p.category}", processed: "${categoryResult}", should show: ${!!categoryResult}`
-                );
-
                 return (
                   <motion.article
                     key={p._id}

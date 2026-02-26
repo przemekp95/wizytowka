@@ -38,38 +38,20 @@ type PortfolioItem = {
 
 async function fetchPortfolio(): Promise<PortfolioItem[]> {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-  console.log('🔍 Portfolio fetch: API_BASE_URL =', base);
 
   try {
     const res = await fetch(`${base}/api/portfolio`, {
       next: { revalidate },
     });
 
-    console.log('🔍 Portfolio fetch: HTTP status =', res.status);
-
     if (!res.ok) {
-      console.log('❌ Portfolio API returned not ok, using fallback data');
       return [];
     }
 
     const data = (await res.json()) as { ok: boolean; items: PortfolioItem[] };
-    const items = data?.items ?? [];
-
-    console.log('✅ Portfolio fetched from API, items count:', items.length);
-
-    // Log first item to see if it's real data or fallback
-    if (items.length > 0) {
-      console.log('📊 First portfolio item:', {
-        title: items[0].title,
-        tags: items[0].tags,
-        dateFrom: items[0].dateFrom,
-      });
-    }
-
-    return items;
+    return data?.items ?? [];
   } catch (error) {
-    console.log('❌ Portfolio fetch failed:', error);
-    console.log('📋 Using fallback hardcoded data');
+    console.error('Portfolio fetch failed, using fallback data', error);
     return [];
   }
 }
