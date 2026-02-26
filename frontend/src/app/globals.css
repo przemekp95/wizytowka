@@ -177,4 +177,29 @@ section[id],
   .custom-cursor-active select:focus {
     cursor: none !important;
   }
+
+  /* Keep chat input readable regardless of browser autofill/private-mode styling. */
+  [data-chat-input] {
+    color: #0f172a !important;
+    caret-color: #0f172a !important;
+    background-color: #ffffff !important;
+  }
+
+  [data-chat-input]::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+  }
+
+  [data-chat-input]:-webkit-autofill,
+  [data-chat-input]:-webkit-autofill:hover,
+  [data-chat-input]:-webkit-autofill:focus {
+    -webkit-text-fill-color: #0f172a !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  [data-chat-input]:-moz-autofill {
+    color: #0f172a !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+  }
 }
