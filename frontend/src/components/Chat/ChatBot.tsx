@@ -227,14 +227,23 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
       <div className="p-4 border-t border-slate-200 bg-slate-50">
         <div className="flex gap-2">
           <input
+            data-chat-input
             ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t('placeholder')}
+            autoComplete="off"
+            spellCheck={false}
             disabled={isLoading}
-            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-500 caret-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
+            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-white !text-slate-900 placeholder:!text-slate-500 caret-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:!text-slate-600"
+            style={{
+              color: '#0f172a',
+              WebkitTextFillColor: '#0f172a',
+              caretColor: '#0f172a',
+              opacity: 1,
+            }}
           />
           <button
             onClick={sendMessage}
