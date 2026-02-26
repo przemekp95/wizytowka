@@ -1,0 +1,29 @@
+name: Release Flow Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+
+permissions:
+  contents: read
+
+jobs:
+  release_flow_guard:
+    name: release-flow-guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure PR source branch is dev
+        run: |
+          set -euo pipefail
+          echo "base_ref=${{ github.base_ref }}"
+          echo "head_ref=${{ github.head_ref }}"
+          if [ "${{ github.head_ref }}" != "dev" ]; then
+            echo "::error::Only PRs from 'dev' to 'main' are allowed."
+            exit 1
+          fi

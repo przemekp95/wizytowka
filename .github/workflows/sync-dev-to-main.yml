@@ -1,0 +1,80 @@
+name: Sync Dev To Main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  sync_dev:
+    name: sync-dev-to-main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Align dev branch SHA with main
+        env:
+          GH_TOKEN: ${{ secrets.ADMIN_GH_TOKEN }}
+          REPO: ${{ github.repository }}
+          MAIN_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Missing ADMIN_GH_TOKEN secret (repo admin token)."
+            exit 1
+          fi
+
+          protection_api="repos/${REPO}/branches/dev/protection"
+          before_json="$(mktemp)"
+          relaxed_json="$(mktemp)"
+          restore_json="$(mktemp)"
+
+          gh api "${protection_api}" > "${before_json}"
+
+          jq '{
+            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // []), checks: (.required_status_checks.checks // [])} end),
+            enforce_admins: .enforce_admins.enabled,
+            required_pull_request_reviews: null,
+            restrictions: (if .restrictions==null then null else {users: (.restrictions.users | map(.login)), teams: (.restrictions.teams | map(.slug)), apps: (.restrictions.apps | map(.slug))} end),
+            required_linear_history: .required_linear_history.enabled,
+            allow_force_pushes: true,
+            allow_deletions: .allow_deletions.enabled,
+            block_creations: .block_creations.enabled,
+            required_conversation_resolution: .required_conversation_resolution.enabled,
+            lock_branch: .lock_branch.enabled,
+            allow_fork_syncing: .allow_fork_syncing.enabled
+          }' "${before_json}" > "${relaxed_json}"
+
+          jq '{
+            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // []), checks: (.required_status_checks.checks // [])} end),
+            enforce_admins: .enforce_admins.enabled,
+            required_pull_request_reviews: (if .required_pull_request_reviews==null then null else {
+              dismiss_stale_reviews: .required_pull_request_reviews.dismiss_stale_reviews,
+              require_code_owner_reviews: .required_pull_request_reviews.require_code_owner_reviews,
+              required_approving_review_count: .required_pull_request_reviews.required_approving_review_count,
+              require_last_push_approval: .required_pull_request_reviews.require_last_push_approval
+            } end),
+            restrictions: (if .restrictions==null then null else {users: (.restrictions.users | map(.login)), teams: (.restrictions.teams | map(.slug)), apps: (.restrictions.apps | map(.slug))} end),
+            required_linear_history: .required_linear_history.enabled,
+            allow_force_pushes: false,
+            allow_deletions: .allow_deletions.enabled,
+            block_creations: .block_creations.enabled,
+            required_conversation_resolution: .required_conversation_resolution.enabled,
+            lock_branch: .lock_branch.enabled,
+            allow_fork_syncing: .allow_fork_syncing.enabled
+          }' "${before_json}" > "${restore_json}"
+
+          restore_protection() {
+            gh api -X PUT "${protection_api}" --input "${restore_json}" || true
+          }
+          trap restore_protection EXIT
+
+          gh api -X PUT "${protection_api}" --input "${relaxed_json}"
+          gh api -X PATCH "repos/${REPO}/git/refs/heads/dev" -f sha="${MAIN_SHA}" -F force=true
+
+          restore_protection
+          trap - EXIT
+
+          echo "dev now points to ${MAIN_SHA}"
