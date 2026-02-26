@@ -111,7 +111,7 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.client) {
       await this.client.close();
-      console.log('🔌 MongoDB connection closed');
+      this.logger.log('MongoDB connection closed');
     }
   }
 

@@ -10,22 +10,19 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-async function loadTranslations(locale: string, section: string) {
-  try {
-    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
-    const sectionData = messages[section] || {};
-    return sectionData;
-  } catch {
-    return {};
-  }
-}
+type ChatTranslations = Record<string, string>;
 
-export function ChatBot() {
+type ChatBotProps = {
+  locale: string;
+  translations: ChatTranslations;
+};
+
+export function ChatBot({ locale, translations }: ChatBotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      content: '',
+      content: translations.welcomeMessage || '',
       isUser: false,
       timestamp: new Date(),
     },
@@ -33,8 +30,6 @@ export function ChatBot() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [currentLocale, setCurrentLocale] = useState('pl');
-  const [chatTranslations, setChatTranslations] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,26 +47,15 @@ export function ChatBot() {
     }
   }, [isOpen]);
 
-  // Load translations and locale
   useEffect(() => {
-    const loadChatTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
-      setCurrentLocale(locale);
-      const chatTranslations = await loadTranslations(locale, 'chat');
-      setChatTranslations(chatTranslations);
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === '1' ? { ...msg, content: translations.welcomeMessage || msg.content } : msg
+      )
+    );
+  }, [translations.welcomeMessage]);
 
-      // Update welcome message
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === '1' ? { ...msg, content: chatTranslations.welcomeMessage || msg.content } : msg
-        )
-      );
-    };
-
-    loadChatTranslations();
-  }, []);
-
-  const t = (key: string) => chatTranslations[key] || key;
+  const t = (key: string) => translations[key] || key;
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -125,7 +109,7 @@ export function ChatBot() {
         id: (Date.now() + 1).toString(),
         content:
           error instanceof Error && error.message === 'Chat service not available'
-            ? currentLocale === 'en'
+            ? locale === 'en'
               ? 'Chat service is currently unavailable. Please try again later.'
               : 'Usługa czatu jest obecnie niedostępna. Spróbuj ponownie później.'
             : t('errorMessage'),
@@ -146,7 +130,7 @@ export function ChatBot() {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString(currentLocale === 'en' ? 'en-US' : 'pl-PL', {
+    return date.toLocaleTimeString(locale === 'en' ? 'en-US' : 'pl-PL', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -250,7 +234,7 @@ export function ChatBot() {
             onKeyPress={handleKeyPress}
             placeholder={t('placeholder')}
             disabled={isLoading}
-            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
+            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder:text-slate-500 caret-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
           />
           <button
             onClick={sendMessage}

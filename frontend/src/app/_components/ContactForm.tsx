@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,22 +23,53 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-// Internal function for loading translations
-async function loadTranslations(locale: string, section: string) {
-  try {
-    const messages = (await import(`../../i18n/messages/${locale}.json`)).default;
-    const sectionData = messages[section] || {};
-    return sectionData;
-  } catch {
-    return {};
-  }
-}
+type ContactTranslations = Record<string, string>;
 
-export default function ContactSection() {
+type ContactSectionProps = {
+  locale: string;
+  translations: ContactTranslations;
+};
+
+const polishDefaults: ContactTranslations = {
+  name: 'Imię i nazwisko',
+  email: 'E-mail',
+  message: 'Wiadomość',
+  maxChars: 'Maksymalnie 5000 znaków',
+  send: 'Wyślij',
+  sending: 'Wysyłanie...',
+  success: 'Wiadomość wysłana',
+  error: 'Uzupełnij wszystkie pola.',
+  sendError: 'Błąd wysyłki',
+  unknownError: 'Nieznany błąd',
+  title: 'Kontakt',
+  description: 'Napisz wiadomość - odpowiem możliwie szybko.',
+  namePlaceholder: 'Imię i nazwisko',
+  emailPlaceholder: 'E-mail',
+  messagePlaceholder: 'Treść wiadomości...',
+};
+
+const englishDefaults: ContactTranslations = {
+  name: 'Full name',
+  email: 'E-mail',
+  message: 'Message',
+  maxChars: 'Maximum 5000 characters',
+  send: 'Send',
+  sending: 'Sending...',
+  success: 'Message sent',
+  error: 'Fill in all fields.',
+  sendError: 'Send error',
+  unknownError: 'Unknown error',
+  title: 'Contact',
+  description: "Send a message - I'll respond as soon as possible.",
+  namePlaceholder: 'Enter your full name',
+  emailPlaceholder: 'Enter your email address',
+  messagePlaceholder: 'Write your message here...',
+};
+
+export default function ContactSection({ locale, translations }: ContactSectionProps) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
   const [err, setErr] = useState('');
-  const [translations, setTranslations] = useState<Record<string, string>>({});
 
   const {
     register,
@@ -55,36 +86,9 @@ export default function ContactSection() {
   const maxLength = 5000;
   const messageProgress = (messageLength / maxLength) * 100;
 
-  useEffect(() => {
-    const loadContactTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'pl';
-      const contactTranslations = await loadTranslations(locale, 'contact');
-      setTranslations(contactTranslations);
-    };
+  const defaults = locale === 'pl' ? polishDefaults : englishDefaults;
 
-    loadContactTranslations();
-  }, []);
-
-  const t = (key: string) =>
-    translations[key] ??
-    {
-      name: 'Imię i nazwisko',
-      email: 'E-mail',
-      message: 'Wiadomość',
-      maxChars: 'Maksymalnie 5000 znaków',
-      send: 'Wyślij',
-      sending: 'Wysyłanie...',
-      success: 'Wiadomość wysłana ✅',
-      error: 'Uzupełnij wszystkie pola.',
-      sendError: 'Błąd wysyłki',
-      unknownError: 'Nieznany błąd',
-      title: 'Kontakt',
-      description: 'Napisz wiadomość – odpowiem możliwie szybko.',
-      namePlaceholder: 'Imię i nazwisko',
-      emailPlaceholder: 'E-mail',
-      messagePlaceholder: 'Treść wiadomości...',
-    }[key] ??
-    key;
+  const t = (key: string) => translations[key] ?? defaults[key] ?? key;
 
   const onSubmit = async (data: ContactFormData) => {
     setStatus('sending');
@@ -180,7 +184,7 @@ export default function ContactSection() {
           <input
             {...register('name')}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
-            placeholder={t('namePlaceholder') || 'John Doe'}
+            placeholder={translations.namePlaceholder ?? translations.placeholderName ?? t('namePlaceholder')}
             data-testid="contact-name"
           />
           <AnimatePresence>
@@ -217,7 +221,9 @@ export default function ContactSection() {
             type="email"
             {...register('email')}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
-            placeholder={t('emailPlaceholder') || 'john@example.com'}
+            placeholder={
+              translations.emailPlaceholder ?? translations.placeholderEmail ?? t('emailPlaceholder')
+            }
             data-testid="contact-email"
           />
           <AnimatePresence>
@@ -254,7 +260,11 @@ export default function ContactSection() {
             {...register('message')}
             rows={5}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none resize-none"
-            placeholder={t('messagePlaceholder') || 'Your message here...'}
+            placeholder={
+              translations.messagePlaceholder ??
+              translations.placeholderMessage ??
+              t('messagePlaceholder')
+            }
             data-testid="contact-message"
           />
 
@@ -300,7 +310,7 @@ export default function ContactSection() {
         <button
           type="submit"
           disabled={status === 'sending' || !isValid}
-          className="relative w-full py-4 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
+          className="relative w-full py-4 px-8 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
           data-testid="contact-submit"
         >
           {status === 'sending' ? (

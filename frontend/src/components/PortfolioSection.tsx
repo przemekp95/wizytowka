@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,25 +25,11 @@ interface PortfolioItem {
 interface PortfolioSectionProps {
   items: PortfolioItem[];
   locale: string;
+  translations: Record<string, string>;
 }
 
-export default function PortfolioSection({ items, locale }: PortfolioSectionProps) {
+export default function PortfolioSection({ items, locale, translations }: PortfolioSectionProps) {
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        const messages = (await import(`../i18n/messages/${locale}.json`)).default;
-        const portfolioTranslations = messages.portfolio || {};
-        setTranslations(portfolioTranslations);
-      } catch (error) {
-        console.error('Error loading translations:', error);
-      }
-    };
-
-    loadTranslations();
-  }, [locale]);
 
   const t = (key: string) =>
     translations[key] ??
@@ -236,12 +222,6 @@ export default function PortfolioSection({ items, locale }: PortfolioSectionProp
                 const imgClasses = p.isLogo ? 'object-contain bg-white p-6' : 'object-cover';
                 const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
                 const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
-
-                // Debug logging for categories
-                const categoryResult = getCategoryDisplayName(p.category, locale);
-                console.log(
-                  `PROJECT: "${p.title}", raw: "${p.category}", processed: "${categoryResult}", should show: ${!!categoryResult}`
-                );
 
                 return (
                   <motion.article
