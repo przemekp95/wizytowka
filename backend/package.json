@@ -50,7 +50,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.2",
     "graphql": "^16.13.0",
-    "helmet": "^7.2.0",
+    "helmet": "^8.1.0",
     "mongodb": "^6.20.0",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.1",

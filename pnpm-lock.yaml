@@ -109,8 +109,8 @@ importers:
         specifier: ^16.13.0
         version: 16.13.0
       helmet:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
       mongodb:
         specifier: ^6.20.0
         version: 6.20.0
@@ -6298,9 +6298,9 @@ packages:
   headers-polyfill@4.0.3:
     resolution: {integrity: sha512-IScLbePpkvO846sIwOtOTDjutRMWdXdJmXdMvk6gCBHxFO8d+QKOQedyZSxFTTFYRSmlgSTDtXqqq4pcenBXLQ==}
 
-  helmet@7.2.0:
-    resolution: {integrity: sha512-ZRiwvN089JfMXokizgqEPXsl2Guk094yExfoDXR0cBYWxtBbaSww/w+vT4WEJsBW2iTUi1GgZ6swmoug3Oy4Xw==}
-    engines: {node: '>=16.0.0'}
+  helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
+    engines: {node: '>=18.0.0'}
 
   hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}
@@ -16826,7 +16826,7 @@ snapshots:
 
   headers-polyfill@4.0.3: {}
 
-  helmet@7.2.0: {}
+  helmet@8.1.0: {}
 
   hermes-estree@0.25.1: {}
 
