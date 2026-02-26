@@ -10,11 +10,9 @@ COPY backend/package.json ./backend/
 COPY pnpm-lock.yaml ./backend/pnpm-lock.yaml
 COPY backend/tsconfig.json ./backend/tsconfig.json
 
-RUN pnpm fetch --prod --filter ./backend...
-
 COPY backend ./backend
-RUN HUSKY_SKIP_INSTALL=1 pnpm --filter ./backend... install --offline --prod --ignore-scripts --no-frozen-lockfile
-RUN npm install -g @nestjs/cli prisma && (cd backend && npx prisma generate && nest build)
+RUN HUSKY_SKIP_INSTALL=1 pnpm --filter ./backend... install --prod --ignore-scripts --no-frozen-lockfile
+RUN pnpm --filter ./backend... exec prisma generate && pnpm --filter ./backend... exec nest build
 
 RUN echo "prune skipped"
 
