@@ -34,7 +34,7 @@ jobs:
           gh api "${protection_api}" > "${before_json}"
 
           jq '{
-            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // []), checks: (.required_status_checks.checks // [])} end),
+            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // [])} end),
             enforce_admins: .enforce_admins.enabled,
             required_pull_request_reviews: null,
             restrictions: (if .restrictions==null then null else {users: (.restrictions.users | map(.login)), teams: (.restrictions.teams | map(.slug)), apps: (.restrictions.apps | map(.slug))} end),
@@ -48,7 +48,7 @@ jobs:
           }' "${before_json}" > "${relaxed_json}"
 
           jq '{
-            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // []), checks: (.required_status_checks.checks // [])} end),
+            required_status_checks: (if .required_status_checks==null then null else {strict: .required_status_checks.strict, contexts: (.required_status_checks.contexts // [])} end),
             enforce_admins: .enforce_admins.enabled,
             required_pull_request_reviews: (if .required_pull_request_reviews==null then null else {
               dismiss_stale_reviews: .required_pull_request_reviews.dismiss_stale_reviews,
