@@ -75,7 +75,7 @@ export default async function LocaleLayout({
   }
 
   return (
-    <div id="i18n-provider" data-locale={locale} lang={locale}>
+    <div id="i18n-provider" data-locale={locale}>
       {children}
     </div>
   );

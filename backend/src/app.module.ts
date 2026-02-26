@@ -58,9 +58,6 @@ function createImports() {
   // Add ChatModule only if OPENAI_API_KEY is available
   if (process.env.OPENAI_API_KEY) {
     baseImports.push(ChatModule);
-    console.log('🔧 ChatModule enabled - OPENAI_API_KEY available');
-  } else {
-    console.log('⚠️  ChatModule disabled - OPENAI_API_KEY not available');
   }
 
   return baseImports;

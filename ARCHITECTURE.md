@@ -21,11 +21,11 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
-│  │   Next.js 15    │ │   NestJS API    │ │   Auth Service  │ │
-│  │   Frontend      │ │   Backend       │ │   (Token)       │ │
+│  │   Next.js 15    │ │   NestJS API    │ │ Access Control  │ │
+│  │   Frontend      │ │   Backend       │ │  (Admin Token)  │ │
 │  │                 │ │   TypeScript    │ │                 │ │
-│  │   - SSR/SSG     │ │   - Controllers │ │   - JWT         │ │
-│  │   - React 18    │ │   - Services    │ │   - Sessions    │ │
+│  │   - SSR/SSG     │ │   - Controllers │ │ - Bearer token  │ │
+│  │   - React 18    │ │   - Services    │ │ - Endpoint auth │ │
 │  │   - TailwindCSS │ │   - GraphQL     │ │                 │ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
@@ -97,7 +97,7 @@ src/
 src/
 ├── app.module.ts               # Root application module
 ├── main.ts                     # Application bootstrap
-├── auth/                       # Authentication module
+├── common/                     # Shared utilities and guards
 ├── contact/                    # Contact form handling
 │   ├── contact.controller.ts   # REST endpoints
 │   ├── contact.service.ts      # Business logic (Documented)
@@ -109,13 +109,13 @@ src/
 │   └── entities/               # Data models
 ├── prisma/                     # Database service
 ├── graphql/                    # GraphQL module
-├── common/                     # Shared utilities
 └── config/                     # Configuration modules
 ```
 
 ## Technology Stack Details
 
 ### Frontend Stack
+
 - **Framework**: Next.js 15 (React 18, App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: Tailwind CSS
@@ -124,14 +124,16 @@ src/
 - **Internationalization**: next-i18n
 
 ### Backend Stack
+
 - **Framework**: NestJS 11 (Node.js)
 - **Language**: TypeStation 5.9
 - **Database**: MongoDB + PostgreSQL via Prisma
 - **API**: REST + GraphQL
-- **Authentication**: JWT tokens
+- **Authentication**: `ADMIN_TOKEN` bearer header on protected admin endpoint(s)
 - **File Storage**: AWS S3
 
 ### DevOps Stack
+
 - **Containerization**: Docker + Docker Compose
 - **Orchestration**: Kubernetes
 - **CI/CD**: GitHub Actions
@@ -142,6 +144,7 @@ src/
 ## Deployment Architecture
 
 ### Development Environment
+
 ```
 Local Machine
 ├── VS Code + Extensions
@@ -153,6 +156,7 @@ Local Machine
 ```
 
 ### Production Environment
+
 ```
 Kubernetes Cluster
 ├── Frontend Deployment (Next.js)
@@ -178,7 +182,7 @@ Kubernetes Cluster
 1. User submits form → Next.js Client
     ↓   Validation (client-side)
 2. GraphQL mutation → NestJS API
-    ↓   Authentication check
+    ↓   Validation + anti-abuse checks
 3. hCaptcha validation → NestJS Service
     ↓   Business logic
 4. Database storage → Prisma (PostgreSQL)
@@ -203,7 +207,7 @@ Kubernetes Cluster
 ## Security Considerations
 
 - **Frontend Security**: Helmet, CSP headers, input sanitization
-- **API Security**: Rate limiting, JWT authentication, validation pipes
+- **API Security**: Rate limiting, admin bearer token checks, validation pipes
 - **Data Security**: SQL injection prevention, MongoDB validation
 - **Infrastructure**: Container security, secret management, SSL/TLS
 

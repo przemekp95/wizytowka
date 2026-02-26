@@ -2,22 +2,18 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import compression from 'compression';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
-async function bootstrap() {
-  console.log('🚀 Starting NestJS application...');
-  console.log(`📍 NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`🔧 PORT: ${process.env.PORT || 3000}`);
+const logger = new Logger('Bootstrap');
 
+async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
-
-  console.log('✅ NestJS app created successfully');
 
   app.set('trust proxy', 1);
 
@@ -61,13 +57,6 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
-  // Temporary disabled logging middleware for debugging
-  // app.use((req: Request, res: Response, next: NextFunction) => {
-  //   new RequestIdMiddleware().use(req, res, next);
-  // });
-
-  // Apply logging and metrics middleware
-  // app.use(LoggingMetricsMiddleware);
 
   app.setGlobalPrefix('api');
 
@@ -95,19 +84,14 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = Number(process.env.PORT) || 3000;
-  console.log(`🔧 Starting server on port ${port}...`);
-
+  logger.log(
+    `Starting application on port ${port} (env: ${process.env.NODE_ENV ?? 'development'})`,
+  );
   await app.listen(port);
-  console.log(`✅ Server listening on port ${port}`);
-  console.log(`🌐 REST   → http://localhost:${port}/api`);
-  console.log(`📖 Swagger→ http://localhost:${port}/api/docs`);
-  console.log(`🔗 GraphQL→ http://localhost:${port}/graphql`);
-  console.log(`💚 Health  → http://localhost:${port}/api/health`);
-  console.log(`📊 Ready   → http://localhost:${port}/api/health/ready`);
-  console.log(`🔄 Live    → http://localhost:${port}/api/health/live`);
+  logger.log(`Application started successfully on port ${port}`);
 }
 
 bootstrap().catch((error) => {
-  console.error('❌ Failed to start application:', error);
+  logger.error('Failed to start application', error instanceof Error ? error.stack : String(error));
   process.exit(1);
 });

@@ -21,10 +21,13 @@ COPY .npmrc package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/package.json
 RUN pnpm --filter ./frontend... install --frozen-lockfile --prod --ignore-scripts
 
-COPY --from=build /workspace/frontend/.next ./frontend/.next
-COPY --from=build /workspace/frontend/public ./frontend/public
-COPY --from=build /workspace/frontend/next.config.ts ./frontend/next.config.ts
+COPY --from=build --chown=node:node /workspace/frontend/.next ./frontend/.next
+COPY --from=build --chown=node:node /workspace/frontend/public ./frontend/public
+COPY --from=build --chown=node:node /workspace/frontend/next.config.ts ./frontend/next.config.ts
 
 WORKDIR /workspace/frontend
 EXPOSE 3000
+USER node
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "const http=require('http');const port=process.env.PORT||3000;const req=http.get({host:'127.0.0.1',port,path:'/sitemap.xml',timeout:4000},res=>process.exit(res.statusCode>=200&&res.statusCode<400?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
 CMD ["pnpm","start"]

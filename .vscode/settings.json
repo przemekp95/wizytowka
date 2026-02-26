@@ -33,5 +33,11 @@
   // Git settings for large monorepo
   "git.ignoreLimitWarning": true,
   "WillLuke.nextjs.addTypesOnSave": true,
-  "WillLuke.nextjs.hasPrompted": true
+  "WillLuke.nextjs.hasPrompted": true,
+  "trivy.secretScanning": true,
+
+  // Trivy ignore file is a plain text list, not YAML.
+  "files.associations": {
+    ".trivyignore": "plaintext"
+  }
 }

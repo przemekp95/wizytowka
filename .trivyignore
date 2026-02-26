@@ -1,0 +1,12 @@
+# Registry-domain checks are intentionally ignored for this repo because
+# images are sourced from GHCR (not Azure ACR / GCR / ECR).
+AVD-KSV-0032
+AVD-KSV-0033
+AVD-KSV-0034
+AVD-KSV-0035
+AVD-KSV-0125
+
+# Official postgres:16 image runs as uid/gid 999. Forcing >10000 breaks startup
+# without a custom image/user strategy.
+AVD-KSV-0020
+AVD-KSV-0021
