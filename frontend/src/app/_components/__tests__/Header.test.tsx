@@ -4,6 +4,7 @@ import Header from '../Header';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
+  AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
   motion: {
     div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
       <div {...props}>{children}</div>
@@ -33,9 +34,18 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
+const navTranslations = {
+  portfolio: 'Portfolio',
+  about: 'About me',
+  skills: 'Skills',
+  techAnalysis: 'Analysis',
+  contact: 'Contact',
+  contactMe: 'Contact me',
+};
+
 describe('Header', () => {
   it('renders navigation links', () => {
-    render(<Header />);
+    render(<Header translations={navTranslations} />);
 
     expect(screen.getByRole('navigation')).toBeInTheDocument();
 
@@ -43,7 +53,7 @@ describe('Header', () => {
     const brandLink = screen.getByRole('link', { name: /Przemysław Pietrzak/ });
     const portfolioLink = screen.getByRole('link', { name: /portfolio/i });
     const aboutLink = screen.getByRole('link', { name: /about/i });
-    const contactLink = screen.getByRole('link', { name: /contact/i });
+    const contactLink = screen.getByRole('link', { name: /^contact$/i });
 
     expect(brandLink).toBeInTheDocument();
     expect(portfolioLink).toBeInTheDocument();
@@ -52,22 +62,22 @@ describe('Header', () => {
   });
 
   it('renders contact me button', () => {
-    render(<Header />);
+    render(<Header translations={navTranslations} />);
 
-    const contactButton = screen.getByRole('link', { name: /contactMe/i });
+    const contactButton = screen.getByRole('link', { name: /contact me/i });
     expect(contactButton).toBeInTheDocument();
     expect(contactButton).toHaveAttribute('href', '/#contact');
   });
 
   it('renders brand link pointing to home', () => {
-    render(<Header />);
+    render(<Header translations={navTranslations} />);
 
     const brandLink = screen.getByRole('link', { name: /Przemysław Pietrzak/ });
     expect(brandLink).toHaveAttribute('href', '/');
   });
 
   it('has proper header structure', () => {
-    render(<Header />);
+    render(<Header translations={navTranslations} />);
 
     const header = screen.getByRole('banner');
     expect(header).toBeInTheDocument();

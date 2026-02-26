@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,25 +25,11 @@ interface PortfolioItem {
 interface PortfolioSectionProps {
   items: PortfolioItem[];
   locale: string;
+  translations: Record<string, string>;
 }
 
-export default function PortfolioSection({ items, locale }: PortfolioSectionProps) {
+export default function PortfolioSection({ items, locale, translations }: PortfolioSectionProps) {
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        const messages = (await import(`../i18n/messages/${locale}.json`)).default;
-        const portfolioTranslations = messages.portfolio || {};
-        setTranslations(portfolioTranslations);
-      } catch (error) {
-        console.error('Error loading translations:', error);
-      }
-    };
-
-    loadTranslations();
-  }, [locale]);
 
   const t = (key: string) =>
     translations[key] ??

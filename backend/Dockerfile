@@ -22,6 +22,10 @@ RUN echo "deploy skipped"
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+ENV PORT=4000
 EXPOSE 4000
-COPY --from=build /app/backend/dist ./dist
+COPY --from=build --chown=node:node /app/backend/dist ./dist
+USER node
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "const http=require('http');const port=process.env.PORT||4000;const req=http.get({host:'127.0.0.1',port,path:'/api/health/live',timeout:4000},res=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
 CMD ["node","./dist/main.js"]

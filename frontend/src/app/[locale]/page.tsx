@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
 import { SkillBar } from '@/components/SkillBar';
-import { TechStackChart, PortfolioCategory } from '@/components/TechStackChart';
+import { TechStackChart } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
 import { calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
@@ -36,6 +36,10 @@ type PortfolioItem = {
   dateTo?: Date;
 };
 
+type TranslationParams = Record<string, string | number>;
+type TranslationSection = Record<string, string>;
+type TranslationMessages = Record<string, unknown>;
+
 async function fetchPortfolio(): Promise<PortfolioItem[]> {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
@@ -56,24 +60,47 @@ async function fetchPortfolio(): Promise<PortfolioItem[]> {
   }
 }
 
-async function getTranslations(locale: string) {
+async function loadMessages(locale: string): Promise<TranslationMessages> {
   try {
-    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
-    return (key: string, params?: Record<string, string | number>) => {
-      const keys = key.split('.');
-      let value = messages;
-      for (const k of keys) {
-        value = value?.[k];
-      }
-      if (typeof value === 'string' && params) {
-        return value.replace(/{(\w+)}/g, (match, param) => String(params[param] || match));
-      }
-      return value || key;
-    };
+    return (await import(`@/i18n/messages/${locale}.json`)).default;
   } catch (error) {
     console.error('Error loading translations for locale:', locale, error);
-    return (key: string) => key;
+    return {};
   }
+}
+
+function getSection(messages: TranslationMessages, section: string): TranslationSection {
+  const value = messages[section];
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const sectionEntries = Object.entries(value);
+  return Object.fromEntries(sectionEntries.filter(([, v]) => typeof v === 'string')) as TranslationSection;
+}
+
+function createTranslator(messages: TranslationMessages) {
+  return (key: string, params?: TranslationParams) => {
+    const keys = key.split('.');
+    let value: unknown = messages;
+
+    for (const currentKey of keys) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return key;
+      }
+      value = (value as TranslationMessages)[currentKey];
+    }
+
+    if (typeof value !== 'string') {
+      return key;
+    }
+
+    if (!params) {
+      return value;
+    }
+
+    return value.replace(/{(\w+)}/g, (match, param) => String(params[param] ?? match));
+  };
 }
 
 export default async function OnePager({ params }: { params: Promise<{ locale: string }> }) {
@@ -85,15 +112,18 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
   // Fetch portfolio data - this will be used on the server side
   const itemsPromise = fetchPortfolio();
-  const tPromise = getTranslations(locale);
+  const messagesPromise = loadMessages(locale);
 
-  const [items, t] = await Promise.all([itemsPromise, tPromise]);
+  const [items, messages] = await Promise.all([itemsPromise, messagesPromise]);
+  const t = createTranslator(messages);
+  const navTranslations = getSection(messages, 'nav');
+  const portfolioTranslations = getSection(messages, 'portfolio');
+  const contactTranslations = getSection(messages, 'contact');
+  const chatTranslations = getSection(messages, 'chat');
 
-  // Wyliczenie kategorii projektów i umiejętności na podstawie portfola
+  // Compute project categories and dynamic skills from the portfolio data.
   const portfolioCategories = calculatePortfolioCategories(items);
   const dynamicSkills = calculateDynamicSkills(items);
-
-  // Removed duplicate getCategoryDisplayName function - use component version instead
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -158,14 +188,14 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         }}
       />
       <ThreeBackground />
-      <Header />
+      <Header translations={navTranslations} />
 
       <main className="pt-14 bg-transparent">
         <section id="home" className="relative overflow-hidden bg-transparent">
           <div className="mx-auto max-w-6xl px-4 py-24 md:py-32 grid md:grid-cols-2 gap-10 items-center">
             <div className="relative w-full max-w-md mx-auto" data-aos="fade-right">
               <div className="absolute inset-0 bg-white bg-opacity-10 rounded-xl -z-10 transform scale-105" />
-              <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 aspect-[4/3]">
+              <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 aspect-4/3">
                 <Image
                   src="/images/PP-2-JPG-01.webp"
                   alt="Przemysław Pietrzak"
@@ -173,7 +203,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   className="object-cover transition-all duration-500 brightness-110 contrast-110 saturate-110"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent" />
               </div>
             </div>
 
@@ -207,7 +237,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         </section>
 
         <div id="portfolio" className="bg-gray-800/30">
-          <PortfolioSection items={items} locale={locale} />
+          <PortfolioSection items={items} locale={locale} translations={portfolioTranslations} />
         </div>
 
         <section id="about" className="bg-gray-800/60">
@@ -310,7 +340,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               {t('contact.title')}
             </h2>
             <div className="mt-10 flex justify-center">
-              <ContactForm />
+              <ContactForm locale={locale} translations={contactTranslations} />
             </div>
           </div>
         </section>
@@ -338,7 +368,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         </div>
       </footer>
 
-      <ChatBot />
+      <ChatBot locale={locale} translations={chatTranslations} />
     </>
   );
 }

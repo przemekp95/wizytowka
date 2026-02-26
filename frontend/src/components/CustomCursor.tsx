@@ -34,7 +34,7 @@ export function CustomCursor() {
     [mouseX, mouseY]
   );
 
-  // Throttle trail creation aggressively for 60fps smoothness
+  // Throttle trail point creation to keep rendering smooth.
   const lastTrailTimeRef = useRef(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
 
@@ -58,7 +58,7 @@ export function CustomCursor() {
       // Always update cursor position for smooth movement
       updateCursorPosition(x, y);
 
-      // Ultra-low throttling - 40ms for ultra-responsive trails in intense portfolio sections
+      // Create trail points at most once per 40ms.
       const now = Date.now();
       if (now - lastTrailTimeRef.current > 40) {
         // Use single animation frame to batch updates
@@ -71,7 +71,7 @@ export function CustomCursor() {
                 y,
                 timestamp: now,
               };
-              return [...prev.slice(-10), newTrail]; // Increased to 10 trails for longer tail in portfolio
+              return [...prev.slice(-10), newTrail]; // Keep the most recent 10 trail points.
             });
             lastTrailTimeRef.current = now;
             animationFrameRef.current = undefined;
@@ -137,12 +137,12 @@ export function CustomCursor() {
     };
   }, [mouseX, mouseY, updateCursorPosition, theme]);
 
-  // Aggressive cleanup for ultra-responsive trails - prevents accumulation during fast movements
+  // Periodically prune stale trail points.
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 600)); // Extended trail lifetime to 600ms for longer visibility
-    }, 80); // Ultra-frequent cleanup - every 80ms matches throttling speed to prevent buildup
+      setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 600)); // Keep trails visible for up to 600ms.
+    }, 80); // Run often enough to avoid trail buildup.
 
     return () => clearInterval(interval);
   }, []);
@@ -152,7 +152,7 @@ export function CustomCursor() {
     [key: string]: { opacity: number; scale: number };
   }>({});
 
-  // Update animations whenever trails change or periodically
+  // Recompute trail animation state when trail data changes.
   useEffect(() => {
     const updateAnimations = () => {
       const currentTime = Date.now();
@@ -169,7 +169,7 @@ export function CustomCursor() {
 
     updateAnimations();
 
-    // Update animations every 100ms for smooth trail fadeout
+    // Refresh animation interpolation at a steady interval.
     const interval = setInterval(updateAnimations, 100);
     return () => clearInterval(interval);
   }, [trails]);

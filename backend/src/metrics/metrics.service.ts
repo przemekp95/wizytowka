@@ -17,10 +17,10 @@ export class MetricsService {
   private readonly errorsTotal: Counter<string>;
 
   constructor() {
-    // Zbieraj domyślne metryki systemowe
+    // Collect default process and system metrics.
     collectDefaultMetrics({ prefix: 'wizytowka_' });
 
-    // Metryka czasu trwania żądań HTTP
+    // HTTP request duration metric.
     this.httpRequestDuration = new Histogram({
       name: 'wizytowka_http_request_duration_seconds',
       help: 'Duration of HTTP requests in seconds',
@@ -28,20 +28,20 @@ export class MetricsService {
       buckets: [0.1, 0.5, 1, 2, 5, 10],
     });
 
-    // Licznik całkowity żądań HTTP
+    // Total HTTP request counter.
     this.httpRequestsTotal = new Counter({
       name: 'wizytowka_http_requests_total',
       help: 'Total number of HTTP requests',
       labelNames: ['method', 'route', 'status_code'],
     });
 
-    // Aktywne połączenia
+    // Number of active connections.
     this.activeConnections = new Gauge({
       name: 'wizytowka_active_connections',
       help: 'Number of active connections',
     });
 
-    // Operacje bazodanowe
+    // Database operation metrics.
     this.databaseOperationsTotal = new Counter({
       name: 'wizytowka_database_operations_total',
       help: 'Total number of database operations',
@@ -55,7 +55,7 @@ export class MetricsService {
       buckets: [0.01, 0.05, 0.1, 0.5, 1, 2],
     });
 
-    // Błędy
+    // Error counter.
     this.errorsTotal = new Counter({
       name: 'wizytowka_errors_total',
       help: 'Total number of errors',
@@ -63,7 +63,7 @@ export class MetricsService {
     });
   }
 
-  // Metody do rejestrowania metryk
+  // Metric recording methods.
   recordHttpRequest(
     method: string,
     route: string,
@@ -104,12 +104,12 @@ export class MetricsService {
     this.errorsTotal.labels(type, route || 'unknown').inc();
   }
 
-  // Metoda do uzyskania metryk w formacie Prometheus
+  // Return metrics in Prometheus exposition format.
   async getMetrics(): Promise<string> {
     return register.metrics();
   }
 
-  // Metoda do uzyskania rejestru metryk
+  // Expose the shared metrics register.
   getRegister(): typeof register {
     return register;
   }

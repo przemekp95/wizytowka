@@ -57,13 +57,6 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
-  // Temporary disabled logging middleware for debugging
-  // app.use((req: Request, res: Response, next: NextFunction) => {
-  //   new RequestIdMiddleware().use(req, res, next);
-  // });
-
-  // Apply logging and metrics middleware
-  // app.use(LoggingMetricsMiddleware);
 
   app.setGlobalPrefix('api');
 

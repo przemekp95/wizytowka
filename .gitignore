@@ -25,6 +25,9 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 # tooling
 .vercel

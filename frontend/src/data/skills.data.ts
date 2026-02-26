@@ -1,4 +1,4 @@
-// Typy
+// Types
 export interface Skill {
   id: string;
   name: string;
@@ -33,9 +33,9 @@ type PortfolioItem = {
   dateTo?: Date;
 };
 
-// Lookup table dla standardowych nazw technologii (zachowaj oryginalną kapitalizację)
-// Stałe statyczna mapa technologii na kategorie
-// Zakodowane mapowanie na podstawie tłumaczeń pl.json dla reliability
+// Lookup table for standardized technology names (preserve canonical capitalization).
+// Static mapping of technologies to skill categories.
+// Hardcoded map derived from localization data for stable behavior.
 const techMap: Record<string, Skill['category']> = {
   // Frontend
   'Next.js': 'frontEnd',
@@ -92,12 +92,12 @@ const techMap: Record<string, Skill['category']> = {
   Trivy: 'devops',
 };
 
-// Funkcja helper do stworzenia techToCategoryMap
+// Helper function used to expose the tech-to-category mapping.
 const createTechToCategoryMap = (): Record<string, Skill['category']> => {
   return techMap;
 };
 
-// Lookup table dla standardowych nazw technologii (zachowaj oryginalną kapitalizację)
+// Lookup table for canonical technology display names.
 const techNameMap: Record<string, string> = {
   // Frontend
   javascript: 'JavaScript',
@@ -216,8 +216,6 @@ const techNameMap: Record<string, string> = {
   oauth: 'OAuth',
   oath2: 'OAuth2',
   OAuth2: 'OAuth2',
-  jwt: 'JWT',
-  JWT: 'JWT',
   wordpress: 'WordPress',
   WordPress: 'WordPress',
   woocommerce: 'WooCommerce',
@@ -258,31 +256,31 @@ const techNameMap: Record<string, string> = {
   Microservices: 'Microservices',
 };
 
-// Normalizuj nazwę technologii używając lookup table i automatycznego Title Case jako fallback
+// Normalize technology names using the lookup table with a Title Case fallback.
 const normalizeTechName = (tech: string): string => {
   const lowerTech = tech.toLowerCase().replace(/\s+/g, ' ').trim();
 
-  // 1. Najpierw sprawdź lookup table dla standardowych nazw
+  // 1) Try the canonical lookup table first.
   if (techNameMap[lowerTech]) {
     return techNameMap[lowerTech];
   }
 
-  // 2. Dla technologii nieznanych w mapie, zastosuj inteligentne tytuły Case
-  // Zamień wszystkie słowa na Title Case, chyba że to specjalne części jak .js, .net, etc.
+  // 2) For unknown technologies, apply smart Title Case normalization.
+  // Convert each token to Title Case, keeping suffixes like .js or .net intact.
   const words = tech.trim().split(/\s+/);
 
   const normalizedWords = words.map((word) => {
-    // Obsługa specjalnych przypadków (.js, .net) - zamień tylko przed kropką
+    // Handle single-dot tokens (.js, .net): capitalize only the prefix.
     if (
       word.includes('.') &&
       word.indexOf('.') === word.lastIndexOf('.') &&
       !word.startsWith('.')
     ) {
-      // Dla pojedynczych kropek (Next.js) - zamień tylko przed kropką
+      // Example: Next.js -> capitalize only the "Next" prefix.
       const [prefix, suffix] = word.split('.');
       return prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase() + '.' + suffix;
     } else {
-      // Standardowy Title Case dla każdego słowa
+      // Default Title Case path.
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }
   });
@@ -292,13 +290,13 @@ const normalizeTechName = (tech: string): string => {
 
 const techToCategoryMap = createTechToCategoryMap();
 
-// Oblicz rzeczywiste miesiące doświadczenia dla technologii na podstawie zakresów dat
+// Calculate real experience months from project date ranges.
 const calculateSkillExperienceMonths = (portfolio: PortfolioItem[], techName: string): number => {
   if (!portfolio.length) {
-    return 6; // fallback ~6 miesięcy na start
+    return 6; // Fallback: assume ~6 months when no portfolio data is available.
   }
 
-  // Zbierz wszystkie zakresy dat, gdzie technologia była używana
+  // Collect all date ranges where this technology appears.
   const dateRanges: Array<{ start: Date; end: Date }> = [];
 
   const now = new Date();
@@ -319,12 +317,12 @@ const calculateSkillExperienceMonths = (portfolio: PortfolioItem[], techName: st
     }
   });
 
-  if (dateRanges.length === 0) return 6; // fallback jeśli brak danych
+  if (dateRanges.length === 0) return 6; // Fallback when no matching date ranges are found.
 
-  // Sortuj zakresy po dacie rozpoczęcia
+  // Sort ranges by start date.
   dateRanges.sort((a, b) => a.start.getTime() - b.start.getTime());
 
-  // Połącz overlapping zakresy
+  // Merge overlapping ranges.
   const mergedRanges: Array<{ start: Date; end: Date }> = [];
   for (const range of dateRanges) {
     if (mergedRanges.length === 0) {
@@ -332,34 +330,34 @@ const calculateSkillExperienceMonths = (portfolio: PortfolioItem[], techName: st
     } else {
       const lastMerged = mergedRanges[mergedRanges.length - 1];
       if (range.start <= lastMerged.end) {
-        // zakresy się pokrywają - połącz
+        // Ranges overlap -> merge into one.
         lastMerged.end = new Date(Math.max(lastMerged.end.getTime(), range.end.getTime()));
       } else {
-        // nowy zakres
+        // Non-overlapping range -> append.
         mergedRanges.push(range);
       }
     }
   }
 
-  // Policzy miesiące dla każdego połączonego zakresu i zaokrągli w górę
+  // Sum months across merged ranges and round up.
   let totalMonths = 0;
   for (const range of mergedRanges) {
     const diffMs = range.end.getTime() - range.start.getTime();
     const diffDays = Math.max(0, diffMs / (1000 * 60 * 60 * 24));
     const diffMonths = diffDays / 30.44;
-    totalMonths += Math.ceil(Math.max(0.01, diffMonths)); // zaokrągli w górę, minimum 1 dzień
+    totalMonths += Math.ceil(Math.max(0.01, diffMonths)); // Round up; enforce minimum non-zero duration.
   }
 
   return Math.max(1, totalMonths);
 };
 
-// Dynamiczne wyliczenie umiejętności na podstawie portfolo
+// Build skills dynamically from portfolio data.
 export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   if (!portfolio.length) {
-    return skillsData; // fallback do statycznych danych
+    return skillsData; // Fallback to static data.
   }
 
-  // Zlicz wystąpienia technologii w portfolio - każdą technologię liczymy tylko raz per projekt
+  // Count technology usage; each technology is counted once per project.
   const techCounts: Record<string, number> = {};
 
   portfolio.forEach((project) => {
@@ -376,10 +374,10 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   const skills: Skill[] = Object.entries(techCounts)
     .map(([techName, count]) => {
       const category = techToCategoryMap[techName] || 'frontEnd';
-      // Procent wystąpienia w projektach (bez minimum) - teraz count oznacza liczbę projektów używających danej technologii
+      // Percentage of projects using this technology (no minimum clamp).
       const projectPercentage = (count / totalProjects) * 100;
       const level = Math.round(projectPercentage); // Bez minimalnego progu, zawsze <= 100
-      // Rzeczywiste miesiące doświadczenia na podstawie zakresów dat
+      // Real experience months inferred from date ranges.
       const experienceMonths = calculateSkillExperienceMonths(portfolio, techName);
 
       return {
@@ -396,7 +394,7 @@ export const calculateDynamicSkills = (portfolio: PortfolioItem[]): Skill[] => {
   return skills;
 };
 
-// Dynamiczne tworzenie kategorii na podstawie tagów z portfolio
+// Build portfolio categories dynamically from project tags.
 export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
   if (!portfolio.length) {
     return [
@@ -412,7 +410,7 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     ];
   }
 
-  // Zbierz wszystkie unikalne kategorie z portfolio
+  // Collect category mentions from portfolio records.
   const categoryCounts: Record<string, number> = {};
   portfolio.forEach((project) => {
     const categoryString = project.category?.toString() || '';
@@ -424,35 +422,35 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     }
   });
 
-  // Definiuj kolory dla wszystkich rzeczywistych kategorii z portfolio
+  // Color mapping for known category keys.
   const categoryColors: Record<string, string> = {
-    'web-app': 'rgba(236, 72, 153, 0.8)', // FIXED! HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    'web app': 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    webapp: 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    web: 'rgba(236, 72, 153, 0.8)', // HOT PINK - SUPER ładny i żywy kolor dla web apps 🔥
-    'landing page': 'rgba(34, 197, 94, 0.8)', // zielony 🌿
-    landing: 'rgba(34, 197, 94, 0.8)', // zielony 🌿
-    ai: 'rgba(168, 85, 247, 0.8)', // fioletowy 🟣
-    'mobile-apps': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
-    'mobile apps': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
-    mobile: 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
-    'mobile-app': 'rgba(6, 182, 212, 0.8)', // cyan / niebieskozielony 🌊
-    services: 'rgba(251, 191, 36, 0.8)', // żółty ☀️
-    ecommerce: 'rgba(59, 130, 246, 0.8)', // niebieski 🌊
-    'web app, services': 'rgba(16, 185, 129, 0.8)', // turkus - dla projektów łączących web-app i services 🔗
+    'web-app': 'rgba(236, 72, 153, 0.8)', // vivid pink
+    'web app': 'rgba(236, 72, 153, 0.8)', // vivid pink
+    webapp: 'rgba(236, 72, 153, 0.8)', // vivid pink
+    web: 'rgba(236, 72, 153, 0.8)', // vivid pink
+    'landing page': 'rgba(34, 197, 94, 0.8)', // green
+    landing: 'rgba(34, 197, 94, 0.8)', // green
+    ai: 'rgba(168, 85, 247, 0.8)', // violet
+    'mobile-apps': 'rgba(6, 182, 212, 0.8)', // cyan
+    'mobile apps': 'rgba(6, 182, 212, 0.8)', // cyan
+    mobile: 'rgba(6, 182, 212, 0.8)', // cyan
+    'mobile-app': 'rgba(6, 182, 212, 0.8)', // cyan
+    services: 'rgba(251, 191, 36, 0.8)', // yellow
+    ecommerce: 'rgba(59, 130, 246, 0.8)', // blue
+    'web app, services': 'rgba(16, 185, 129, 0.8)', // turquoise for mixed web/service projects
   };
 
-  // Palette kolorów dla nieznanych kategorii
+  // Fallback palette for unknown categories.
   const fallbackColors = [
-    'rgba(156, 163, 175, 0.8)', // szary
-    'rgba(245, 158, 11, 0.8)', // ciemny żółty
-    'rgba(59, 130, 246, 0.8)', // jasny niebieski
-    'rgba(16, 185, 129, 0.8)', // ciemny zielony
-    'rgba(236, 72, 153, 0.8)', // różowy
-    'rgba(139, 69, 19, 0.8)', // brązowy
+    'rgba(156, 163, 175, 0.8)', // gray
+    'rgba(245, 158, 11, 0.8)', // dark yellow
+    'rgba(59, 130, 246, 0.8)', // light blue
+    'rgba(16, 185, 129, 0.8)', // dark green
+    'rgba(236, 72, 153, 0.8)', // pink
+    'rgba(139, 69, 19, 0.8)', // brown
   ];
 
-  // Najpierw tłumaczenia dla najczęściej używanych kategorii
+  // Canonical translations for most common category names.
   const categoryTranslations: Record<
     string,
     { namePl: string; nameEn: string; descriptionPl: string; descriptionEn: string }
@@ -536,14 +534,14 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     0
   );
 
-  // Utwórz kategorie dla każdej znalezionej kategorii
+  // Build category entries for each discovered key.
   const categories = Object.entries(categoryCounts).map(([categoryKey, count], index) => {
     const normalizedKey = categoryKey.toLowerCase();
 
-    // Wybierz kolor - najpierw predefined, potem z palette
+    // Resolve color from predefined mapping, then fallback palette.
     const color = categoryColors[normalizedKey] || fallbackColors[index % fallbackColors.length];
 
-    // Tłumaczenia - najpierw predefined, potem generyczne z tytułu
+    // Resolve translations from predefined mapping, then generate generic labels.
     const translation = categoryTranslations[normalizedKey] || {
       namePl: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
       nameEn: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
@@ -562,16 +560,16 @@ export const calculatePortfolioCategories = (portfolio: PortfolioItem[]) => {
     };
   });
 
-  // Posortuj wg procentu (malejąco)
+  // Sort by percentage descending.
   return categories
     .filter((cat: any) => cat.percentage >= 0.01)
     .sort((a, b) => b.percentage - a.percentage);
 };
 
-// Stała fallback nazwa dla technologii bez doświadczeniem
+// Fallback placeholder for builds with no computed skills.
 export const skillsData: Skill[] = [];
 
-// Funkcje pomocnicze dla formatowania
+// Helper functions for category/skill formatting.
 export const getSkillsByCategory = (category: Skill['category'], skills?: Skill[]): Skill[] => {
   const data = skills || skillsData;
   return data.filter((skill) => skill.category === category);
