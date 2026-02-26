@@ -24,7 +24,8 @@ env:
   SKIP_PRISMA: true
 
 jobs:
-  test:
+  backend_test:
+    name: backend-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,18 +34,128 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: true
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            backend/package.json
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Run backend tests with coverage
+        run: |
+          mkdir -p backend/reports
+          pnpm -F backend run test:cov -- --ci --runInBand --coverageReporters=text-summary --coverageReporters=lcov --coverageReporters=json-summary --json --outputFile=reports/jest-results.json 2>&1 | tee backend/reports/jest.log
+
+      - name: Backend coverage summary
+        if: always()
+        run: |
+          if [ ! -f backend/coverage/coverage-summary.json ]; then
+            echo "## Backend Coverage" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Coverage summary not available." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          node <<'EOF'
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('backend/coverage/coverage-summary.json', 'utf8')).total;
+          const line = `| backend | ${summary.lines.pct}% | ${summary.statements.pct}% | ${summary.functions.pct}% | ${summary.branches.pct}% |`;
+          const output = [
+            '## Backend Coverage',
+            '',
+            '| Project | Lines | Statements | Functions | Branches |',
+            '|---|---:|---:|---:|---:|',
+            line,
+            ''
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, output);
+          console.log(output);
+          EOF
+
+      - name: Upload backend test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-artifacts
+          if-no-files-found: warn
+          path: |
+            backend/reports/**
+            backend/coverage/**
+
+  frontend_test:
+    name: frontend-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            frontend/package.json
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend tests with coverage
+        run: |
+          mkdir -p frontend/reports
+          pnpm -F frontend exec vitest run --coverage --coverage.reporter=text-summary --coverage.reporter=lcov --coverage.reporter=json-summary --reporter=default --reporter=json --outputFile=reports/vitest-results.json 2>&1 | tee frontend/reports/vitest.log
+
+      - name: Frontend coverage summary
+        if: always()
+        run: |
+          if [ ! -f frontend/coverage/coverage-summary.json ]; then
+            echo "## Frontend Coverage" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Coverage summary not available." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          node <<'EOF'
+          const fs = require('fs');
+          const summary = JSON.parse(fs.readFileSync('frontend/coverage/coverage-summary.json', 'utf8')).total;
+          const line = `| frontend | ${summary.lines.pct}% | ${summary.statements.pct}% | ${summary.functions.pct}% | ${summary.branches.pct}% |`;
+          const output = [
+            '## Frontend Coverage',
+            '',
+            '| Project | Lines | Statements | Functions | Branches |',
+            '|---|---:|---:|---:|---:|',
+            line,
+            ''
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, output);
+          console.log(output);
+          EOF
+
+      - name: Upload frontend test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-artifacts
+          if-no-files-found: warn
+          path: |
+            frontend/reports/**
+            frontend/coverage/**
 
   build_and_push:
+    needs: [backend_test, frontend_test]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -54,16 +165,17 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: true
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
