@@ -44,12 +44,14 @@ This is a comprehensive portfolio website that showcases professional work and p
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/przemekp95/wizytowka.git
    cd wizytowka
    ```
 
 2. **Install dependencies**
+
    ```bash
    # Install all dependencies (frontend + backend)
    pnpm install
@@ -60,6 +62,7 @@ This is a comprehensive portfolio website that showcases professional work and p
    ```
 
 3. **Environment Setup**
+
    ```bash
    # Backend environment variables
    cp backend/.env.example backend/.env
@@ -71,6 +74,7 @@ This is a comprehensive portfolio website that showcases professional work and p
    ```
 
 4. **Database Setup**
+
    ```bash
    # Start database containers
    docker-compose up -d postgres mongo
@@ -85,6 +89,7 @@ This is a comprehensive portfolio website that showcases professional work and p
 ### Running the Application
 
 **Development Mode:**
+
 ```bash
 # Start backend (Terminal 1)
 cd backend && npm run start:dev
@@ -94,6 +99,7 @@ cd frontend && npm run dev
 ```
 
 **Production Mode:**
+
 ```bash
 # Using Docker Compose
 docker-compose -f docker-compose.prod.yml up -d
@@ -103,6 +109,7 @@ kubectl apply -f k8s/
 ```
 
 **Available URLs:**
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000/api
 - **GraphQL Playground**: http://localhost:4000/graphql
@@ -112,27 +119,27 @@ kubectl apply -f k8s/
 
 ### Backend (.env)
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` / `production` |
-| `PORT` | Backend port | `4000` |
-| `DATABASE_URL` | MongoDB connection string | `mongodb://localhost:27017/wizytowka` |
-| `ADMIN_TOKEN` | Admin authentication token | `your-secret-token` |
-| `JWT_SECRET` | JWT signing secret | `your-jwt-secret` |
-| `SMTP_HOST` | SMTP server host | `smtp.gmail.com` |
-| `SMTP_USER` | SMTP username | `your-email@gmail.com` |
-| `SMTP_PASS` | SMTP password | `your-app-password` |
-| `AWS_ACCESS_KEY_ID` | AWS access key | `AKIA...` |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key | `your-secret` |
-| `AWS_S3_BUCKET` | S3 bucket name | `your-bucket` |
+| Variable                | Description                | Example                               |
+| ----------------------- | -------------------------- | ------------------------------------- |
+| `NODE_ENV`              | Environment mode           | `development` / `production`          |
+| `PORT`                  | Backend port               | `4000`                                |
+| `DATABASE_URL`          | MongoDB connection string  | `mongodb://localhost:27017/wizytowka` |
+| `ADMIN_TOKEN`           | Admin authentication token | `your-secret-token`                   |
+| `SMTP_HOST`             | SMTP server host           | `smtp.gmail.com`                      |
+| `SMTP_USER`             | SMTP username              | `your-email@gmail.com`                |
+| `SMTP_PASS`             | SMTP password              | `your-app-password`                   |
+| `AWS_ACCESS_KEY_ID`     | AWS access key             | `AKIA...`                             |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key             | `your-secret`                         |
+| `AWS_S3_BUCKET`         | S3 bucket name             | `your-bucket`                         |
 
 ### Frontend (.env.local)
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:4000/api` |
-| `NEXT_PUBLIC_GRAPHQL_URL` | GraphQL endpoint | `http://localhost:4000/graphql` |
-| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha site key | `your-site-key` |
+| Variable                        | Description             | Example                         |
+| ------------------------------- | ----------------------- | ------------------------------- |
+| `NEXT_PUBLIC_API_URL`           | Backend API URL         | `http://localhost:4000/api`     |
+| `NEXT_PUBLIC_GRAPHQL_URL`       | GraphQL endpoint        | `http://localhost:4000/graphql` |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics GA4 ID | `G-XXXXXXXXXX`                  |
+| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha site key       | `your-site-key`                 |
 
 ## Project Structure
 
@@ -215,18 +222,19 @@ npm run coverage           # Run tests with coverage
 
 ### REST API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/portfolio` | Get portfolio items |
-| POST | `/api/contact` | Send contact message |
-| GET | `/api/contact/messages` | Get contact messages (admin) |
+| Method | Endpoint                | Description                  |
+| ------ | ----------------------- | ---------------------------- |
+| GET    | `/api/health`           | Health check                 |
+| GET    | `/api/portfolio`        | Get portfolio items          |
+| POST   | `/api/contact`          | Send contact message         |
+| GET    | `/api/contact/messages` | Get contact messages (admin) |
 
 ### GraphQL Schema
 
 The GraphQL API provides full CRUD operations for portfolio items and contact management.
 
 Example query:
+
 ```graphql
 query GetPortfolio {
   portfolioItems {
@@ -242,6 +250,7 @@ query GetPortfolio {
 ## Testing
 
 Run complete test suite:
+
 ```bash
 # Backend tests
 cd backend && npm run test:e2e
@@ -347,6 +356,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Author
 
 **Przemysław Pietrzak**
+
 - GitHub: [@przemekp95](https://github.com/przemekp95)
 - LinkedIn: [[LinkedIn Profile]](https://www.linkedin.com/in/przempietrzak/)
 - Email: contact@ppsolutions.com.pl

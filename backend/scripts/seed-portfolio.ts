@@ -11,7 +11,7 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-laravel',
-    category: 'web-app, api', // wiele kategorii oddzielone przecinkami
+    category: 'web-app, api', // multiple categories separated by commas
     dateFrom: new Date('2022-03-01'),
     dateTo: new Date('2022-07-31'),
   },
@@ -24,7 +24,7 @@ const items = [
     isLogo: true,
     newTech: false,
     slug: 'casn-nextjs',
-    category: 'web-app, landing, api', // 3 kategorie: web-app, landing, i api
+    category: 'web-app, landing, api', // three categories: web-app, landing, and api
     dateFrom: new Date('2022-08-01'),
     dateTo: new Date('2023-02-28'),
   },
@@ -50,7 +50,7 @@ const items = [
     newTech: false,
     slug: 'strona-wizytowka',
     dateFrom: new Date('2024-03-01'),
-    // dateTo: null - wciąż trwający projekt (do dzisiaj)
+    // dateTo: null - ongoing project (until today)
   },
   {
     title: 'Fundacja Służba Niepodległej',
@@ -62,7 +62,7 @@ const items = [
     newTech: false,
     slug: 'fundacja-sluzba-niepodleglej',
     dateFrom: new Date('2023-09-01'),
-    // dateTo: null - wciąż trwający projekt
+    // dateTo: null - ongoing project
   },
 ];
 

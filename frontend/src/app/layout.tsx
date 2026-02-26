@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { AOSInitializer } from '../components/AOSInitializer';
 import { CustomCursor } from '../components/CustomCursor';
+import { GoogleAnalytics } from '../components/GoogleAnalytics';
 import './globals.css';
 
 const geistSans = Geist({
@@ -16,6 +18,20 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 });
+
+const supportedLocales = new Set(['pl', 'en']);
+const defaultLocale = 'en';
+const googleSiteVerification =
+  process.env.GOOGLE_SITE_VERIFICATION || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID;
+
+function resolveHtmlLocale(rawLocale: string | null): string {
+  if (!rawLocale) {
+    return defaultLocale;
+  }
+
+  return supportedLocales.has(rawLocale) ? rawLocale : defaultLocale;
+}
 
 export const metadata: Metadata = {
   title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
@@ -72,9 +88,11 @@ export const metadata: Metadata = {
       'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
     creator: '@przemekp95',
   },
-  verification: {
-    google: 'google-site-verification-code',
-  },
+  verification: googleSiteVerification
+    ? {
+        google: googleSiteVerification,
+      }
+    : undefined,
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -82,19 +100,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const htmlLang = resolveHtmlLocale(requestHeaders.get('x-locale'));
+
   return (
-    <html className="dark">
+    <html lang={htmlLang} className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100`}
       >
         <AOSInitializer />
         <ErrorBoundary>{children}</ErrorBoundary>
         <CustomCursor />
+        {gaMeasurementId && process.env.NODE_ENV === 'production' ? (
+          <GoogleAnalytics measurementId={gaMeasurementId} />
+        ) : null}
         <Analytics />
         <SpeedInsights />
       </body>

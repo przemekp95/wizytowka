@@ -9,7 +9,7 @@ const customJestConfig = {
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|webp|avif|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
-  // Ważne: nie wciągaj .next (w tym .next/standalone/package.json) do mapy modułów
+  // Important: exclude .next (including .next/standalone/package.json) from module resolution
   modulePathIgnorePatterns: ['<rootDir>/.next/'],
 };
 

@@ -2,8 +2,8 @@
 import fs from 'fs';
 import path from 'path';
 
-// Test portfolio - użyć technologii które są rzeczywiście w różnych kategoriach
-// z about me: Laravel (backend), MySQL (database), Next.js (frontend), Github (devops)
+// Test portfolio: use technologies that clearly span different categories.
+// From "about me": Laravel (backend), MySQL (database), Next.js (frontend), GitHub (devops).
 const testPortfolio = [
   {
     _id: 'backend-project',

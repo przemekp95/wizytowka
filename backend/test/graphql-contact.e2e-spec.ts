@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
-// mock nodemailera, by nic nie wychodziło na zewnątrz
+// Mock nodemailer to prevent external email delivery during tests.
 jest.mock('nodemailer', () => {
   const sendMail = jest.fn().mockResolvedValue({
     messageId: 'e2e-id',
@@ -25,7 +25,7 @@ describe('GraphQL Contact (e2e)', () => {
     process.env.SMTP_HOST = 'smtp.test.local';
     process.env.SMTP_FROM = 'from@test.local';
     process.env.SMTP_TO = 'to@test.local';
-    process.env.THROTTLE_DISABLE = '1'; // jeśli AppModule to respektuje
+    process.env.THROTTLE_DISABLE = '1'; // if AppModule respects this flag
     process.env.HCAPTCHA_MOCK = '1';
 
     const moduleRef = await Test.createTestingModule({
@@ -34,7 +34,7 @@ describe('GraphQL Contact (e2e)', () => {
 
     app = moduleRef.createNestApplication();
 
-    // Ten sam ValidationPipe co w main.ts (żeby walidacja DTO działała w testach)
+    // Use the same ValidationPipe as in main.ts so DTO validation works in tests.
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -89,17 +89,17 @@ describe('GraphQL Contact (e2e)', () => {
 
     const res = await gql(query, variables);
 
-    // Dopuszczamy GraphQL 200 z errors albo globalny 400
+    // Accept either GraphQL 200 with errors or a global 400 response.
     expect([200, 400]).toContain(res.status);
 
     const errors = res.body?.errors as Array<any> | undefined;
 
     if (errors?.length) {
-      // Łapiemy komunikat niezależnie od miejsca (message/extensions/response)
+      // Match the error message regardless of where GraphQL stores it.
       const blob = JSON.stringify(errors).toLowerCase();
       expect(blob).toMatch(/email|invalid|niepopraw|format|validation/);
     } else {
-      // Brak errors => kontrakt resolvera { ok: false }
+      // No errors array means resolver contract should return { ok: false }.
       expect(res.body?.data?.sendContact?.ok).toBe(false);
     }
   });

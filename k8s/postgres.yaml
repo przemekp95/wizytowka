@@ -4,11 +4,13 @@ metadata:
   name: postgres
   namespace: wiz
 spec:
+  type: ClusterIP
   selector:
     app: postgres
   ports:
     - name: pg
       port: 5432
+      targetPort: pg
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,11 +27,43 @@ spec:
       labels:
         app: postgres
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: postgres
           image: postgres:16
           ports:
             - containerPort: 5432
+              name: pg
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-run
+              mountPath: /var/run/postgresql
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: POSTGRES_DB
               value: wizytowka
@@ -37,3 +71,18 @@ spec:
               value: postgres
             - name: POSTGRES_PASSWORD
               value: postgres
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+        - name: postgres-run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

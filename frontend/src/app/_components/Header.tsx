@@ -5,30 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 
-async function loadTranslations(locale: string, section: string) {
-  try {
-    const messages = (await import(`@/i18n/messages/${locale}.json`)).default;
-    const sectionData = messages[section] || {};
-    return sectionData;
-  } catch {
-    return {};
-  }
-}
+type HeaderTranslations = Record<string, string>;
 
-export default function Header() {
+type HeaderProps = {
+  translations: HeaderTranslations;
+};
+
+export default function Header({ translations }: HeaderProps) {
   const headerRef = useRef<HTMLElement>(null);
-  const [translations, setTranslations] = useState<Record<string, string>>({});
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const loadNavTranslations = async () => {
-      const locale = document.querySelector('#i18n-provider')?.getAttribute('data-locale') || 'en';
-      const navTranslations = await loadTranslations(locale, 'nav');
-      setTranslations(navTranslations);
-    };
-
-    loadNavTranslations();
-  }, []);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -39,7 +24,7 @@ export default function Header() {
       el.classList.toggle('scrolled', scrolled);
     };
 
-    onScroll(); // stan początkowy po odświeżeniu
+    onScroll(); // Apply initial state after refresh.
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
