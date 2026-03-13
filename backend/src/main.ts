@@ -92,6 +92,9 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  logger.error('Failed to start application', error instanceof Error ? error.stack : String(error));
+  logger.error(
+    'Failed to start application',
+    error instanceof Error ? error.stack : String(error),
+  );
   process.exit(1);
 });

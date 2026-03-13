@@ -20,7 +20,6 @@ export default defineConfig({
         NODE_ENV: 'test',
         PORT: '4000',
         THROTTLE_DISABLE: '1',
-        HCAPTCHA_MOCK: '1',
         SMTP_HOST: 'smtp.test.local',
         SMTP_FROM: 'from@test.local',
         SMTP_TO: 'to@test.local',

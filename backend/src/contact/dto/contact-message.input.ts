@@ -1,11 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 
 @InputType()
 export class ContactMessageInput {
@@ -24,9 +18,4 @@ export class ContactMessageInput {
   @MinLength(5)
   @MaxLength(2000)
   message!: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  hcaptchaToken?: string;
 }

@@ -13,28 +13,30 @@ export class ContactResolver {
     @Args('input') input: ContactMessageInput,
     @Context('req') req: Request,
   ): Promise<ContactResult> {
-    try {
-      const ip =
-        (req.headers['x-forwarded-for'] as string | undefined)
-          ?.split(',')[0]
-          ?.trim() || req.ip;
-      const requestId = req.requestId;
+    const ip =
+      (req.headers['x-forwarded-for'] as string | undefined)
+        ?.split(',')[0]
+        ?.trim() || req.ip;
+    const requestId = req.requestId;
 
-      const result = await this.contactService.createAndNotify({
-        name: input.name,
-        email: input.email,
-        message: input.message,
-        ip,
-        requestId,
-      });
+    const result = await this.contactService.createAndNotify({
+      name: input.name,
+      email: input.email,
+      message: input.message,
+      ip,
+      requestId,
+    });
 
+    if (!result.ok) {
       return {
-        ok: result.ok,
-        error: undefined,
+        ok: false,
+        error: result.error,
       };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unknown error';
-      return { ok: false, error: msg };
     }
+
+    return {
+      ok: true,
+      error: undefined,
+    };
   }
 }

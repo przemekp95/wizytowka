@@ -95,7 +95,8 @@ describe('AwsService', () => {
 
       const mockUploadInstance = {
         done: jest.fn().mockResolvedValue({
-          Location: 'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
+          Location:
+            'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
         }),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
@@ -105,7 +106,9 @@ describe('AwsService', () => {
 
       const result = await service.uploadImage(mockFile);
 
-      expect(result).toBe('https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg');
+      expect(result).toBe(
+        'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
+      );
       expect(mockUpload).toHaveBeenCalledWith({
         client: expect.any(Object),
         params: {
@@ -116,12 +119,16 @@ describe('AwsService', () => {
           ACL: 'public-read',
         },
       });
-      expect(loggerSpy).toHaveBeenCalledWith('🔧 Initializing AWS S3 client...');
+      expect(loggerSpy).toHaveBeenCalledWith(
+        '🔧 Initializing AWS S3 client...',
+      );
       expect(loggerSpy).toHaveBeenCalledWith('✅ AWS S3 client initialized');
       expect(loggerSpy).toHaveBeenCalledWith(
         'Starting upload: portfolio/mocked-uuid.jpg (17 bytes)',
       );
-      expect(loggerSpy).toHaveBeenCalledWith('Image uploaded successfully: portfolio/mocked-uuid.jpg');
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Image uploaded successfully: portfolio/mocked-uuid.jpg',
+      );
     });
 
     it('should successfully upload an image with custom folder', async () => {
@@ -134,7 +141,8 @@ describe('AwsService', () => {
 
       const mockUploadInstance = {
         done: jest.fn().mockResolvedValue({
-          Location: 'https://test-bucket.s3.amazonaws.com/custom/mocked-uuid.jpg',
+          Location:
+            'https://test-bucket.s3.amazonaws.com/custom/mocked-uuid.jpg',
         }),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
@@ -144,7 +152,9 @@ describe('AwsService', () => {
 
       const result = await service.uploadImage(mockFile, 'custom');
 
-      expect(result).toBe('https://test-bucket.s3.amazonaws.com/custom/mocked-uuid.jpg');
+      expect(result).toBe(
+        'https://test-bucket.s3.amazonaws.com/custom/mocked-uuid.jpg',
+      );
       expect(mockUpload).toHaveBeenCalledWith({
         client: expect.any(Object),
         params: {
@@ -158,6 +168,10 @@ describe('AwsService', () => {
     });
 
     it('should handle files without extension', async () => {
+      const { v4: uuidv4 } = require('uuid');
+      (uuidv4 as jest.Mock).mockReturnValue('mocked-uuid');
+      (pathMock.extname as jest.Mock).mockReturnValue('');
+
       const fileWithoutExtension = {
         originalname: 'test-image',
         buffer: Buffer.from('test-file-content'),
@@ -166,7 +180,8 @@ describe('AwsService', () => {
 
       const mockUploadInstance = {
         done: jest.fn().mockResolvedValue({
-          Location: 'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid',
+          Location:
+            'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid',
         }),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
@@ -176,7 +191,9 @@ describe('AwsService', () => {
 
       const result = await service.uploadImage(fileWithoutExtension);
 
-      expect(result).toBe('https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid');
+      expect(result).toBe(
+        'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid',
+      );
       expect(mockUpload).toHaveBeenCalledWith({
         client: expect.any(Object),
         params: {
@@ -199,30 +216,39 @@ describe('AwsService', () => {
         send: jest.fn(),
       }));
 
-      await expect(service.uploadImage(mockFile)).rejects.toThrow('Upload failed');
-      expect(loggerSpy).toHaveBeenCalledWith('🔧 Initializing AWS S3 client...');
+      await expect(service.uploadImage(mockFile)).rejects.toThrow(
+        'Upload failed',
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(
+        '🔧 Initializing AWS S3 client...',
+      );
       expect(loggerSpy).toHaveBeenCalledWith('✅ AWS S3 client initialized');
     });
 
     it('should handle timeout on upload', async () => {
       jest.setTimeout(35000); // Increase timeout for this test
       const mockUploadInstance = {
-        done: jest.fn().mockImplementation(
-          () => new Promise(resolve => setTimeout(resolve, 35000))
-        ),
+        done: jest
+          .fn()
+          .mockImplementation(
+            () => new Promise((resolve) => setTimeout(resolve, 35000)),
+          ),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
       (mockS3Client as any).mockImplementation(() => ({
         send: jest.fn(),
       }));
 
-      await expect(service.uploadImage(mockFile)).rejects.toThrow('Upload timeout after 30s');
+      await expect(service.uploadImage(mockFile)).rejects.toThrow(
+        'Upload timeout after 30s',
+      );
     }, 40000);
 
     it('should reuse S3 client instance', async () => {
       const mockUploadInstance = {
         done: jest.fn().mockResolvedValue({
-          Location: 'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
+          Location:
+            'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
         }),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
@@ -237,14 +263,17 @@ describe('AwsService', () => {
       await service.uploadImage(mockFile);
 
       // Should only log client initialization once
-      expect(loggerSpy).toHaveBeenCalledWith('🔧 Initializing AWS S3 client...');
+      expect(loggerSpy).toHaveBeenCalledWith(
+        '🔧 Initializing AWS S3 client...',
+      );
       expect(loggerSpy).toHaveBeenCalledWith('✅ AWS S3 client initialized');
       expect(loggerSpy).toHaveBeenCalledTimes(6); // 2 initializations + 4 logs per upload
     });
   });
 
   describe('deleteImage', () => {
-    const mockImageUrl = 'https://test-bucket.s3.amazonaws.com/portfolio/test-image.jpg';
+    const mockImageUrl =
+      'https://test-bucket.s3.amazonaws.com/portfolio/test-image.jpg';
 
     beforeEach(() => {
       (configService.get as jest.Mock).mockImplementation((key: string) => {
@@ -264,11 +293,11 @@ describe('AwsService', () => {
 
       await service.deleteImage(mockImageUrl);
 
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.any(DeleteObjectCommand)
-      );
+      expect(mockSend).toHaveBeenCalledWith(expect.any(DeleteObjectCommand));
       expect(loggerSpy).toHaveBeenCalledWith('✅ AWS S3 client initialized');
-      expect(loggerSpy).toHaveBeenCalledWith('Image deleted successfully: portfolio/test-image.jpg');
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Image deleted successfully: portfolio/test-image.jpg',
+      );
     });
 
     it('should correctly parse key from URL', async () => {
@@ -277,17 +306,15 @@ describe('AwsService', () => {
         send: mockSend,
       }));
 
-      const complexUrl = 'https://test-bucket.s3.amazonaws.com/folder/subfolder/image.jpg';
+      const complexUrl =
+        'https://test-bucket.s3.amazonaws.com/folder/subfolder/image.jpg';
       await service.deleteImage(complexUrl);
 
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          input: {
-            Bucket: 'test-bucket',
-            Key: 'folder/subfolder/image.jpg',
-          },
-        })
-      );
+      expect(DeleteObjectCommand).toHaveBeenCalledWith({
+        Bucket: 'test-bucket',
+        Key: 'folder/subfolder/image.jpg',
+      });
+      expect(mockSend).toHaveBeenCalledWith(expect.any(DeleteObjectCommand));
     });
 
     it('should throw error on delete failure', async () => {
@@ -297,7 +324,9 @@ describe('AwsService', () => {
         send: mockSend,
       }));
 
-      await expect(service.deleteImage(mockImageUrl)).rejects.toThrow('Delete failed');
+      await expect(service.deleteImage(mockImageUrl)).rejects.toThrow(
+        'Delete failed',
+      );
     });
   });
 
@@ -305,7 +334,8 @@ describe('AwsService', () => {
     it('should initialize S3 client with correct configuration', async () => {
       const mockUploadInstance = {
         done: jest.fn().mockResolvedValue({
-          Location: 'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
+          Location:
+            'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
         }),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
@@ -336,15 +366,21 @@ describe('AwsService', () => {
       });
     });
 
-    it('should handle missing bucket name configuration', () => {
+    it('should handle missing bucket name configuration', async () => {
       const testConfigService = {
         get: jest.fn((key: string) => {
-          if (key !== 'aws.s3.bucketName') return 'test-value';
+          if (key === 'aws.region') return 'us-east-1';
           return undefined;
         }),
       };
 
-      expect(() => new AwsService(testConfigService as any)).toThrow('AWS S3 bucket name is not configured');
+      const testService = new AwsService(testConfigService as any);
+
+      await expect(
+        testService.deleteImage(
+          'https://test-bucket.s3.amazonaws.com/portfolio/test.jpg',
+        ),
+      ).rejects.toThrow('AWS S3 bucket name is not configured');
     });
   });
 });

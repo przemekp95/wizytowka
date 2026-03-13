@@ -1,20 +1,19 @@
 # Personal Portfolio Website
 
-A modern, full-stack portfolio website built with Next.js 15, React 18, NestJS, and TypeScript. Features internationalization, contact forms, portfolio management, and seamless CI/CD deployment.
+A full-stack portfolio application built with Next.js 16, React 19, NestJS 11, and TypeScript. The repo includes a public-facing frontend, a NestJS backend, automated tests, Docker/Kubernetes assets, and CI suitable for production hardening.
 
 ## Description
 
-This is a comprehensive portfolio website that showcases professional work and provides contact functionality. The application features:
+This repository contains:
 
-- **Frontend**: Next.js 15 with React 18, TypeScript, and Tailwind CSS
-- **Backend**: NestJS with GraphQL and REST APIs
-- **Database**: MongoDB with Prisma ORM
-- **Authentication**: Token-based admin access
-- **Contact System**: Email notifications via SMTP
-- **File Storage**: AWS S3 integration
-- **Internationalization**: Built-in i18n support
-- **Testing**: Comprehensive unit, integration, and E2E tests
-- **Deployment**: Docker + Kubernetes ready
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **Backend**: NestJS 11 with GraphQL and REST APIs
+- **Data Layer**: MongoDB, accessed through Prisma for contact data and the MongoDB driver for portfolio data
+- **Contact Flow**: strict success semantics, where a submission is considered successful only when both DB persistence and SMTP delivery succeed
+- **File Storage**: AWS S3 integration for portfolio assets
+- **Internationalization**: locale-aware frontend routes and translations
+- **Testing**: unit and integration coverage in backend/frontend, plus Playwright E2E coverage
+- **Deployment Assets**: Docker, Kubernetes, and CI workflow definitions
 
 ## Architecture Overview
 
@@ -36,8 +35,8 @@ This is a comprehensive portfolio website that showcases professional work and p
 
 ### Prerequisites
 
-- **Node.js** 18+
-- **pnpm** (recommended) or npm/yarn
+- **Node.js** 20+
+- **pnpm** 9+
 - **Docker** and Docker Compose
 - **Git**
 
@@ -64,25 +63,19 @@ This is a comprehensive portfolio website that showcases professional work and p
 3. **Environment Setup**
 
    ```bash
-   # Backend environment variables
    cp backend/.env.example backend/.env
-   # Edit backend/.env with your configuration
-
-   # Frontend environment variables
    cp frontend/.env.example frontend/.env.local
-   # Edit frontend/.env.local if needed
    ```
 
 4. **Database Setup**
 
    ```bash
-   # Start database containers
-   docker-compose up -d postgres mongo
+   # Start MongoDB (and optional local tooling like MailHog)
+   docker compose up -d mongo mailhog
 
-   # Generate Prisma client and seed database
+   # Generate Prisma client for the backend workspace
    cd backend
-   npx prisma generate
-   npx prisma db seed
+   pnpm prisma generate
    cd ..
    ```
 
@@ -108,38 +101,48 @@ docker-compose -f docker-compose.prod.yml up -d
 kubectl apply -f k8s/
 ```
 
-**Available URLs:**
+**Available URLs**
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000/api
-- **GraphQL Playground**: http://localhost:4000/graphql
-- **Health Check**: http://localhost:4000/api/health
+- **GraphQL Endpoint**: http://localhost:4000/graphql
+- **Swagger Docs**: http://localhost:4000/api/docs
+- **Health Check**: http://localhost:4000/api/health/live
 
 ## Environment Variables
 
-### Backend (.env)
+### Backend (`backend/.env`)
 
-| Variable                | Description                | Example                               |
-| ----------------------- | -------------------------- | ------------------------------------- |
-| `NODE_ENV`              | Environment mode           | `development` / `production`          |
-| `PORT`                  | Backend port               | `4000`                                |
-| `DATABASE_URL`          | MongoDB connection string  | `mongodb://localhost:27017/wizytowka` |
-| `ADMIN_TOKEN`           | Admin authentication token | `your-secret-token`                   |
-| `SMTP_HOST`             | SMTP server host           | `smtp.gmail.com`                      |
-| `SMTP_USER`             | SMTP username              | `your-email@gmail.com`                |
-| `SMTP_PASS`             | SMTP password              | `your-app-password`                   |
-| `AWS_ACCESS_KEY_ID`     | AWS access key             | `AKIA...`                             |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key             | `your-secret`                         |
-| `AWS_S3_BUCKET`         | S3 bucket name             | `your-bucket`                         |
+| Variable                | Description                   | Example                                       |
+| ----------------------- | ----------------------------- | --------------------------------------------- |
+| `NODE_ENV`              | Environment mode              | `development`                                 |
+| `PORT`                  | Backend port                  | `4000`                                        |
+| `FRONTEND_URL`          | Primary frontend origin       | `http://localhost:3000`                       |
+| `CORS_ORIGINS`          | Additional allowed origins    | `http://localhost:3000,http://localhost:3001` |
+| `MONGODB_URI`           | MongoDB connection string     | `mongodb://localhost:27017/wizytowka`         |
+| `MONGODB_DB`            | MongoDB database name         | `wizytowka`                                   |
+| `SMTP_HOST`             | SMTP server host              | `localhost`                                   |
+| `SMTP_PORT`             | SMTP port                     | `1025`                                        |
+| `SMTP_SECURE`           | SMTP TLS flag                 | `false`                                       |
+| `SMTP_FROM`             | Sender address                | `portfolio@example.com`                       |
+| `SMTP_TO`               | Recipient address             | `owner@example.com`                           |
+| `ADMIN_TOKEN`           | Admin authentication token    | `your-secret-token`                           |
+| `OPENAI_API_KEY`        | Optional chat integration key | `sk-...`                                      |
+| `AWS_REGION`            | AWS region                    | `us-east-1`                                   |
+| `AWS_ACCESS_KEY_ID`     | AWS access key                | `AKIA...`                                     |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key                | `your-secret`                                 |
+| `AWS_S3_BUCKET_NAME`    | S3 bucket name                | `your-bucket`                                 |
 
-### Frontend (.env.local)
+### Frontend (`frontend/.env.local`)
 
-| Variable                        | Description             | Example                         |
-| ------------------------------- | ----------------------- | ------------------------------- |
-| `NEXT_PUBLIC_API_URL`           | Backend API URL         | `http://localhost:4000/api`     |
-| `NEXT_PUBLIC_GRAPHQL_URL`       | GraphQL endpoint        | `http://localhost:4000/graphql` |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics GA4 ID | `G-XXXXXXXXXX`                  |
-| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | hCaptcha site key       | `your-site-key`                 |
+| Variable                               | Description                                | Example                         |
+| -------------------------------------- | ------------------------------------------ | ------------------------------- |
+| `NEXT_PUBLIC_GRAPHQL_URL`              | GraphQL endpoint                           | `http://localhost:4000/graphql` |
+| `NEXT_PUBLIC_API_URL`                  | Backend base URL for client-side fetches   | `http://localhost:4000`         |
+| `NEXT_PUBLIC_API_BASE_URL`             | Backend REST base URL                      | `http://localhost:4000/api`     |
+| `NEXT_PUBLIC_SITE_URL`                 | Public site URL                            | `http://localhost:3000`         |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID`        | Optional Google Analytics GA4 ID           | `G-XXXXXXXXXX`                  |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional Search Console verification token | `token`                         |
 
 ## Project Structure
 
@@ -157,7 +160,7 @@ wizytowka/
 │       └── schema.prisma   # Database schema
 ├── frontend/               # Next.js frontend application
 │   ├── src/
-│   │   ├── app/           # Next.js 13+ app router
+│   │   ├── app/           # Next.js App Router
 │   │   ├── components/    # Reusable React components
 │   │   ├── graphql/       # GraphQL queries
 │   │   └── lib/           # Utility functions
@@ -183,6 +186,8 @@ npm run start:prod         # Start production build
 npm run build              # Build for production
 npm run format             # Format code with Prettier
 npm run lint               # Run ESLint
+npm run lint:fix           # Run ESLint with autofix
+npm run typecheck          # Run TypeScript type checking
 
 # Testing
 npm run test               # Run unit tests
@@ -208,14 +213,24 @@ npm run start              # Start production server
 
 # Code Quality
 npm run lint               # Run ESLint
+npm run lint:fix           # Run ESLint with autofix + Prettier
 npm run format             # Format code
-npm run type-check         # TypeScript type checking
+npm run typecheck          # TypeScript type checking
 
 # Testing
 npm run test               # Run unit tests
 npm run test:watch         # Run tests in watch mode
 npm run test:e2e           # Run Playwright E2E tests
 npm run coverage           # Run tests with coverage
+```
+
+### Workspace Checks
+
+```bash
+pnpm lint                  # Run lint in every workspace
+pnpm typecheck             # Run TypeScript checks in every workspace
+pnpm test                  # Run backend and frontend unit tests
+pnpm check                 # Run lint + typecheck + tests + build
 ```
 
 ## APIs

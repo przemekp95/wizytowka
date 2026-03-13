@@ -4,14 +4,16 @@
   "packageManager": "pnpm@9.12.2",
   "scripts": {
     "preinstall": "node -e \"if(!/pnpm/.test(process.env.npm_execpath||'')){console.error('✖ Użyj pnpm');process.exit(1)}\"",
-    "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
-    "start": "pnpm -r start",
-    "start:prod": "pnpm -F backend run start:prod",
-    "lint": "pnpm -r lint",
-    "check": "pnpm -r lint && echo '✅ Wszystkie sprawdzenia pomyślne!'",
-    "test:e2e": "pnpm -F frontend exec playwright test",
-    "test:all": "pnpm -F backend test && pnpm -F frontend test && pnpm -F backend test:e2e && pnpm -F frontend exec playwright test"
+    "dev": "corepack pnpm -r --parallel dev",
+    "build": "corepack pnpm -r build",
+    "start": "corepack pnpm -r start",
+    "start:prod": "corepack pnpm -F backend run start:prod",
+    "lint": "corepack pnpm -r lint",
+    "typecheck": "corepack pnpm -r typecheck",
+    "test": "corepack pnpm -F backend test && corepack pnpm -F frontend test",
+    "check": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && echo '✅ Wszystkie sprawdzenia pomyślne!'",
+    "test:e2e": "corepack pnpm -F frontend exec playwright test",
+    "test:all": "corepack pnpm -F backend test && corepack pnpm -F frontend test && corepack pnpm -F backend test:e2e && corepack pnpm -F frontend exec playwright test"
   },
   "devDependencies": {
     "baseline-browser-mapping": "^2.10.7",
