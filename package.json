@@ -14,7 +14,7 @@
     "test:all": "pnpm -F backend test && pnpm -F frontend test && pnpm -F backend test:e2e && pnpm -F frontend exec playwright test"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.0",
+    "baseline-browser-mapping": "^2.10.7",
     "husky": "^9.1.7"
   },
   "dependencies": {
