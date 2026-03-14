@@ -32,8 +32,19 @@ export type CreateContactInput = {
   message: string;
   ip?: string;
   requestId?: string;
-  hcaptchaToken?: string;
 };
+
+export type CreateContactResult =
+  | {
+      ok: true;
+      messageId: string;
+      savedId: string;
+    }
+  | {
+      ok: false;
+      error: string;
+      savedId?: string;
+    };
 
 /**
  * Service responsible for handling contact form submissions,
@@ -41,7 +52,7 @@ export type CreateContactInput = {
  *
  * Features:
  * - SMTP email sending with retry logic
- * - Database persistence with graceful degradation
+ * - Database persistence before delivery
  * - Request tracking and logging
  */
 @Injectable()
@@ -204,21 +215,15 @@ export class ContactService {
 
   /**
    * Saves contact message to database and sends email notification.
-   * Uses graceful degradation - if database save fails, email is still sent.
-   * If email fails, the message may still be saved in database.
+   * The operation succeeds only when both persistence and delivery succeed.
    *
-   * @param params - Contact form input data including hCaptcha token
+   * @param params - Contact form input data
    * @returns Promise resolving to operation result with IDs and status
    */
-  async createAndNotify(params: CreateContactInput): Promise<{
-    ok: true;
-    messageId?: string;
-    savedId?: string;
-  }> {
-    let savedId: string | undefined;
-
+  async createAndNotify(
+    params: CreateContactInput,
+  ): Promise<CreateContactResult> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const saved = await this.prisma.contactMessage.create({
         data: {
           name: params.name,
@@ -228,30 +233,36 @@ export class ContactService {
         },
         select: { id: true },
       });
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      savedId = saved.id;
-    } catch (e) {
-      const error =
-        (e as unknown) instanceof Error
-          ? (e as unknown as Error)
-          : new Error(String(e));
-      this.logger.warn(
-        `DB save failed, continuing. requestId=${params.requestId} reason=${error.message}`,
-      );
-    }
 
-    try {
-      const { messageId } = await this.sendMail(params);
-      return { ok: true, messageId, savedId };
+      const savedId = saved.id;
+
+      try {
+        const { messageId } = await this.sendMail(params);
+        return { ok: true, messageId, savedId };
+      } catch (e) {
+        const error =
+          (e as unknown) instanceof Error
+            ? (e as unknown as Error)
+            : new Error(String(e));
+        this.logger.error(
+          `Mail send failed. requestId=${params.requestId} savedId=${savedId} reason=${error.message}`,
+        );
+        return {
+          ok: false,
+          error:
+            'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
+          savedId,
+        };
+      }
     } catch (e) {
-      const error =
-        (e as unknown) instanceof Error
-          ? (e as unknown as Error)
-          : new Error(String(e));
+      const error = e instanceof Error ? e : new Error(String(e));
       this.logger.error(
-        `Mail send failed. requestId=${params.requestId} reason=${error.message}`,
+        `DB save failed. requestId=${params.requestId} reason=${error.message}`,
       );
-      return { ok: true, savedId };
+      return {
+        ok: false,
+        error: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',
+      };
     }
   }
 }

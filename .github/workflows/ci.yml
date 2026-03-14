@@ -48,6 +48,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm -F backend exec prisma generate --schema prisma/schema.prisma
+
+      - name: Lint backend
+        run: pnpm -F backend lint
+
+      - name: Typecheck backend
+        run: pnpm -F backend typecheck
+
       - name: Run backend tests with coverage
         run: |
           mkdir -p backend/reports
@@ -113,6 +122,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint frontend
+        run: pnpm -F frontend lint
+
+      - name: Typecheck frontend
+        run: pnpm -F frontend typecheck
+
       - name: Run frontend tests with coverage
         run: |
           mkdir -p frontend/reports
@@ -154,8 +169,37 @@ jobs:
             frontend/reports/**
             frontend/coverage/**
 
-  build_and_push:
+  app_build:
+    name: app-build
     needs: [backend_test, frontend_test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm -F backend exec prisma generate --schema prisma/schema.prisma
+
+      - name: Build apps
+        run: pnpm -r build
+
+  build_and_push:
+    needs: [backend_test, frontend_test, app_build]
     if: github.ref == 'refs/heads/main'
     timeout-minutes: 30
     runs-on: ubuntu-latest

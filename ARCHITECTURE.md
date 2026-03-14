@@ -21,11 +21,11 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
-│  │   Next.js 15    │ │   NestJS API    │ │ Access Control  │ │
+│  │   Next.js 16    │ │   NestJS API    │ │ Access Control  │ │
 │  │   Frontend      │ │   Backend       │ │  (Admin Token)  │ │
 │  │                 │ │   TypeScript    │ │                 │ │
 │  │   - SSR/SSG     │ │   - Controllers │ │ - Bearer token  │ │
-│  │   - React 18    │ │   - Services    │ │ - Endpoint auth │ │
+│  │   - React 19    │ │   - Services    │ │ - Endpoint auth │ │
 │  │   - TailwindCSS │ │   - GraphQL     │ │                 │ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
@@ -34,12 +34,12 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                      Data Layer                             │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
-│  │   MongoDB       │ │   PostgreSQL    │ │   AWS S3        │ │
-│  │   Portfolio     │ │   (Prisma ORM)  │ │   Files         │ │
-│  │                 │ │   Contact DB    │ │                 │ │
-│  │   - Documents   │ │   - Relational  │ │   - Static      │ │
-│  │   - JSON Schema │ │   - NoSQL       │ │   - CDN         │ │
-│  │   - Aggregation │ │   - Indexes     │ │                 │ │
+│  │   MongoDB       │ │ Prisma + Mongo  │ │   AWS S3        │ │
+│  │   App Data      │ │   Data Access   │ │   Files         │ │
+│  │                 │ │                 │ │                 │ │
+│  │   - Portfolio   │ │ - Contact data  │ │   - Static      │ │
+│  │   - Contact     │ │ - Shared schema │ │   - CDN         │ │
+│  │   - Aggregation │ │ - Type safety   │ │                 │ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                                    │
@@ -116,7 +116,7 @@ src/
 
 ### Frontend Stack
 
-- **Framework**: Next.js 15 (React 18, App Router)
+- **Framework**: Next.js 16 (React 19, App Router)
 - **Language**: TypeScript 5.9
 - **Styling**: Tailwind CSS
 - **State Management**: React hooks
@@ -126,8 +126,8 @@ src/
 ### Backend Stack
 
 - **Framework**: NestJS 11 (Node.js)
-- **Language**: TypeStation 5.9
-- **Database**: MongoDB + PostgreSQL via Prisma
+- **Language**: TypeScript 5.9
+- **Database**: MongoDB via Prisma and the MongoDB driver
 - **API**: REST + GraphQL
 - **Authentication**: `ADMIN_TOKEN` bearer header on protected admin endpoint(s)
 - **File Storage**: AWS S3
@@ -183,13 +183,11 @@ Kubernetes Cluster
     ↓   Validation (client-side)
 2. GraphQL mutation → NestJS API
     ↓   Validation + anti-abuse checks
-3. hCaptcha validation → NestJS Service
-    ↓   Business logic
-4. Database storage → Prisma (PostgreSQL)
+3. Database storage → Prisma (MongoDB)
     ↓   Email notification
-5. SMTP send → Contact Service
+4. SMTP send → Contact Service
     ↓
-6. Success/error response → Client
+5. Success/error response → Client
 ```
 
 ### Portfolio Data Loading

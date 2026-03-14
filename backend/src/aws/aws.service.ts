@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, DeleteObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  S3ClientConfig,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -89,11 +93,21 @@ export class AwsService {
       });
 
       const uploadPromise = upload.done();
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Upload timeout after 30s')), 30000),
-      );
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error('Upload timeout after 30s')),
+          30000,
+        );
+      });
 
-      await Promise.race([uploadPromise, timeoutPromise]);
+      try {
+        await Promise.race([uploadPromise, timeoutPromise]);
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
       this.logger.log(`Image uploaded successfully: ${fileName}`);
       return `https://${this.getBucketName()}.s3.amazonaws.com/${fileName}`;
     } catch (error: unknown) {
@@ -107,7 +121,8 @@ export class AwsService {
 
   async deleteImage(imageUrl: string): Promise<void> {
     try {
-      const key = imageUrl.split('/').slice(-2).join('/');
+      const { pathname } = new URL(imageUrl);
+      const key = pathname.replace(/^\/+/, '');
       await this.getS3Client().send(
         new DeleteObjectCommand({
           Bucket: this.getBucketName(),

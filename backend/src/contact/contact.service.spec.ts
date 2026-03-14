@@ -113,7 +113,7 @@ describe('ContactService', () => {
     });
   });
 
-  it('should handle database failure gracefully and still send email', async () => {
+  it('should stop when database save fails', async () => {
     const dbError = new Error('Database connection failed');
     (prismaMock.contactMessage.create as jest.Mock).mockRejectedValue(dbError);
 
@@ -124,15 +124,14 @@ describe('ContactService', () => {
     });
 
     expect(result).toEqual({
-      ok: true,
-      messageId: 'test-id',
-      savedId: undefined,
+      ok: false,
+      error: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',
     });
 
-    expect(sendMailMock).toHaveBeenCalled();
+    expect(sendMailMock).not.toHaveBeenCalled();
   });
 
-  it('should handle email failure gracefully and still save to database', async () => {
+  it('should handle email failure gracefully and keep savedId for recovery', async () => {
     const emailError = new Error('SMTP failure');
     sendMailMock.mockRejectedValue(emailError);
 
@@ -143,9 +142,9 @@ describe('ContactService', () => {
     });
 
     expect(result).toEqual({
-      ok: true,
+      ok: false,
+      error: 'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
       savedId: 'saved-123',
-      messageId: undefined,
     });
 
     expect(prismaMock.contactMessage.create).toHaveBeenCalled();

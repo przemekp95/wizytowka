@@ -17,23 +17,28 @@ export class ContactController {
   constructor(private readonly contact: ContactService) {}
 
   @Post()
-  @HttpCode(HttpStatus.ACCEPTED)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Send contact message',
     description:
-      'Submits a contact form message with email notification and database storage',
+      'Submits a contact form message and reports success only when storage and delivery succeed',
   })
   @ApiBody({
     type: ContactDto,
     description: 'Contact form data',
   })
   @ApiResponse({
-    status: HttpStatus.ACCEPTED,
-    description: 'Message accepted for processing',
+    status: HttpStatus.OK,
+    description: 'Message processed',
     schema: {
       type: 'object',
       properties: {
         ok: { type: 'boolean', example: true },
+        error: {
+          type: 'string',
+          example: 'Nie udalo sie dostarczyc wiadomosci.',
+          nullable: true,
+        },
         messageId: { type: 'string', example: 'abc123@example.com' },
         savedId: { type: 'string', example: 'uuid-string' },
       },

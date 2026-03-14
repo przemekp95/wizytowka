@@ -4,7 +4,6 @@
 
 input ContactMessageInput {
   email: String!
-  hcaptchaToken: String
   message: String!
   name: String!
 }

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, beforeAll, afterAll, afterEach, describe, it, expect } from 'vitest';
 import ContactSection from '@/app/_components/ContactForm';
@@ -59,7 +59,7 @@ describe('ContactSection', () => {
     await userEvent.type(messageInput, 'Treść wiadomości testowej');
 
     await waitFor(() => expect(submitButton).toBeEnabled());
-    fireEvent.click(submitButton);
+    await userEvent.click(submitButton);
 
     const successMsg = await screen.findByText(/Wiadomość wysłana/i);
     expect(successMsg).toBeInTheDocument();
@@ -90,9 +90,31 @@ describe('ContactSection', () => {
     await userEvent.type(messageInput, 'To jest poprawna wiadomość testowa.');
 
     await waitFor(() => expect(submitButton).toBeEnabled());
-    fireEvent.click(submitButton);
+    await userEvent.click(submitButton);
 
     const errorMsg = await screen.findByText(/Błąd walidacji \(GraphQL\)/i);
+    expect(errorMsg).toBeInTheDocument();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('network failure - renderuje fallbackowy komunikat błędu', async () => {
+    fetchSpy.mockRejectedValue(new Error('Sieć niedostępna'));
+
+    render(<ContactSection locale="pl" translations={contactTranslations} />);
+
+    const nameInput = screen.getByTestId('contact-name');
+    const emailInput = screen.getByTestId('contact-email');
+    const messageInput = screen.getByTestId('contact-message');
+    const submitButton = screen.getByTestId('contact-submit');
+
+    await userEvent.type(nameInput, 'Jan Testowy');
+    await userEvent.type(emailInput, 'jan@test.pl');
+    await userEvent.type(messageInput, 'To jest poprawna wiadomość testowa.');
+
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    await userEvent.click(submitButton);
+
+    const errorMsg = await screen.findByText(/Sieć niedostępna/i);
     expect(errorMsg).toBeInTheDocument();
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
