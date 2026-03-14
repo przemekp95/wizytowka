@@ -94,17 +94,17 @@ export default function ContactSection({ locale, translations }: ContactSectionP
     setStatus('sending');
     setErr('');
     setProgress(0);
+    let progressInterval: ReturnType<typeof setInterval> | undefined;
 
     try {
       // Simulate progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + Math.random() * 30, 90));
       }, 200);
 
       // Honeypot check
       const website = data.name.toLowerCase();
       if (website.includes('website') || website.includes('http')) {
-        clearInterval(progressInterval);
         setStatus('sent');
         setProgress(100);
         reset();
@@ -115,7 +115,6 @@ export default function ContactSection({ locale, translations }: ContactSectionP
         name: data.name.trim(),
         email: data.email.trim(),
         message: data.message.trim(),
-        hcaptchaToken: '',
       };
 
       const query = `
@@ -134,13 +133,13 @@ export default function ContactSection({ locale, translations }: ContactSectionP
         cache: 'no-store',
       });
 
-      clearInterval(progressInterval);
       setProgress(100);
 
       const j = await r.json().catch(() => ({}));
+      const response = j?.data?.sendContact;
 
-      if (!r.ok || j?.errors || j?.data?.sendContact?.ok === false) {
-        throw new Error(j?.data?.sendContact?.error || j?.errors?.[0]?.message || t('sendError'));
+      if (!r.ok || j?.errors || response?.ok !== true) {
+        throw new Error(response?.error || j?.errors?.[0]?.message || t('sendError'));
       }
 
       setStatus('sent');
@@ -152,6 +151,10 @@ export default function ContactSection({ locale, translations }: ContactSectionP
       setStatus('error');
       setErr(e instanceof Error ? e.message : t('unknownError'));
       setProgress(0);
+    } finally {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
     }
   };
 
@@ -184,7 +187,9 @@ export default function ContactSection({ locale, translations }: ContactSectionP
           <input
             {...register('name')}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
-            placeholder={translations.namePlaceholder ?? translations.placeholderName ?? t('namePlaceholder')}
+            placeholder={
+              translations.namePlaceholder ?? translations.placeholderName ?? t('namePlaceholder')
+            }
             data-testid="contact-name"
           />
           <AnimatePresence>
@@ -222,7 +227,9 @@ export default function ContactSection({ locale, translations }: ContactSectionP
             {...register('email')}
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 outline-none"
             placeholder={
-              translations.emailPlaceholder ?? translations.placeholderEmail ?? t('emailPlaceholder')
+              translations.emailPlaceholder ??
+              translations.placeholderEmail ??
+              t('emailPlaceholder')
             }
             data-testid="contact-email"
           />

@@ -76,7 +76,9 @@ function getSection(messages: TranslationMessages, section: string): Translation
   }
 
   const sectionEntries = Object.entries(value);
-  return Object.fromEntries(sectionEntries.filter(([, v]) => typeof v === 'string')) as TranslationSection;
+  return Object.fromEntries(
+    sectionEntries.filter(([, v]) => typeof v === 'string')
+  ) as TranslationSection;
 }
 
 function createTranslator(messages: TranslationMessages) {

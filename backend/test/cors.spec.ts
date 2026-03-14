@@ -3,8 +3,8 @@ import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
+import { ContactService } from '../src/contact/contact.service';
 
 describe('CORS', () => {
   let app: INestApplication;
@@ -35,13 +35,25 @@ describe('CORS', () => {
         }),
         AppModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(ContactService)
+      .useValue({
+        createAndNotify: jest.fn().mockResolvedValue({
+          ok: true,
+          messageId: 'msg-123',
+          savedId: 'saved-123',
+        }),
+      })
+      .compile();
 
     app = mod.createNestApplication();
 
     // Konfiguracja CORS jak w main.ts
     app.enableCors({
-      origin: (origin: string | undefined, cb: (error: Error | null, allow?: boolean) => void) => {
+      origin: (
+        origin: string | undefined,
+        cb: (error: Error | null, allow?: boolean) => void,
+      ) => {
         if (!origin) return cb(null, true);
         const allowedOrigins = new Set([
           'http://localhost:3000',
@@ -80,7 +92,7 @@ describe('CORS', () => {
       .post('/api/contact')
       .set('Origin', ORIGIN)
       .send({ name: 'T', email: 't@example.pl', message: 'Test message' });
-    expect(res.status).toBe(202); // albo 200, zgodnie z twoją implementacją
+    expect(res.status).toBe(200);
     expect(res.header['access-control-allow-origin']).toBe(ORIGIN);
   }, 5000);
 });

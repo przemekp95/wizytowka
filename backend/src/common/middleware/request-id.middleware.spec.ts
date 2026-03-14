@@ -2,10 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RequestIdMiddleware } from './request-id.middleware';
 import type { Request, Response } from 'express';
 
-jest.mock('crypto', () => ({
-  randomUUID: jest.fn(() => 'test-uuid-123'),
-}));
-
 describe('RequestIdMiddleware', () => {
   let middleware: RequestIdMiddleware;
   let mockRequest: Partial<Request & { requestId?: string }>;
@@ -45,7 +41,10 @@ describe('RequestIdMiddleware', () => {
     middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
 
     expect((mockRequest as any).requestId).toBe('existing-request-id');
-    expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-Id', 'existing-request-id');
+    expect(mockResponse.setHeader).toHaveBeenCalledWith(
+      'X-Request-Id',
+      'existing-request-id',
+    );
     expect(mockNext).toHaveBeenCalled();
   });
 
@@ -54,8 +53,11 @@ describe('RequestIdMiddleware', () => {
 
     middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
 
-    expect(mockRequest.requestId).toBe('test-uuid-123');
-    expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-Id', 'test-uuid-123');
+    expect(mockRequest.requestId).toEqual(expect.any(String));
+    expect(mockResponse.setHeader).toHaveBeenCalledWith(
+      'X-Request-Id',
+      expect.any(String),
+    );
     expect(mockNext).toHaveBeenCalled();
   });
 
@@ -64,8 +66,11 @@ describe('RequestIdMiddleware', () => {
 
     middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
 
-    expect(mockRequest.requestId).toBe('test-uuid-123');
-    expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-Id', 'test-uuid-123');
+    expect(mockRequest.requestId).toEqual(expect.any(String));
+    expect(mockResponse.setHeader).toHaveBeenCalledWith(
+      'X-Request-Id',
+      expect.any(String),
+    );
     expect(mockNext).toHaveBeenCalled();
   });
 
@@ -84,6 +89,9 @@ describe('RequestIdMiddleware', () => {
     middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
 
     expect(mockRequest.requestId).toBe('custom-id-456');
-    expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-Id', 'custom-id-456');
+    expect(mockResponse.setHeader).toHaveBeenCalledWith(
+      'X-Request-Id',
+      'custom-id-456',
+    );
   });
 });

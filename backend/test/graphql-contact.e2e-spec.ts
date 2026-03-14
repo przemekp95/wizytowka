@@ -26,7 +26,6 @@ describe('GraphQL Contact (e2e)', () => {
     process.env.SMTP_FROM = 'from@test.local';
     process.env.SMTP_TO = 'to@test.local';
     process.env.THROTTLE_DISABLE = '1'; // if AppModule respects this flag
-    process.env.HCAPTCHA_MOCK = '1';
 
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -51,7 +50,6 @@ describe('GraphQL Contact (e2e)', () => {
     delete process.env.SMTP_FROM;
     delete process.env.SMTP_TO;
     delete process.env.THROTTLE_DISABLE;
-    delete process.env.HCAPTCHA_MOCK;
     await app.close();
   });
 

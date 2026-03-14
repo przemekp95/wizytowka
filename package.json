@@ -4,14 +4,16 @@
   "packageManager": "pnpm@9.12.2",
   "scripts": {
     "preinstall": "node -e \"if(!/pnpm/.test(process.env.npm_execpath||'')){console.error('✖ Użyj pnpm');process.exit(1)}\"",
-    "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
-    "start": "pnpm -r start",
-    "start:prod": "pnpm -F backend run start:prod",
-    "lint": "pnpm -r lint",
-    "check": "pnpm -r lint && echo '✅ Wszystkie sprawdzenia pomyślne!'",
-    "test:e2e": "pnpm -F frontend exec playwright test",
-    "test:all": "pnpm -F backend test && pnpm -F frontend test && pnpm -F backend test:e2e && pnpm -F frontend exec playwright test"
+    "dev": "corepack pnpm -r --parallel dev",
+    "build": "corepack pnpm -r build",
+    "start": "corepack pnpm -r start",
+    "start:prod": "corepack pnpm -F backend run start:prod",
+    "lint": "corepack pnpm -r lint",
+    "typecheck": "corepack pnpm -r typecheck",
+    "test": "corepack pnpm -F backend test && corepack pnpm -F frontend test",
+    "check": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && echo '✅ Wszystkie sprawdzenia pomyślne!'",
+    "test:e2e": "corepack pnpm -F frontend exec playwright test",
+    "test:all": "corepack pnpm -F backend test && corepack pnpm -F frontend test && corepack pnpm -F backend test:e2e && corepack pnpm -F frontend exec playwright test"
   },
   "devDependencies": {
     "baseline-browser-mapping": "^2.10.7",
@@ -23,15 +25,20 @@
   },
   "pnpm": {
     "overrides": {
+      "@ardatan/relay-compiler>immutable": "^3.8.3",
       "@angular-devkit/core>ajv": "^8.18.0",
       "diff@^4.0.0": "^4.0.4",
       "fast-xml-parser": "^5.4.1",
+      "file-type": "^21.3.2",
       "hono": "^4.11.10",
       "js-yaml@^4.0.0": "^4.1.1",
       "lodash": "^4.17.23",
       "minimatch@^3.0.0": "^3.1.5",
       "minimatch@^9.0.0": "^9.0.8",
-      "qs": "^6.15.0"
+      "qs": "^6.15.0",
+      "serialize-javascript": "^7.0.3",
+      "undici": "^7.24.1",
+      "yauzl": "^3.2.1"
     }
   }
 }

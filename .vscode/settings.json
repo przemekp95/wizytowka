@@ -39,5 +39,10 @@
   // Trivy ignore file is a plain text list, not YAML.
   "files.associations": {
     ".trivyignore": "plaintext"
+  },
+
+  // Allow VS Code JSON schema downloads for the markdownlint extension config schema.
+  "json.schemaDownload.trustedDomains": {
+    "https://raw.githubusercontent.com/DavidAnson/markdownlint/": true
   }
 }
