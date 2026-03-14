@@ -36,7 +36,7 @@ This repository contains:
 ### Prerequisites
 
 - **Node.js** 20+
-- **pnpm** 9+
+- **Corepack** (bundled with modern Node.js releases)
 - **Docker** and Docker Compose
 - **Git**
 
@@ -52,13 +52,11 @@ This repository contains:
 2. **Install dependencies**
 
    ```bash
-   # Install all dependencies (frontend + backend)
-   pnpm install
-
-   # Or install separately
-   cd frontend && pnpm install && cd ..
-   cd backend && pnpm install && cd ..
+   corepack enable
+   make install
    ```
+
+   `make install` removes stale local Git hook configuration from older clones and installs all workspace dependencies with the repository-pinned pnpm version.
 
 3. **Environment Setup**
 
@@ -74,9 +72,7 @@ This repository contains:
    docker compose up -d mongo mailhog
 
    # Generate Prisma client for the backend workspace
-   cd backend
-   pnpm prisma generate
-   cd ..
+   corepack pnpm -F backend exec prisma generate --schema prisma/schema.prisma
    ```
 
 ### Running the Application
@@ -84,11 +80,11 @@ This repository contains:
 **Development Mode:**
 
 ```bash
-# Start backend (Terminal 1)
-cd backend && npm run start:dev
+make dev
 
-# Start frontend (Terminal 2)
-cd frontend && npm run dev
+# Or run the workspace commands explicitly
+corepack pnpm -F backend dev
+corepack pnpm -F frontend dev
 ```
 
 **Production Mode:**
@@ -176,61 +172,57 @@ wizytowka/
 ### Backend Scripts
 
 ```bash
-cd backend
-
 # Development
-npm run start:dev          # Start with hot reload
-npm run start:prod         # Start production build
+corepack pnpm -F backend dev          # Start with hot reload
+corepack pnpm -F backend start:prod   # Start production build
 
 # Building
-npm run build              # Build for production
-npm run format             # Format code with Prettier
-npm run lint               # Run ESLint
-npm run lint:fix           # Run ESLint with autofix
-npm run typecheck          # Run TypeScript type checking
+corepack pnpm -F backend build        # Build for production
+corepack pnpm -F backend format       # Format code with Prettier
+corepack pnpm -F backend lint         # Run ESLint
+corepack pnpm -F backend lint:fix     # Run ESLint with autofix
+corepack pnpm -F backend typecheck    # Run TypeScript type checking
 
 # Testing
-npm run test               # Run unit tests
-npm run test:e2e           # Run E2E tests
-npm run test:cov           # Run tests with coverage
+corepack pnpm -F backend test         # Run unit tests
+corepack pnpm -F backend test:e2e     # Run E2E tests
+corepack pnpm -F backend test:cov     # Run tests with coverage
 
 # Database
-npx prisma migrate dev     # Apply migrations (dev)
-npx prisma db push         # Push schema changes
-npx prisma generate        # Generate Prisma client
-npx prisma studio          # Open Prisma Studio
+corepack pnpm -F backend exec prisma migrate dev
+corepack pnpm -F backend exec prisma db push
+corepack pnpm -F backend exec prisma generate
+corepack pnpm -F backend exec prisma studio
 ```
 
 ### Frontend Scripts
 
 ```bash
-cd frontend
-
 # Development
-npm run dev                # Start development server
-npm run build              # Build for production
-npm run start              # Start production server
+corepack pnpm -F frontend dev         # Start development server
+corepack pnpm -F frontend build       # Build for production
+corepack pnpm -F frontend start       # Start production server
 
 # Code Quality
-npm run lint               # Run ESLint
-npm run lint:fix           # Run ESLint with autofix + Prettier
-npm run format             # Format code
-npm run typecheck          # TypeScript type checking
+corepack pnpm -F frontend lint        # Run ESLint
+corepack pnpm -F frontend lint:fix    # Run ESLint with autofix + Prettier
+corepack pnpm -F frontend format      # Format code
+corepack pnpm -F frontend typecheck   # TypeScript type checking
 
 # Testing
-npm run test               # Run unit tests
-npm run test:watch         # Run tests in watch mode
-npm run test:e2e           # Run Playwright E2E tests
-npm run coverage           # Run tests with coverage
+corepack pnpm -F frontend test        # Run unit tests
+corepack pnpm -F frontend test:watch  # Run tests in watch mode
+corepack pnpm -F frontend test:e2e    # Run Playwright E2E tests
+corepack pnpm -F frontend coverage    # Run tests with coverage
 ```
 
 ### Workspace Checks
 
 ```bash
-pnpm lint                  # Run lint in every workspace
-pnpm typecheck             # Run TypeScript checks in every workspace
-pnpm test                  # Run backend and frontend unit tests
-pnpm check                 # Run lint + typecheck + tests + build
+corepack pnpm lint         # Run lint in every workspace
+corepack pnpm typecheck    # Run TypeScript checks in every workspace
+corepack pnpm test         # Run backend and frontend unit tests
+corepack pnpm check        # Run lint + typecheck + tests + build
 ```
 
 ## APIs
@@ -267,11 +259,8 @@ query GetPortfolio {
 Run complete test suite:
 
 ```bash
-# Backend tests
-cd backend && npm run test:e2e
-
-# Frontend tests
-cd frontend && npm run test:e2e
+corepack pnpm -F backend test:e2e
+corepack pnpm -F frontend test:e2e
 ```
 
 ### Test Coverage Requirements
@@ -308,10 +297,17 @@ kubectl get services
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes and add tests
-4. Run the test suite: `npm run test`
-5. Commit your changes: `git commit -m 'feat: add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+4. Bootstrap locally with `corepack enable` and `make install`
+5. Run workspace checks with `corepack pnpm check`
+6. Commit your changes: `git commit -m 'feat: add amazing feature'`
+7. Push to the branch: `git push origin feature/amazing-feature`
+8. Open a Pull Request
+
+## Branch Maintenance
+
+- `main` and `dev` are the only long-lived branches.
+- Branches merged through GitHub are deleted automatically after merge.
+- Stale branches older than 14 days should be archived with an `archive/YYYYMMDD/<branch>` tag and then removed.
 
 ### Commit Convention
 
