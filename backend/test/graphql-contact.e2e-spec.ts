@@ -1,56 +1,43 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-
-// Mock nodemailer to prevent external email delivery during tests.
-jest.mock('nodemailer', () => {
-  const sendMail = jest.fn().mockResolvedValue({
-    messageId: 'e2e-id',
-    accepted: ['to@example.com'],
-    rejected: [],
-  });
-  const createTransport = jest.fn(() => ({ sendMail }));
-  return {
-    __esModule: true,
-    default: { createTransport },
-    createTransport,
-  };
-});
+import { ContactService } from '../src/contact/contact.service';
+import { configureApp } from '../src/app.bootstrap';
+import { GqlThrottlerGuard } from '../src/common/guards/gql-throttler.guard';
 
 describe('GraphQL Contact (e2e)', () => {
   let app: INestApplication;
+  const contactService = {
+    createAndNotify: jest.fn(),
+  };
 
   beforeAll(async () => {
-    process.env.SMTP_HOST = 'smtp.test.local';
-    process.env.SMTP_FROM = 'from@test.local';
-    process.env.SMTP_TO = 'to@test.local';
-    process.env.THROTTLE_DISABLE = '1'; // if AppModule respects this flag
-
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(ContactService)
+      .useValue(contactService)
+      .compile();
 
     app = moduleRef.createNestApplication();
-
-    // Use the same ValidationPipe as in main.ts so DTO validation works in tests.
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidUnknownValues: false,
-      }),
-    );
+    configureApp(app, { enableSwagger: false });
 
     await app.init();
   });
 
   afterAll(async () => {
-    delete process.env.SMTP_HOST;
-    delete process.env.SMTP_FROM;
-    delete process.env.SMTP_TO;
-    delete process.env.THROTTLE_DISABLE;
     await app.close();
+  });
+
+  beforeEach(() => {
+    app.get(GqlThrottlerGuard).reset();
+    contactService.createAndNotify.mockReset();
+    contactService.createAndNotify.mockResolvedValue({
+      ok: true,
+      messageId: 'msg-123',
+      savedId: 'saved-123',
+    });
   });
 
   const gql = (query: string, variables?: Record<string, any>) =>
@@ -100,5 +87,30 @@ describe('GraphQL Contact (e2e)', () => {
       // No errors array means resolver contract should return { ok: false }.
       expect(res.body?.data?.sendContact?.ok).toBe(false);
     }
+  });
+
+  it('sendContact – throttles repeated requests on GraphQL', async () => {
+    const query = `
+      mutation($input: ContactMessageInput!) {
+        sendContact(input: $input) { ok }
+      }
+    `;
+    const variables = {
+      input: {
+        name: 'Jan Testowy',
+        email: 'jan@test.com',
+        message: 'To jest poprawna wiadomosc testowa.',
+      },
+    };
+
+    for (let i = 0; i < 30; i++) {
+      await gql(query, variables).expect(200);
+    }
+
+    const throttled = await gql(query, variables);
+
+    expect(throttled.status).toBe(429);
+    expect(JSON.stringify(throttled.body).toLowerCase()).toMatch(/rate|throttle|too many/i);
+    expect(contactService.createAndNotify).toHaveBeenCalledTimes(30);
   });
 });

@@ -1,10 +1,8 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatMessageDto } from './dto/chat-message.dto';
 
 @Controller('chat')
-@UseGuards(ThrottlerGuard)
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 

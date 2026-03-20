@@ -19,7 +19,6 @@ export default defineConfig({
       env: {
         NODE_ENV: 'test',
         PORT: '4000',
-        THROTTLE_DISABLE: '1',
         SMTP_HOST: 'smtp.test.local',
         SMTP_FROM: 'from@test.local',
         SMTP_TO: 'to@test.local',
@@ -33,8 +32,8 @@ export default defineConfig({
       env: {
         NODE_ENV: 'test',
         PORT: '3000',
-        NEXT_PUBLIC_GRAPHQL_URL: 'http://localhost:4000/graphql',
-        NEXT_PUBLIC_API_URL: 'http://localhost:4000',
+        BACKEND_GRAPHQL_URL: 'http://localhost:4000/graphql',
+        BACKEND_API_URL: 'http://127.0.0.1:65535',
       },
     },
   ],

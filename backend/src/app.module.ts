@@ -8,9 +8,6 @@ import { HealthController } from './health.controller';
 import { LinksController } from './links.controller';
 import { ContactModule } from './contact/contact.module';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { PortfolioApiController } from './portfolio/portfolio.controller';
 import { AwsModule } from './aws/aws.module';
@@ -18,6 +15,7 @@ import { AwsModule } from './aws/aws.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import type { Request, Response } from 'express';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggingModule } from './logging/logging.module';
@@ -30,8 +28,6 @@ function createImports() {
       envFilePath: ['.env'], // backend/.env
     }),
 
-    ThrottlerModule.forRoot([{ ttl: 60, limit: 30 }]),
-
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
@@ -39,7 +35,7 @@ function createImports() {
       playground: process.env.NODE_ENV !== 'production',
       introspection: process.env.NODE_ENV !== 'production',
       path: '/graphql',
-      csrfPrevention: false, // Disable CSRF protection for development
+      csrfPrevention: true,
       context: ({ req, res }: { req: Request; res: Response }) => ({
         req,
         res,
@@ -71,11 +67,6 @@ function createImports() {
     LinksController,
     PortfolioApiController,
   ],
-  providers: [
-    AppService,
-    HelloResolver,
-    // Re-enabled throttling for basic protection (10 requests per minute)
-    { provide: APP_GUARD, useClass: GqlThrottlerGuard },
-  ],
+  providers: [AppService, HelloResolver],
 })
 export class AppModule {}

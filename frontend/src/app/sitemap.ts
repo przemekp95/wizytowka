@@ -4,7 +4,7 @@ const defaultBaseUrl = 'https://pietrzakprzemyslaw.pl';
 const localizedPaths = ['', '/en', '/pl'];
 
 function resolveBaseUrl(): string {
-  const configuredBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+  const configuredBaseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
   const baseUrl = configuredBaseUrl?.trim() || defaultBaseUrl;
 
   return baseUrl.replace(/\/+$/, '');

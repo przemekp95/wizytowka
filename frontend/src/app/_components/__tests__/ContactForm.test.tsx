@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, beforeAll, afterAll, afterEach, describe, it, expect } from 'vitest';
 import ContactSection from '@/app/_components/ContactForm';
@@ -39,6 +39,9 @@ describe('ContactSection', () => {
     const submitButton = screen.getByTestId('contact-submit');
     expect(submitButton).toBeDisabled();
     expect(fetchSpy).not.toHaveBeenCalled();
+
+    expect(screen.getByLabelText(/Imię i nazwisko/i)).toHaveAttribute('aria-invalid', 'false');
+    expect(screen.getByLabelText(/E-mail/i)).toHaveAttribute('aria-invalid', 'false');
   });
 
   it('sukces wysyłki - pokazuje komunikat i czyści dane', async () => {
@@ -49,8 +52,8 @@ describe('ContactSection', () => {
 
     render(<ContactSection locale="pl" translations={contactTranslations} />);
 
-    const nameInput = screen.getByTestId('contact-name');
-    const emailInput = screen.getByTestId('contact-email');
+    const nameInput = screen.getByLabelText(/Imię i nazwisko/i);
+    const emailInput = screen.getByLabelText(/E-mail/i);
     const messageInput = screen.getByTestId('contact-message');
     const submitButton = screen.getByTestId('contact-submit');
 
@@ -61,8 +64,15 @@ describe('ContactSection', () => {
     await waitFor(() => expect(submitButton).toBeEnabled());
     await userEvent.click(submitButton);
 
-    const successMsg = await screen.findByText(/Wiadomość wysłana/i);
+    const successMsg = await screen.findByRole('status');
     expect(successMsg).toBeInTheDocument();
+    expect(successMsg).toHaveTextContent(/Wiadomość wysłana/i);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/contact',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
     expect(fetchSpy).toHaveBeenCalledTimes(1);
 
     expect(nameInput).toHaveValue('');
@@ -80,8 +90,8 @@ describe('ContactSection', () => {
 
     render(<ContactSection locale="pl" translations={contactTranslations} />);
 
-    const nameInput = screen.getByTestId('contact-name');
-    const emailInput = screen.getByTestId('contact-email');
+    const nameInput = screen.getByLabelText(/Imię i nazwisko/i);
+    const emailInput = screen.getByLabelText(/E-mail/i);
     const messageInput = screen.getByTestId('contact-message');
     const submitButton = screen.getByTestId('contact-submit');
 
@@ -92,14 +102,48 @@ describe('ContactSection', () => {
     await waitFor(() => expect(submitButton).toBeEnabled());
     await userEvent.click(submitButton);
 
-    const errorMsg = await screen.findByText(/Błąd walidacji \(GraphQL\)/i);
+    const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
+    expect(errorMsg).toHaveTextContent(/Błąd walidacji \(GraphQL\)/i);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/contact',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
   it('network failure - renderuje fallbackowy komunikat błędu', async () => {
     fetchSpy.mockRejectedValue(new Error('Sieć niedostępna'));
 
+    render(<ContactSection locale="pl" translations={contactTranslations} />);
+
+    const nameInput = screen.getByLabelText(/Imię i nazwisko/i);
+    const emailInput = screen.getByLabelText(/E-mail/i);
+    const messageInput = screen.getByTestId('contact-message');
+    const submitButton = screen.getByTestId('contact-submit');
+
+    await userEvent.type(nameInput, 'Jan Testowy');
+    await userEvent.type(emailInput, 'jan@test.pl');
+    await userEvent.type(messageInput, 'To jest poprawna wiadomość testowa.');
+
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    await userEvent.click(submitButton);
+
+    const errorMsg = await screen.findByRole('alert');
+    expect(errorMsg).toBeInTheDocument();
+    expect(errorMsg).toHaveTextContent(/Sieć niedostępna/i);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/contact',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables submit for messages above 2000 characters', async () => {
     render(<ContactSection locale="pl" translations={contactTranslations} />);
 
     const nameInput = screen.getByTestId('contact-name');
@@ -109,13 +153,9 @@ describe('ContactSection', () => {
 
     await userEvent.type(nameInput, 'Jan Testowy');
     await userEvent.type(emailInput, 'jan@test.pl');
-    await userEvent.type(messageInput, 'To jest poprawna wiadomość testowa.');
+    fireEvent.input(messageInput, { target: { value: 'a'.repeat(2001) } });
 
-    await waitFor(() => expect(submitButton).toBeEnabled());
-    await userEvent.click(submitButton);
-
-    const errorMsg = await screen.findByText(/Sieć niedostępna/i);
-    expect(errorMsg).toBeInTheDocument();
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(submitButton).toBeDisabled();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

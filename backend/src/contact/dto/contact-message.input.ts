@@ -15,7 +15,7 @@ export class ContactMessageInput {
 
   @Field()
   @IsString()
-  @MinLength(5)
+  @MinLength(10)
   @MaxLength(2000)
   message!: string;
 }

@@ -9,6 +9,7 @@ import {
 
 @Injectable()
 export class MetricsService {
+  private static defaultMetricsRegistered = false;
   private readonly httpRequestDuration: Histogram<string>;
   private readonly httpRequestsTotal: Counter<string>;
   private readonly activeConnections: Gauge<string>;
@@ -17,50 +18,83 @@ export class MetricsService {
   private readonly errorsTotal: Counter<string>;
 
   constructor() {
-    // Collect default process and system metrics.
-    collectDefaultMetrics({ prefix: 'wizytowka_' });
+    if (!MetricsService.defaultMetricsRegistered) {
+      collectDefaultMetrics({ prefix: 'wizytowka_' });
+      MetricsService.defaultMetricsRegistered = true;
+    }
 
-    // HTTP request duration metric.
-    this.httpRequestDuration = new Histogram({
-      name: 'wizytowka_http_request_duration_seconds',
-      help: 'Duration of HTTP requests in seconds',
-      labelNames: ['method', 'route', 'status_code'],
-      buckets: [0.1, 0.5, 1, 2, 5, 10],
-    });
+    this.httpRequestDuration = this.getOrCreateMetric(
+      'wizytowka_http_request_duration_seconds',
+      () =>
+        new Histogram({
+          name: 'wizytowka_http_request_duration_seconds',
+          help: 'Duration of HTTP requests in seconds',
+          labelNames: ['method', 'route', 'status_code'],
+          buckets: [0.1, 0.5, 1, 2, 5, 10],
+        }),
+    );
 
-    // Total HTTP request counter.
-    this.httpRequestsTotal = new Counter({
-      name: 'wizytowka_http_requests_total',
-      help: 'Total number of HTTP requests',
-      labelNames: ['method', 'route', 'status_code'],
-    });
+    this.httpRequestsTotal = this.getOrCreateMetric(
+      'wizytowka_http_requests_total',
+      () =>
+        new Counter({
+          name: 'wizytowka_http_requests_total',
+          help: 'Total number of HTTP requests',
+          labelNames: ['method', 'route', 'status_code'],
+        }),
+    );
 
-    // Number of active connections.
-    this.activeConnections = new Gauge({
-      name: 'wizytowka_active_connections',
-      help: 'Number of active connections',
-    });
+    this.activeConnections = this.getOrCreateMetric(
+      'wizytowka_active_connections',
+      () =>
+        new Gauge({
+          name: 'wizytowka_active_connections',
+          help: 'Number of active connections',
+        }),
+    );
 
-    // Database operation metrics.
-    this.databaseOperationsTotal = new Counter({
-      name: 'wizytowka_database_operations_total',
-      help: 'Total number of database operations',
-      labelNames: ['operation', 'collection', 'success'],
-    });
+    this.databaseOperationsTotal = this.getOrCreateMetric(
+      'wizytowka_database_operations_total',
+      () =>
+        new Counter({
+          name: 'wizytowka_database_operations_total',
+          help: 'Total number of database operations',
+          labelNames: ['operation', 'collection', 'success'],
+        }),
+    );
 
-    this.databaseOperationDuration = new Histogram({
-      name: 'wizytowka_database_operation_duration_seconds',
-      help: 'Duration of database operations in seconds',
-      labelNames: ['operation', 'collection'],
-      buckets: [0.01, 0.05, 0.1, 0.5, 1, 2],
-    });
+    this.databaseOperationDuration = this.getOrCreateMetric(
+      'wizytowka_database_operation_duration_seconds',
+      () =>
+        new Histogram({
+          name: 'wizytowka_database_operation_duration_seconds',
+          help: 'Duration of database operations in seconds',
+          labelNames: ['operation', 'collection'],
+          buckets: [0.01, 0.05, 0.1, 0.5, 1, 2],
+        }),
+    );
 
-    // Error counter.
-    this.errorsTotal = new Counter({
-      name: 'wizytowka_errors_total',
-      help: 'Total number of errors',
-      labelNames: ['type', 'route'],
-    });
+    this.errorsTotal = this.getOrCreateMetric(
+      'wizytowka_errors_total',
+      () =>
+        new Counter({
+          name: 'wizytowka_errors_total',
+          help: 'Total number of errors',
+          labelNames: ['type', 'route'],
+        }),
+    );
+  }
+
+  private getOrCreateMetric<
+    T extends Counter<string> | Histogram<string> | Gauge<string>,
+  >(name: string, factory: () => T): T {
+    const existing = register.getSingleMetric(name);
+
+    if (existing) {
+      return existing as T;
+    }
+
+    return factory();
   }
 
   // Metric recording methods.

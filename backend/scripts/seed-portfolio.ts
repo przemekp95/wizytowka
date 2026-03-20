@@ -1,7 +1,29 @@
 import 'dotenv/config';
 import { MongoClient } from 'mongodb';
 
-const items = [
+type PortfolioSeedItem = {
+  title: string;
+  href: string;
+  desc: string;
+  tags: string[];
+  img: string;
+  isLogo: boolean;
+  newTech: boolean;
+  slug: string;
+  category?: string;
+  dateFrom: Date;
+  dateTo?: Date;
+};
+
+type PortfolioSeedDocument = PortfolioSeedItem & {
+  _id: string;
+  order: number;
+  status: 'published';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+const items: PortfolioSeedItem[] = [
   {
     title: 'CASN Laravel',
     href: 'https://casn.pietrzakprzemyslaw.pl',
@@ -32,7 +54,15 @@ const items = [
     title: 'Mazowieści',
     href: 'https://mazowiesci.pl',
     desc: 'Migracja z WIX do WordPress, import treści, SEO...',
-    tags: ['Python (Scrapy)', 'WordPress', 'PHP', 'HTML', 'CSS', 'REST API', 'SEO'],
+    tags: [
+      'Python (Scrapy)',
+      'WordPress',
+      'PHP',
+      'HTML',
+      'CSS',
+      'REST API',
+      'SEO',
+    ],
     img: '/images/mazo.png',
     isLogo: true,
     newTech: false,
@@ -66,7 +96,7 @@ const items = [
   },
 ];
 
-(async () => {
+void (async () => {
   const uri =
     process.env.MONGODB_URI ??
     'mongodb://root:root@localhost:27017/?authSource=admin';
@@ -79,22 +109,19 @@ const items = [
   const client = new MongoClient(uri);
   await client.connect();
   const db = client.db(dbName);
-  const col = db.collection('portfolio_items');
+  const col = db.collection<PortfolioSeedDocument>('portfolio_items');
 
   const now = new Date();
   await col.deleteMany({});
   await col.insertMany(
-    items.map((p, i) => {
-      const doc: any = {
-        ...p,
-        _id: p.slug,
-        order: i + 1,
-        status: 'published',
-        createdAt: now,
-        updatedAt: now,
-      };
-      return doc;
-    }),
+    items.map((item, index) => ({
+      ...item,
+      _id: item.slug,
+      order: index + 1,
+      status: 'published' as const,
+      createdAt: now,
+      updatedAt: now,
+    })),
   );
 
   await client.close();

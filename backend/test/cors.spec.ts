@@ -3,75 +3,36 @@ import request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { ConfigModule } from '@nestjs/config';
+import { configureApp } from '../src/app.bootstrap';
 import { ContactService } from '../src/contact/contact.service';
 
 describe('CORS', () => {
   let app: INestApplication;
   const ORIGIN = 'http://localhost:3001';
+  const contactService = {
+    createAndNotify: jest.fn(),
+  };
 
   beforeAll(async () => {
     const mod = await Test.createTestingModule({
-      imports: [
-        // Override config for test environment to provide AWS credentials
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: [], // Don't load .env file
-          load: [
-            () => ({
-              aws: {
-                s3: {
-                  bucketName: 'test-bucket',
-                },
-                region: 'us-east-1',
-                accessKeyId: 'test-key',
-                secretAccessKey: 'test-secret',
-              },
-              database: {
-                url: 'postgresql://test:test@localhost:5432/test',
-              },
-            }),
-          ],
-        }),
-        AppModule,
-      ],
+      imports: [AppModule],
     })
       .overrideProvider(ContactService)
-      .useValue({
-        createAndNotify: jest.fn().mockResolvedValue({
-          ok: true,
-          messageId: 'msg-123',
-          savedId: 'saved-123',
-        }),
-      })
+      .useValue(contactService)
       .compile();
 
     app = mod.createNestApplication();
-
-    // Konfiguracja CORS jak w main.ts
-    app.enableCors({
-      origin: (
-        origin: string | undefined,
-        cb: (error: Error | null, allow?: boolean) => void,
-      ) => {
-        if (!origin) return cb(null, true);
-        const allowedOrigins = new Set([
-          'http://localhost:3000',
-          'http://localhost:3001',
-        ]);
-        if (allowedOrigins.has(origin)) return cb(null, true);
-        return cb(new Error(`CORS blocked for origin: ${origin}`), false);
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      exposedHeaders: ['Set-Cookie'],
-      maxAge: 600,
-    });
-
-    app.setGlobalPrefix('api');
-
+    configureApp(app, { enableSwagger: false });
     await app.init();
+  });
+
+  beforeEach(() => {
+    contactService.createAndNotify.mockReset();
+    contactService.createAndNotify.mockResolvedValue({
+      ok: true,
+      messageId: 'msg-123',
+      savedId: 'saved-123',
+    });
   });
 
   afterAll(async () => {
@@ -80,7 +41,7 @@ describe('CORS', () => {
 
   it('preflight OPTIONS exposes ACAO', async () => {
     const res = await request(app.getHttpServer())
-      .options('/api/contact')
+      .options('/graphql')
       .set('Origin', ORIGIN)
       .set('Access-Control-Request-Method', 'POST');
     expect(res.status).toBe(204);
@@ -89,9 +50,22 @@ describe('CORS', () => {
 
   it('POST echoes ACAO', async function () {
     const res = await request(app.getHttpServer())
-      .post('/api/contact')
+      .post('/graphql')
       .set('Origin', ORIGIN)
-      .send({ name: 'T', email: 't@example.pl', message: 'Test message' });
+      .send({
+        query: `
+          mutation($input: ContactMessageInput!) {
+            sendContact(input: $input) { ok }
+          }
+        `,
+        variables: {
+          input: {
+            name: 'Te',
+            email: 't@example.pl',
+            message: 'To jest poprawna wiadomosc testowa.',
+          },
+        },
+      });
     expect(res.status).toBe(200);
     expect(res.header['access-control-allow-origin']).toBe(ORIGIN);
   }, 5000);

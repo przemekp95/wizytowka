@@ -1,10 +1,11 @@
 import {
   Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
   Logger,
+  OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
-import { MongoClient, Db } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
+import { randomUUID } from 'crypto';
 import { AwsService } from '../aws/aws.service';
 
 interface MulterFile {
@@ -39,30 +40,111 @@ export type PortfolioItem = {
 @Injectable()
 export class PortfolioService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PortfolioService.name);
-  private client!: MongoClient;
-  private db!: Db;
+  private client: MongoClient | null = null;
+  private db: Db | null = null;
+  private connectingPromise: Promise<void> | null = null;
+  private connected = false;
+  private lastError: string | null = null;
 
   constructor(private readonly awsService: AwsService) {}
 
-  /**
-   * Initialize MongoDB connection with indexes creation.
-   * Uses graceful degradation - if connection/operations fail, service continues with mock data.
-   */
-  async onModuleInit() {
-    try {
-      this.logger.log('Starting MongoDB connection...');
-      this.logger.log(
-        `MONGODB_URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`,
-      );
-      this.logger.log(`MONGODB_DB: ${process.env.MONGODB_DB || 'wizytowka'}`);
+  async onModuleInit(): Promise<void> {
+    await this.connectIfNeeded().catch(() => undefined);
+  }
 
-      this.client = new MongoClient(process.env.MONGODB_URI!, {
+  async onModuleDestroy(): Promise<void> {
+    if (this.client) {
+      await this.client.close();
+    }
+
+    this.client = null;
+    this.db = null;
+    this.connected = false;
+    this.lastError = null;
+    this.logger.log('MongoDB connection closed');
+  }
+
+  async getDependencyStatus(): Promise<{
+    name: 'mongo';
+    ready: boolean;
+    error?: string;
+  }> {
+    if (this.db) {
+      try {
+        await this.db.command({ ping: 1 });
+        this.connected = true;
+        this.lastError = null;
+      } catch (error) {
+        this.connected = false;
+        this.lastError = error instanceof Error ? error.message : String(error);
+        await this.client?.close().catch(() => undefined);
+        this.client = null;
+        this.db = null;
+      }
+    }
+
+    await this.connectIfNeeded().catch(() => undefined);
+
+    return {
+      name: 'mongo',
+      ready: this.connected,
+      ...(this.lastError ? { error: this.lastError } : {}),
+    };
+  }
+
+  private async getCollection(): Promise<Collection<PortfolioItem>> {
+    if (!this.db) {
+      await this.connectIfNeeded().catch(() => undefined);
+    }
+
+    if (!this.db) {
+      throw new Error('MongoDB not connected');
+    }
+
+    return this.db.collection<PortfolioItem>('portfolio_items');
+  }
+
+  private async connectIfNeeded(): Promise<void> {
+    if (this.db) {
+      this.connected = true;
+      this.lastError = null;
+      return;
+    }
+
+    if (this.connectingPromise) {
+      await this.connectingPromise;
+      return;
+    }
+
+    this.connectingPromise = this.connectInternal().finally(() => {
+      this.connectingPromise = null;
+    });
+
+    await this.connectingPromise;
+  }
+
+  private async connectInternal(): Promise<void> {
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      this.connected = false;
+      this.lastError = 'MONGODB_URI is not configured';
+      throw new Error(this.lastError);
+    }
+
+    this.logger.log('Starting MongoDB connection...');
+    this.logger.log(`MONGODB_URI: ${mongoUri ? 'SET' : 'NOT SET'}`);
+    this.logger.log(`MONGODB_DB: ${process.env.MONGODB_DB || 'wizytowka'}`);
+
+    let nextClient: MongoClient | null = null;
+
+    try {
+      nextClient = new MongoClient(mongoUri, {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
       });
 
       this.logger.log('Attempting MongoDB connection...');
-      const connectPromise = this.client.connect();
+      const connectPromise = nextClient.connect();
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
           () => reject(new Error('Connection timeout after 5s')),
@@ -73,20 +155,16 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
       await Promise.race([connectPromise, timeoutPromise]);
       this.logger.log('MongoDB connection established');
 
-      this.db = this.client.db(process.env.MONGODB_DB || 'wizytowka');
-      this.logger.log(`Database "${this.db.databaseName}" selected`);
+      const nextDb = nextClient.db(process.env.MONGODB_DB || 'wizytowka');
+      this.logger.log(`Database "${nextDb.databaseName}" selected`);
 
-      // Try to create indexes (graceful degradation if fails)
       try {
-        const col = this.db.collection<PortfolioItem>('portfolio_items');
+        const col = nextDb.collection<PortfolioItem>('portfolio_items');
         this.logger.log('Creating database indexes...');
-
         await col.createIndex({ slug: 1 }, { unique: true });
         this.logger.log('Slug index created');
-
         await col.createIndex({ status: 1, order: 1 });
         this.logger.log('Status/Order index created');
-
         this.logger.log('Database indexes created successfully');
       } catch (indexError) {
         this.logger.warn(
@@ -97,31 +175,46 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
         );
       }
 
+      this.client = nextClient;
+      this.db = nextDb;
+      this.connected = true;
+      this.lastError = null;
       this.logger.log('PortfolioService initialization completed successfully');
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
+      this.connected = false;
+      this.lastError = errorMessage;
+      this.client = null;
+      this.db = null;
       this.logger.error(`MongoDB connection failed: ${errorMessage}`);
       this.logger.warn(
-        'PortfolioService will run with mock data - reduced functionality',
+        'PortfolioService is unavailable until MongoDB connection succeeds',
+      );
+      await nextClient?.close().catch(() => undefined);
+      throw error instanceof Error ? error : new Error(errorMessage);
+    }
+  }
+
+  private async deleteImageBestEffort(
+    imageUrl: string,
+    reason: string,
+  ): Promise<void> {
+    try {
+      await this.awsService.deleteImage(imageUrl);
+    } catch (error) {
+      this.logger.warn(
+        `Image cleanup skipped for ${reason}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
     }
   }
 
-  async onModuleDestroy() {
-    if (this.client) {
-      await this.client.close();
-      this.logger.log('MongoDB connection closed');
-    }
-  }
-
   async listPublished(): Promise<PortfolioItem[]> {
-    if (!this.db) {
-      throw new Error('MongoDB not connected');
-    }
+    const collection = await this.getCollection();
 
-    return this.db
-      .collection<PortfolioItem>('portfolio_items')
+    return collection
       .find({ status: 'published' })
       .sort({ order: 1, createdAt: -1 })
       .toArray();
@@ -131,6 +224,7 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
     itemData: Omit<PortfolioItem, '_id' | 'createdAt' | 'updatedAt'>,
     imageFile?: MulterFile,
   ): Promise<PortfolioItem> {
+    const collection = await this.getCollection();
     let imageUrl = itemData.img;
 
     if (imageFile) {
@@ -145,11 +239,7 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
       updatedAt: new Date(),
     };
 
-    if (this.db) {
-      await this.db
-        .collection<PortfolioItem>('portfolio_items')
-        .insertOne(newItem);
-    }
+    await collection.insertOne(newItem);
     return newItem;
   }
 
@@ -158,64 +248,94 @@ export class PortfolioService implements OnModuleInit, OnModuleDestroy {
     updateData: Partial<Omit<PortfolioItem, '_id' | 'createdAt'>>,
     imageFile?: MulterFile,
   ): Promise<PortfolioItem | null> {
-    if (!this.db) {
-      throw new Error('MongoDB not connected');
+    const collection = await this.getCollection();
+    const existingItem = await collection.findOne({ _id: id });
+
+    if (!existingItem) {
+      return null;
     }
 
     let imageUrl = updateData.img;
+    let uploadedImageUrl: string | undefined;
 
     if (imageFile) {
-      const existingItem = await this.db
-        .collection<PortfolioItem>('portfolio_items')
-        .findOne({ _id: id });
-
-      if (existingItem?.img) {
-        await this.awsService.deleteImage(existingItem.img);
-      }
-
-      imageUrl = await this.awsService.uploadImage(imageFile, 'portfolio');
+      uploadedImageUrl = await this.awsService.uploadImage(
+        imageFile,
+        'portfolio',
+      );
+      imageUrl = uploadedImageUrl;
     }
 
     const updatedData = {
       ...updateData,
-      ...(imageUrl && { img: imageUrl }),
+      ...(imageUrl !== undefined ? { img: imageUrl } : {}),
       updatedAt: new Date(),
     };
 
-    const result = await this.db
-      .collection<PortfolioItem>('portfolio_items')
-      .findOneAndUpdate(
+    try {
+      const updatedItem = await collection.findOneAndUpdate(
         { _id: id },
         { $set: updatedData },
         { returnDocument: 'after' },
       );
 
-    return result
-      ? (result as unknown as { value: PortfolioItem }).value
-      : null;
+      if (!updatedItem && uploadedImageUrl) {
+        await this.deleteImageBestEffort(
+          uploadedImageUrl,
+          `rolled back failed update for portfolio item ${id}`,
+        );
+      }
+
+      if (
+        updatedItem &&
+        uploadedImageUrl &&
+        existingItem.img &&
+        existingItem.img !== uploadedImageUrl
+      ) {
+        await this.deleteImageBestEffort(
+          existingItem.img,
+          `removing replaced image for portfolio item ${id}`,
+        );
+      }
+
+      return updatedItem;
+    } catch (error) {
+      if (uploadedImageUrl) {
+        await this.deleteImageBestEffort(
+          uploadedImageUrl,
+          `rolled back failed DB update for portfolio item ${id}`,
+        );
+      }
+
+      throw error;
+    }
   }
 
   async deletePortfolioItem(id: string): Promise<boolean> {
-    if (!this.db) {
-      throw new Error('MongoDB not connected');
+    const collection = await this.getCollection();
+    const item = await collection.findOne({ _id: id });
+
+    if (!item) {
+      return false;
     }
 
-    const item = await this.db
-      .collection<PortfolioItem>('portfolio_items')
-      .findOne({ _id: id });
+    const result = await collection.deleteOne({ _id: id });
 
-    if (item?.img) {
-      await this.awsService.deleteImage(item.img);
+    if (!result.deletedCount) {
+      return false;
     }
 
-    const result = await this.db
-      .collection<PortfolioItem>('portfolio_items')
-      .deleteOne({ _id: id });
+    if (item.img) {
+      await this.deleteImageBestEffort(
+        item.img,
+        `deleting image for removed portfolio item ${id}`,
+      );
+    }
 
-    return result.deletedCount > 0;
+    return true;
   }
 
   private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
+    return randomUUID();
   }
 }

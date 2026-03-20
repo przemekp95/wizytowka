@@ -16,7 +16,7 @@
   },
   "about": {
     "title": "O mnie",
-    "description": "Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Cypress, PHPUnit) w projektach frontendowych i backendowych.",
+    "description": "Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Playwright, PHPUnit) w projektach frontendowych i backendowych.",
     "techStack": "Stack technologiczny",
     "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
     "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
@@ -32,7 +32,7 @@
     "placeholderName": "Wpisz swoje pełne imię i nazwisko",
     "placeholderEmail": "Wprowadź swój adres e-mail",
     "placeholderMessage": "Napisz swoją wiadomość tutaj...",
-    "maxChars": "Maksymalnie 5000 znaków",
+    "maxChars": "Maksymalnie 2000 znaków",
     "send": "Wyślij",
     "sending": "Wysyłanie...",
     "success": "Wiadomość wysłana ✅",
@@ -73,6 +73,7 @@
   "portfolio": {
     "title": "Moje projekty",
     "noItems": "Brak projektów do wyświetlenia.",
+    "unavailable": "Portfolio jest chwilowo niedostępne. Spróbuj ponownie później.",
     "newTech": "Nowa technologia",
     "repository": "Repozytorium",
     "technologies": "Wykorzystane technologie"

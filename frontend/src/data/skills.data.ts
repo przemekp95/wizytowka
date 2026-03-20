@@ -195,8 +195,6 @@ const techNameMap: Record<string, string> = {
   cicd: 'CI/CD',
   'CI/CD': 'CI/CD',
   jenkins: 'Jenkins',
-  cypress: 'Cypress',
-  Cypress: 'Cypress',
   playwright: 'Playwright',
   Playwright: 'Playwright',
   jest: 'Jest',

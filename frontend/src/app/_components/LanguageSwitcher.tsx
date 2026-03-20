@@ -9,37 +9,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import type { Locale } from '@/lib/routing';
+import { buildLocalizedPath, getLocaleFromPathname } from '@/lib/routing';
 
 export default function LanguageSwitcher() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+  const currentLocale = getLocaleFromPathname(pathname);
+  const currentLocaleInfo =
+    currentLocale === 'pl' ? { flag: '🇵🇱', name: 'Polski' } : { flag: '🇬🇧', name: 'English' };
+  const otherLocale: Locale = currentLocale === 'pl' ? 'en' : 'pl';
+  const otherLocaleInfo =
+    otherLocale === 'pl' ? { flag: '🇵🇱', name: 'Polski' } : { flag: '🇬🇧', name: 'English' };
 
-  const switchLanguage = (newLocale: string) => {
+  const switchLanguage = (newLocale: Locale) => {
     startTransition(() => {
-      const newPathname = pathname.startsWith('/pl')
-        ? pathname.replace('/pl', `/${newLocale}`)
-        : pathname.startsWith('/en')
-          ? pathname.replace('/en', `/${newLocale}`)
-          : `/${newLocale}${pathname}`;
-
-      window.location.href = newPathname;
+      const nextPathname = buildLocalizedPath(pathname, newLocale);
+      window.location.href = `${nextPathname}${window.location.hash}`;
     });
   };
-
-  const getCurrentLocale = () => {
-    if (pathname.startsWith('/pl')) return 'pl';
-    if (pathname.startsWith('/en')) return 'en';
-    return 'en';
-  };
-
-  const getLocaleInfo = (locale: string) => {
-    return locale === 'pl' ? { flag: '🇵🇱', name: 'Polski' } : { flag: '🇬🇧', name: 'English' };
-  };
-
-  const currentLocale = getCurrentLocale();
-  const currentLocaleInfo = getLocaleInfo(currentLocale);
-  const otherLocale = currentLocale === 'pl' ? 'en' : 'pl';
-  const otherLocaleInfo = getLocaleInfo(otherLocale);
 
   return (
     <DropdownMenu>

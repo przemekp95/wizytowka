@@ -1,7 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { PortfolioService } from './portfolio/portfolio.service';
+import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
 export class HealthController {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly portfolioService: PortfolioService,
+  ) {}
+
   @Get('health')
   health() {
     return {
@@ -15,12 +22,24 @@ export class HealthController {
   }
 
   @Get('health/ready')
-  ready() {
-    return {
-      ok: true,
-      ready: true,
+  async ready() {
+    const dependencies = {
+      prisma: await this.prismaService.getDependencyStatus(),
+      mongo: await this.portfolioService.getDependencyStatus(),
+    };
+
+    const payload = {
+      ok: dependencies.prisma.ready && dependencies.mongo.ready,
+      ready: dependencies.prisma.ready && dependencies.mongo.ready,
+      dependencies,
       timestamp: new Date().toISOString(),
     };
+
+    if (!payload.ready) {
+      throw new ServiceUnavailableException(payload);
+    }
+
+    return payload;
   }
 
   @Get('health/live')

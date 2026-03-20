@@ -1,37 +1,36 @@
 import { test, expect } from '@playwright/test';
 
 test('wysyłanie formularza kontaktowego (onepager)', async ({ page }) => {
-  await page.goto('/');
+  await page.route('**/api/contact', async (route) => {
+    const payload = route.request().postDataJSON() as {
+      query?: string;
+      variables?: { input?: { name?: string; email?: string; message?: string } };
+    };
 
-  const kontaktHeading = page.getByRole('heading', { name: /kontakt/i });
-  if ((await kontaktHeading.count()) > 0) {
-    await kontaktHeading.first().scrollIntoViewIfNeeded();
-  } else {
-    const anchor = page.locator('a[href="#kontakt"]');
-    if ((await anchor.count()) > 0) await anchor.first().click();
-  }
+    expect(route.request().url()).toContain('/api/contact');
+    expect(payload.query).toContain('sendContact');
+    expect(payload.variables?.input).toMatchObject({
+      name: 'Jan',
+      email: 'jan@test.com',
+      message: 'To jest test E2E',
+    });
 
-  await page.route('**/*graphql*', (route) =>
-    route.fulfill({
+    await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ data: { createMessage: { id: '1' } } }),
-    })
-  );
-  await page.route('**/api/**', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true }),
-    })
-  );
+      body: JSON.stringify({ data: { sendContact: { ok: true, error: null } } }),
+    });
+  });
+
+  await page.goto('/en');
+  await page.locator('#contact').scrollIntoViewIfNeeded();
+  await expect(page.getByText(/Portfolio is temporarily unavailable/i)).toBeVisible();
 
   const name = page.getByTestId('contact-name');
-  const email = page.getByLabel(/E-?mail/i); // obsłuży "E-mail" i "Email"
+  const email = page.getByTestId('contact-email');
   const message = page.getByTestId('contact-message');
   const submit = page.getByTestId('contact-submit');
   await expect(submit).toBeVisible();
-  await expect(submit).toBeEnabled();
 
   await expect(name).toBeVisible();
   await expect(email).toBeVisible();
@@ -40,9 +39,8 @@ test('wysyłanie formularza kontaktowego (onepager)', async ({ page }) => {
   await name.fill('Jan');
   await email.fill('jan@test.com');
   await message.fill('To jest test E2E');
-  await submit.click({ timeout: 120000, force: true });
+  await expect(submit).toBeEnabled();
+  await submit.click();
 
-  const _success = page.getByTestId('contact-success');
-  await _success.waitFor({ state: 'visible', timeout: 60000 });
-  await expect(_success).toBeVisible();
+  await expect(page.getByText(/Message sent/i)).toBeVisible();
 });

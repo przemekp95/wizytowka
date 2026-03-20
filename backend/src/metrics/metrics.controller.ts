@@ -1,13 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Header, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
+import { OpsTokenGuard } from '../common/guards/ops-token.guard';
 
 @ApiTags('Metrics')
 @Controller('metrics')
+@UseGuards(OpsTokenGuard)
 export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
 
   @Get()
+  @Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
   @ApiOperation({
     summary: 'Get Prometheus metrics',
     description: 'Returns all collected metrics in Prometheus format',

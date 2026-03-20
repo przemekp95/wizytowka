@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Request } from 'express';
+import { GqlThrottleStorageService } from '../common/guards/gql-throttle-storage.service';
+import { GqlThrottlerGuard } from '../common/guards/gql-throttler.guard';
 import { ContactResolver } from './contact.resolver';
 import { ContactService, type CreateContactResult } from './contact.service';
 
@@ -15,6 +17,8 @@ describe('ContactResolver', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         ContactResolver,
+        GqlThrottlerGuard,
+        GqlThrottleStorageService,
         {
           provide: ContactService,
           useValue: contactService,
@@ -53,7 +57,7 @@ describe('ContactResolver', () => {
       name: 'Jan',
       email: 'jan@example.com',
       message: 'To jest poprawna wiadomosc testowa.',
-      ip: '198.51.100.23',
+      ip: '10.0.0.1',
       requestId: 'req-123',
     });
   });

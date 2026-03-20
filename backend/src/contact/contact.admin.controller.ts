@@ -1,12 +1,6 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-import type { Request } from 'express';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { OpsTokenGuard } from '../common/guards/ops-token.guard';
 
 // Define type for the select result
 type ContactMessageItem = {
@@ -19,20 +13,12 @@ type ContactMessageItem = {
 };
 
 @Controller('contact')
+@UseGuards(OpsTokenGuard)
 export class ContactAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('messages')
-  async list(
-    @Req() req: Request,
-    @Query('limit') limit = '20',
-    @Query('cursor') cursor?: string,
-  ) {
-    const expected = `Bearer ${process.env.ADMIN_TOKEN ?? ''}`;
-    if (!process.env.ADMIN_TOKEN || req.headers.authorization !== expected) {
-      throw new UnauthorizedException();
-    }
-
+  async list(@Query('limit') limit = '20', @Query('cursor') cursor?: string) {
     const take = Math.max(1, Math.min(Number(limit) || 20, 100));
 
     const items: ContactMessageItem[] =

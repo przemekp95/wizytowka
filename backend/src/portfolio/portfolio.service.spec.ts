@@ -162,5 +162,125 @@ describe('PortfolioService', () => {
       expect(awsService.uploadImage).toHaveBeenCalledWith(mockFile, 'portfolio');
       expect(result.img).toBe('uploaded-image-url');
     });
+
+    it('fails fast when database is not connected', async () => {
+      (service as any).db = null;
+
+      await expect(
+        service.createPortfolioItem({
+          title: 'Disconnected',
+          slug: 'disconnected',
+          href: '/portfolio/disconnected',
+          desc: 'No database available',
+          tags: ['Node.js'],
+          img: 'placeholder.jpg',
+          status: 'draft',
+        }),
+      ).rejects.toThrow('MongoDB not connected');
+
+      expect(awsService.uploadImage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updatePortfolioItem', () => {
+    it('returns the updated document and deletes the replaced image after success', async () => {
+      const updatedItem = {
+        ...mockPortfolioItems[0],
+        img: 'https://example.com/new-image.jpg',
+      };
+      const findOne = jest.fn().mockResolvedValue(mockPortfolioItems[0]);
+      const findOneAndUpdate = jest.fn().mockResolvedValue(updatedItem);
+      const mockCollection = {
+        findOne,
+        findOneAndUpdate,
+      };
+      const mockDb = {
+        collection: jest.fn().mockReturnValue(mockCollection),
+      };
+
+      (service as any).db = mockDb;
+      awsService.uploadImage.mockResolvedValue(updatedItem.img);
+
+      const mockFile = {
+        originalname: 'new-image.jpg',
+        buffer: Buffer.from('new-image'),
+        mimetype: 'image/jpeg',
+      };
+
+      const result = await service.updatePortfolioItem(
+        mockPortfolioItems[0]._id,
+        { title: 'Updated title' },
+        mockFile as any,
+      );
+
+      expect(result).toEqual(updatedItem);
+      expect(findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: mockPortfolioItems[0]._id },
+        {
+          $set: expect.objectContaining({
+            title: 'Updated title',
+            img: updatedItem.img,
+            updatedAt: expect.any(Date),
+          }),
+        },
+        { returnDocument: 'after' },
+      );
+      expect(awsService.deleteImage).toHaveBeenCalledWith(mockPortfolioItems[0].img);
+    });
+
+    it('rolls back the freshly uploaded image when the DB update fails', async () => {
+      const findOne = jest.fn().mockResolvedValue(mockPortfolioItems[0]);
+      const findOneAndUpdate = jest.fn().mockRejectedValue(new Error('Update failed'));
+      const mockCollection = {
+        findOne,
+        findOneAndUpdate,
+      };
+      const mockDb = {
+        collection: jest.fn().mockReturnValue(mockCollection),
+      };
+
+      (service as any).db = mockDb;
+      awsService.uploadImage.mockResolvedValue('https://example.com/new-image.jpg');
+
+      await expect(
+        service.updatePortfolioItem(
+          mockPortfolioItems[0]._id,
+          { title: 'Updated title' },
+          {
+            originalname: 'new-image.jpg',
+            buffer: Buffer.from('new-image'),
+            mimetype: 'image/jpeg',
+          } as any,
+        ),
+      ).rejects.toThrow('Update failed');
+
+      expect(awsService.deleteImage).toHaveBeenCalledWith('https://example.com/new-image.jpg');
+      expect(awsService.deleteImage).not.toHaveBeenCalledWith(mockPortfolioItems[0].img);
+    });
+  });
+
+  describe('deletePortfolioItem', () => {
+    it('deletes the DB record before removing the image from storage', async () => {
+      const findOne = jest.fn().mockResolvedValue(mockPortfolioItems[0]);
+      const deleteOne = jest.fn().mockResolvedValue({ deletedCount: 1 });
+      const mockCollection = {
+        findOne,
+        deleteOne,
+      };
+      const mockDb = {
+        collection: jest.fn().mockReturnValue(mockCollection),
+      };
+
+      (service as any).db = mockDb;
+      awsService.deleteImage.mockResolvedValue(undefined);
+
+      await expect(service.deletePortfolioItem(mockPortfolioItems[0]._id)).resolves.toBe(true);
+
+      expect(deleteOne).toHaveBeenCalledWith({ _id: mockPortfolioItems[0]._id });
+      expect(awsService.deleteImage).toHaveBeenCalledWith(mockPortfolioItems[0].img);
+      expect(deleteOne.mock.invocationCallOrder[0]).toBeLessThan(
+        awsService.deleteImage.mock.invocationCallOrder[0],
+      );
+    });
   });
 });

@@ -39,24 +39,41 @@ type PortfolioItem = {
 type TranslationParams = Record<string, string | number>;
 type TranslationSection = Record<string, string>;
 type TranslationMessages = Record<string, unknown>;
+type PortfolioFetchResult = {
+  items: PortfolioItem[];
+  isDegraded: boolean;
+};
 
-async function fetchPortfolio(): Promise<PortfolioItem[]> {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+function getPortfolioUnavailableMessage(locale: string): string {
+  return locale === 'en'
+    ? 'Portfolio is temporarily unavailable. Please try again later.'
+    : 'Portfolio jest chwilowo niedostępne. Spróbuj ponownie później.';
+}
+
+async function fetchPortfolio(): Promise<PortfolioFetchResult> {
+  const apiOrigin = process.env.BACKEND_API_URL ?? 'http://localhost:4000';
 
   try {
-    const res = await fetch(`${base}/api/portfolio`, {
+    const res = await fetch(`${apiOrigin}/api/portfolio`, {
       next: { revalidate },
     });
 
     if (!res.ok) {
-      return [];
+      return { items: [], isDegraded: true };
     }
 
     const data = (await res.json()) as { ok: boolean; items: PortfolioItem[] };
-    return data?.items ?? [];
+    if (!data?.ok) {
+      return { items: [], isDegraded: true };
+    }
+
+    return {
+      items: data.items ?? [],
+      isDegraded: false,
+    };
   } catch (error) {
     console.error('Portfolio fetch failed, using fallback data', error);
-    return [];
+    return { items: [], isDegraded: true };
   }
 }
 
@@ -116,16 +133,19 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
   const itemsPromise = fetchPortfolio();
   const messagesPromise = loadMessages(locale);
 
-  const [items, messages] = await Promise.all([itemsPromise, messagesPromise]);
+  const [portfolioState, messages] = await Promise.all([itemsPromise, messagesPromise]);
   const t = createTranslator(messages);
   const navTranslations = getSection(messages, 'nav');
   const portfolioTranslations = getSection(messages, 'portfolio');
   const contactTranslations = getSection(messages, 'contact');
   const chatTranslations = getSection(messages, 'chat');
+  const portfolioUnavailableMessage = portfolioState.isDegraded
+    ? (portfolioTranslations.unavailable ?? getPortfolioUnavailableMessage(locale))
+    : null;
 
   // Compute project categories and dynamic skills from the portfolio data.
-  const portfolioCategories = calculatePortfolioCategories(items);
-  const dynamicSkills = calculateDynamicSkills(items);
+  const portfolioCategories = calculatePortfolioCategories(portfolioState.items);
+  const dynamicSkills = calculateDynamicSkills(portfolioState.items);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -239,7 +259,12 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         </section>
 
         <div id="portfolio" className="bg-gray-800/30">
-          <PortfolioSection items={items} locale={locale} translations={portfolioTranslations} />
+          <PortfolioSection
+            items={portfolioState.items}
+            locale={locale}
+            translations={portfolioTranslations}
+            degradedMessage={portfolioUnavailableMessage}
+          />
         </div>
 
         <section id="about" className="bg-gray-800/60">
