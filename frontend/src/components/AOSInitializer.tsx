@@ -14,18 +14,14 @@ export function AOSInitializer() {
       delay: 0,
     });
 
-    // Refresh AOS on route changes
-    const handleRouteChange = () => {
-      setTimeout(() => {
-        AOS.refresh();
-      }, 100);
+    const handleResize = () => {
+      AOS.refresh();
     };
 
-    // Listen for navigation events if applicable
-    window.addEventListener('resize', () => AOS.refresh());
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', () => AOS.refresh());
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

@@ -1,58 +1,45 @@
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-import type { Request } from 'express';
-import { PrismaService } from '../prisma/prisma.service';
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { OpsTokenGuard } from '../common/guards/ops-token.guard';
+import { ContactMessageListResponseDto } from './contact.openapi.dto';
+import { ContactAdminService } from './contact-admin.service';
 
-// Define type for the select result
-type ContactMessageItem = {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  ip: string | null;
-  createdAt: Date;
-};
-
+@ApiTags('contact')
+@ApiBearerAuth('admin-token')
 @Controller('contact')
+@UseGuards(OpsTokenGuard)
 export class ContactAdminController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly contactAdminService: ContactAdminService) {}
 
   @Get('messages')
-  async list(
-    @Req() req: Request,
-    @Query('limit') limit = '20',
-    @Query('cursor') cursor?: string,
-  ) {
-    const expected = `Bearer ${process.env.ADMIN_TOKEN ?? ''}`;
-    if (!process.env.ADMIN_TOKEN || req.headers.authorization !== expected) {
-      throw new UnauthorizedException();
-    }
-
-    const take = Math.max(1, Math.min(Number(limit) || 20, 100));
-
-    const items: ContactMessageItem[] =
-      await this.prisma.contactMessage.findMany({
-        take,
-        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          message: true,
-          ip: true,
-          createdAt: true,
-        },
-      });
-
-    const nextCursor =
-      items.length === take ? items[items.length - 1].id : undefined;
-
-    return { items, nextCursor };
+  @ApiOperation({
+    summary: 'List stored contact messages',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    example: 'cm_456',
+  })
+  @ApiOkResponse({ type: ContactMessageListResponseDto })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid admin bearer token',
+  })
+  async list(@Query('limit') limit = '20', @Query('cursor') cursor?: string) {
+    return this.contactAdminService.listMessages({
+      limit: Number(limit) || 20,
+      cursor,
+    });
   }
 }

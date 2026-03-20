@@ -1,24 +1,26 @@
 import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import Header from '../Header';
+
+let mockPathnameValue = '/en';
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
   motion: {
-    div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
+    div: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: unknown }>) => (
       <div {...props}>{children}</div>
     ),
 
-    nav: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
+    nav: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: unknown }>) => (
       <nav {...props}>{children}</nav>
     ),
 
-    ul: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
+    ul: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: unknown }>) => (
       <ul {...props}>{children}</ul>
     ),
 
-    li: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: any }>) => (
+    li: ({ children, ...props }: React.PropsWithChildren<{ [key: string]: unknown }>) => (
       <li {...props}>{children}</li>
     ),
   },
@@ -26,12 +28,7 @@ vi.mock('framer-motion', () => ({
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  usePathname: () => '/',
+  usePathname: () => mockPathnameValue,
 }));
 
 const navTranslations = {
@@ -44,36 +41,48 @@ const navTranslations = {
 };
 
 describe('Header', () => {
-  it('renders navigation links', () => {
+  beforeEach(() => {
+    mockPathnameValue = '/en';
+  });
+
+  it('renders locale-aware navigation links for English', () => {
+    mockPathnameValue = '/en';
     render(<Header translations={navTranslations} />);
 
     expect(screen.getByRole('navigation')).toBeInTheDocument();
 
-    // Check for main navigation links
     const brandLink = screen.getByRole('link', { name: /Przemysław Pietrzak/ });
     const portfolioLink = screen.getByRole('link', { name: /portfolio/i });
     const aboutLink = screen.getByRole('link', { name: /about/i });
     const contactLink = screen.getByRole('link', { name: /^contact$/i });
 
     expect(brandLink).toBeInTheDocument();
+    expect(brandLink).toHaveAttribute('href', '/en');
     expect(portfolioLink).toBeInTheDocument();
+    expect(portfolioLink).toHaveAttribute('href', '/en#portfolio');
     expect(aboutLink).toBeInTheDocument();
+    expect(aboutLink).toHaveAttribute('href', '/en#about');
     expect(contactLink).toBeInTheDocument();
+    expect(contactLink).toHaveAttribute('href', '/en#contact');
   });
 
-  it('renders contact me button', () => {
-    render(<Header translations={navTranslations} />);
-
-    const contactButton = screen.getByRole('link', { name: /contact me/i });
-    expect(contactButton).toBeInTheDocument();
-    expect(contactButton).toHaveAttribute('href', '/#contact');
-  });
-
-  it('renders brand link pointing to home', () => {
+  it('renders locale-aware navigation links for Polish', () => {
+    mockPathnameValue = '/pl';
     render(<Header translations={navTranslations} />);
 
     const brandLink = screen.getByRole('link', { name: /Przemysław Pietrzak/ });
-    expect(brandLink).toHaveAttribute('href', '/');
+    const contactButton = screen.getByRole('link', { name: /contact me/i });
+
+    expect(brandLink).toHaveAttribute('href', '/pl');
+    expect(contactButton).toHaveAttribute('href', '/pl#contact');
+  });
+
+  it('renders brand link pointing to home', () => {
+    mockPathnameValue = '/pl';
+    render(<Header translations={navTranslations} />);
+
+    const brandLink = screen.getByRole('link', { name: /Przemysław Pietrzak/ });
+    expect(brandLink).toHaveAttribute('href', '/pl');
   });
 
   it('has proper header structure', () => {

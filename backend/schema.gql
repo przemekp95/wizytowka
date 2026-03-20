@@ -2,21 +2,41 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Public contact form input accepted by the sendContact mutation."""
 input ContactMessageInput {
+  """Reply-to email address for the contact message."""
   email: String!
+
+  """Message body submitted through the public contact form."""
   message: String!
+
+  """Full name of the person sending the message."""
   name: String!
 }
 
+"""
+Result returned after attempting to process a public contact submission.
+"""
 type ContactResult {
+  """Human-readable error returned when the contact submission fails."""
   error: String
+
+  """
+  Indicates whether the message was persisted and delivered successfully.
+  """
   ok: Boolean!
 }
 
 type Mutation {
+  """
+  Submit a public contact message. This mutation is rate-limited and returns ok=false when delivery fails.
+  """
   sendContact(input: ContactMessageInput!): ContactResult!
 }
 
 type Query {
+  """
+  Minimal GraphQL hello query exposed for smoke testing and tooling checks.
+  """
   hello: String!
 }

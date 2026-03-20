@@ -1,5 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export async function generateMetadata({
   params,
@@ -24,7 +29,6 @@ export async function generateMetadata({
     creator: 'Przemysław Pietrzak',
     publisher: 'Przemysław Pietrzak',
     robots: 'index, follow',
-    viewport: 'width=device-width, initial-scale=1',
     openGraph: {
       title: isPolish
         ? 'Przemysław Pietrzak - Full Stack Developer'

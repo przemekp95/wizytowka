@@ -72,8 +72,7 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
     setIsLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const response = await fetch(`${baseUrl}/chat/message`, {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,15 +83,15 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
         }),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
         if (response.status === 404) {
           // Chat service not available
           throw new Error('Chat service not available');
         }
-        throw new Error('Network response was not ok');
+        throw new Error(data?.error || data?.errors?.[0]?.message || 'Network response was not ok');
       }
-
-      const data = await response.json();
       setSessionId(data.sessionId);
 
       const botMessage: ChatMessage = {
