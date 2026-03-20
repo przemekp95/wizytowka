@@ -16,7 +16,7 @@
     "test:all": "corepack pnpm -F backend test && corepack pnpm -F backend test:bdd && corepack pnpm -F frontend test && corepack pnpm -F backend test:e2e && corepack pnpm -F frontend exec playwright test"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.7"
+    "baseline-browser-mapping": "^2.10.9"
   },
   "dependencies": {
     "@types/jest": "^30.0.0",
