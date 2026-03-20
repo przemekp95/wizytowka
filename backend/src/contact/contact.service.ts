@@ -1,38 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
-import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
-import { PrismaService } from '../prisma/prisma.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  CONTACT_MESSAGE_REPOSITORY,
+  type ContactMessageRepositoryPort,
+} from './application/ports/contact-message-repository.port';
+import {
+  CONTACT_NOTIFICATION_PORT,
+  type ContactNotificationPort,
+} from './application/ports/contact-notification.port';
+import {
+  ContactSubmission,
+  type ContactSubmissionProps,
+} from './domain/contact-submission';
 
-/**
- * Options for configuring retry logic with exponential backoff
- */
-interface RetryOptions {
-  maxRetries: number;
-  baseDelay: number;
-  maxDelay: number;
-}
-
-/**
- * Converts various value types to boolean
- * @param v - Value to convert
- * @returns Boolean representation of the input value
- */
-function toBool(v: unknown): boolean {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return v === 1;
-  if (typeof v === 'string') {
-    const s = v.toLowerCase().trim();
-    return s === 'true' || s === '1' || s === 'yes' || s === 'ssl';
-  }
-  return false;
-}
-
-export type CreateContactInput = {
-  name: string;
-  email: string;
-  message: string;
-  ip?: string;
-  requestId?: string;
-};
+export type CreateContactInput = ContactSubmissionProps;
 
 export type CreateContactResult =
   | {
@@ -46,207 +26,40 @@ export type CreateContactResult =
       savedId?: string;
     };
 
-/**
- * Service responsible for handling contact form submissions,
- * email notifications, and database persistence.
- *
- * Features:
- * - SMTP email sending with retry logic
- * - Database persistence before delivery
- * - Request tracking and logging
- */
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
-  /**
-   * @param prisma - Database service for data persistence
-   */
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(CONTACT_MESSAGE_REPOSITORY)
+    private readonly repository: ContactMessageRepositoryPort,
+    @Inject(CONTACT_NOTIFICATION_PORT)
+    private readonly notifier: ContactNotificationPort,
+  ) {}
 
-  /**
-   * SMTP transporter configured with environment variables.
-   * Uses connection pooling and rate limiting for optimal delivery.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  private transporter: Transporter = nodemailer.createTransport(
-    {
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 465),
-      secure: toBool(process.env.SMTP_SECURE ?? true),
-      auth:
-        process.env.SMTP_USER && process.env.SMTP_PASS
-          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-          : undefined,
-      connectionTimeout: 30_000,
-      greetingTimeout: 30_000,
-      socketTimeout: 60_000,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      rateDelta: 1000,
-      rateLimit: 5,
-    },
-    {
-      logger: toBool(process.env.SMTP_DEBUG ?? false),
-      debug: toBool(process.env.SMTP_DEBUG ?? false),
-    },
-  );
-
-  /**
-   * Executes an operation with exponential backoff retry logic
-   * @template T - Return type of the operation
-   * @param operation - Async function to retry on failure
-   * @param options - Retry configuration options
-   * @param requestId - Optional request identifier for logging
-   * @returns Promise resolving to the operation result
-   * @throws Last error encountered if all retries are exhausted
-   */
-  private async retryWithBackoff<T>(
-    operation: () => Promise<T>,
-    options: RetryOptions,
-    requestId?: string,
-  ): Promise<T> {
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          this.logger.warn(
-            `Retry attempt ${attempt}/${options.maxRetries} for requestId=${requestId}`,
-          );
-        }
-
-        return await operation();
-      } catch (error) {
-        lastError =
-          (error as unknown) instanceof Error
-            ? (error as unknown as Error)
-            : new Error(String(error));
-
-        if (attempt === options.maxRetries) {
-          break;
-        }
-
-        const delay = Math.min(
-          options.baseDelay * Math.pow(2, attempt),
-          options.maxDelay,
-        );
-
-        this.logger.warn(
-          `Email send failed (attempt ${attempt + 1}), retrying in ${delay}ms. ` +
-            `Error: ${lastError.message} requestId=${requestId}`,
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-
-    throw lastError!;
-  }
-
-  /**
-   * Sends an email notification with contact form data using SMTP
-   * @param params - Contact form input data
-   * @returns Promise resolving to object containing messageId
-   * @throws Error if SMTP configuration is missing or sending fails
-   */
   async sendMail(params: CreateContactInput): Promise<{ messageId: string }> {
-    const from = process.env.SMTP_FROM || process.env.SMTP_USER || '';
-    const to = process.env.SMTP_TO || process.env.SMTP_USER || '';
-
-    if (!process.env.SMTP_HOST || !from || !to) {
-      throw new Error('Brak konfiguracji SMTP (HOST/FROM/TO)');
-    }
-
-    const lines: string[] = [
-      `Imię i nazwisko: ${params.name}`,
-      `E-mail: ${params.email}`,
-      params.ip ? `IP: ${params.ip}` : '',
-      params.requestId ? `Request-Id: ${params.requestId}` : '',
-      '---',
-      params.message,
-    ].filter(Boolean);
-
-    const retryOptions: RetryOptions = {
-      maxRetries: 3,
-      baseDelay: 1000,
-      maxDelay: 10000,
-    };
-
-    const result = await this.retryWithBackoff(
-      async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const info = await this.transporter.sendMail({
-          from,
-          to,
-          replyTo: params.email,
-          subject: `Wiadomość ze strony – ${params.name}`,
-          text: lines.join('\n'),
-          headers: { 'X-Request-Id': params.requestId ?? '' },
-        });
-
-        // Type guard to ensure info is SentMessageInfo
-        if (info && typeof info === 'object' && 'messageId' in info) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const sentInfo = info as SentMessageInfo;
-
-          this.logger.log(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            `Mail sent successfully: messageId=${sentInfo.messageId} ` +
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              `accepted=${JSON.stringify(sentInfo.accepted)} ` +
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              `rejected=${JSON.stringify(sentInfo.rejected)} req=${params.requestId}`,
-          );
-
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          return { messageId: sentInfo.messageId };
-        } else {
-          throw new Error('Invalid response from sendMail');
-        }
-      },
-      retryOptions,
-      params.requestId,
-    );
-
-    return result;
+    return this.notifier.send(ContactSubmission.create(params));
   }
 
-  /**
-   * Saves contact message to database and sends email notification.
-   * The operation succeeds only when both persistence and delivery succeed.
-   *
-   * @param params - Contact form input data
-   * @returns Promise resolving to operation result with IDs and status
-   */
   async createAndNotify(
     params: CreateContactInput,
   ): Promise<CreateContactResult> {
-    try {
-      const saved = await this.prisma.contactMessage.create({
-        data: {
-          name: params.name,
-          email: params.email,
-          message: params.message,
-          ip: params.ip ?? null,
-        },
-        select: { id: true },
-      });
+    const submission = ContactSubmission.create(params);
 
+    try {
+      const saved = await this.repository.save(submission);
       const savedId = saved.id;
 
       try {
-        const { messageId } = await this.sendMail(params);
+        const { messageId } = await this.notifier.send(submission);
         return { ok: true, messageId, savedId };
-      } catch (e) {
-        const error =
-          (e as unknown) instanceof Error
-            ? (e as unknown as Error)
-            : new Error(String(e));
+      } catch (error) {
+        const deliveryError =
+          error instanceof Error ? error : new Error(String(error));
         this.logger.error(
-          `Mail send failed. requestId=${params.requestId} savedId=${savedId} reason=${error.message}`,
+          `Mail send failed. requestId=${submission.requestId} savedId=${savedId} reason=${deliveryError.message}`,
         );
+
         return {
           ok: false,
           error:
@@ -254,11 +67,13 @@ export class ContactService {
           savedId,
         };
       }
-    } catch (e) {
-      const error = e instanceof Error ? e : new Error(String(e));
+    } catch (error) {
+      const saveError =
+        error instanceof Error ? error : new Error(String(error));
       this.logger.error(
-        `DB save failed. requestId=${params.requestId} reason=${error.message}`,
+        `DB save failed. requestId=${submission.requestId} reason=${saveError.message}`,
       );
+
       return {
         ok: false,
         error: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',

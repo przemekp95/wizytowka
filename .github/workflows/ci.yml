@@ -61,6 +61,9 @@ jobs:
           mkdir -p backend/reports
           pnpm -F backend run test:cov -- --ci --runInBand --coverageReporters=text-summary --coverageReporters=lcov --coverageReporters=json-summary --json --outputFile=reports/jest-results.json 2>&1 | tee backend/reports/jest.log
 
+      - name: Run backend BDD scenarios
+        run: pnpm -F backend test:bdd
+
       - name: Backend coverage summary
         if: always()
         run: |

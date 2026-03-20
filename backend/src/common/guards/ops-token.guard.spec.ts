@@ -1,16 +1,15 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
+import { opsConfig } from '../../config';
 import { OpsTokenGuard } from './ops-token.guard';
 
 describe('OpsTokenGuard', () => {
-  const guard = new OpsTokenGuard();
-
-  afterEach(() => {
-    delete process.env.ADMIN_TOKEN;
-  });
+  const opsConfiguration: ConfigType<typeof opsConfig> = {
+    adminToken: 'secret-token',
+  };
+  const guard = new OpsTokenGuard(opsConfiguration);
 
   it('accepts the configured bearer token', () => {
-    process.env.ADMIN_TOKEN = 'secret-token';
-
     const context = {
       switchToHttp: () => ({
         getRequest: () => ({
@@ -25,8 +24,6 @@ describe('OpsTokenGuard', () => {
   });
 
   it('rejects missing or invalid bearer tokens', () => {
-    process.env.ADMIN_TOKEN = 'secret-token';
-
     const context = {
       switchToHttp: () => ({
         getRequest: () => ({

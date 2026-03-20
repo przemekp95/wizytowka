@@ -1,10 +1,13 @@
 import {
+  Inject,
   Injectable,
   Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { Collection, Db, MongoClient } from 'mongodb';
+import { mongoConfig, throttleConfig } from '../../config';
 
 type ThrottleStorageDriver = 'memory' | 'mongo';
 
@@ -32,6 +35,13 @@ export class GqlThrottleStorageService
   private db: Db | null = null;
   private collection: Collection<GqlThrottleDocument> | null = null;
   private connectingPromise: Promise<void> | null = null;
+
+  constructor(
+    @Inject(throttleConfig.KEY)
+    private readonly throttleConfiguration: ConfigType<typeof throttleConfig>,
+    @Inject(mongoConfig.KEY)
+    private readonly mongoConfiguration: ConfigType<typeof mongoConfig>,
+  ) {}
 
   onModuleInit(): Promise<void> {
     if (this.getDriver() !== 'mongo') {
@@ -89,19 +99,7 @@ export class GqlThrottleStorageService
   }
 
   private getDriver(): ThrottleStorageDriver {
-    if (process.env.THROTTLE_STORAGE === 'memory') {
-      return 'memory';
-    }
-
-    if (process.env.THROTTLE_STORAGE === 'mongo') {
-      return 'mongo';
-    }
-
-    if (process.env.NODE_ENV === 'test') {
-      return 'memory';
-    }
-
-    return 'mongo';
+    return this.throttleConfiguration.driver;
   }
 
   private incrementMemory(
@@ -222,7 +220,7 @@ export class GqlThrottleStorageService
   }
 
   private async connectMongo(): Promise<void> {
-    const mongoUri = process.env.MONGODB_URI;
+    const mongoUri = this.mongoConfiguration.uri;
 
     if (!mongoUri) {
       throw new Error(
@@ -238,7 +236,7 @@ export class GqlThrottleStorageService
     try {
       await client.connect();
 
-      const db = client.db(process.env.MONGODB_DB || 'wizytowka');
+      const db = client.db(this.mongoConfiguration.dbName);
       const collection =
         db.collection<GqlThrottleDocument>(THROTTLE_COLLECTION);
       await collection.createIndex(

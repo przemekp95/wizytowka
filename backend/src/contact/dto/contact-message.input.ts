@@ -1,19 +1,24 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 
-@InputType()
+@InputType({
+  description:
+    'Public contact form input accepted by the sendContact mutation.',
+})
 export class ContactMessageInput {
-  @Field()
+  @Field({ description: 'Full name of the person sending the message.' })
   @IsString()
   @MinLength(2)
   @MaxLength(100)
   name!: string;
 
-  @Field()
+  @Field({ description: 'Reply-to email address for the contact message.' })
   @IsEmail()
   email!: string;
 
-  @Field()
+  @Field({
+    description: 'Message body submitted through the public contact form.',
+  })
   @IsString()
   @MinLength(10)
   @MaxLength(2000)

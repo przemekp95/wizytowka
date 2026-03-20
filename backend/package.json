@@ -19,6 +19,7 @@
     "lint:fix": "eslint \"{src,apps,libs,test,scripts}/**/*.ts\" --fix",
     "typecheck": "tsc --noEmit -p tsconfig.build.json && tsc --noEmit -p scripts/tsconfig.json",
     "test": "jest",
+    "test:bdd": "cucumber-js --require-module ts-node/register/transpile-only --require-module tsconfig-paths/register --require 'features/step-definitions/**/*.ts' --format progress --format summary 'features/**/*.feature'",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -68,6 +69,7 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "9.6.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.0.0",
     "@nestjs/testing": "^11.1.16",

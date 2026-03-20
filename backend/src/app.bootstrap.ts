@@ -1,52 +1,43 @@
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import type { ConfigType } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
 import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
+import { appConfig } from './config';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { LoggingMetricsMiddleware } from './common/middleware/logging-metrics.middleware';
 import { LoggingService } from './logging/logging.service';
 import { MetricsService } from './metrics/metrics.service';
 
-const validationPipe = new ValidationPipe({
-  whitelist: true,
-  forbidNonWhitelisted: true,
-  transform: true,
-  forbidUnknownValues: false,
-});
+export function createValidationPipe(): ValidationPipe {
+  return new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+    forbidUnknownValues: false,
+  });
+}
 
 export type AppConfigurationOptions = {
   enableSwagger?: boolean;
 };
 
-function toBool(v: unknown): boolean {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return v === 1;
-  if (typeof v === 'string') {
-    const s = v.toLowerCase().trim();
-    return s === 'true' || s === '1' || s === 'yes' || s === 'on';
-  }
-  return false;
-}
+type AppRuntimeConfig = ConfigType<typeof appConfig>;
 
-function getAllowedOrigins(): Set<string> {
-  const envOrigins = (process.env.CORS_ORIGINS ?? '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
+function getAllowedOrigins(appConfiguration: AppRuntimeConfig): Set<string> {
   return new Set<string>([
     'http://localhost:3000',
     'http://localhost:3001',
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-    ...envOrigins,
+    ...(appConfiguration.frontendUrl ? [appConfiguration.frontendUrl] : []),
+    ...appConfiguration.corsOrigins,
   ]);
 }
 
-function createCorsOptions(): CorsOptions {
-  const allowedOrigins = getAllowedOrigins();
+function createCorsOptions(appConfiguration: AppRuntimeConfig): CorsOptions {
+  const allowedOrigins = getAllowedOrigins(appConfiguration);
 
   return {
     origin: (origin, cb) => {
@@ -73,17 +64,18 @@ export function configureApp(
   { enableSwagger = true }: AppConfigurationOptions = {},
 ): void {
   const expressApp = app as INestApplication & Partial<NestExpressApplication>;
+  const appConfiguration = app.get<AppRuntimeConfig>(appConfig.KEY);
   const requestIdMiddleware = new RequestIdMiddleware();
   const loggingMetricsMiddleware = new LoggingMetricsMiddleware(
     app.get(LoggingService),
     app.get(MetricsService),
   );
 
-  if (typeof expressApp.set === 'function' && toBool(process.env.TRUST_PROXY)) {
+  if (typeof expressApp.set === 'function' && appConfiguration.trustProxy) {
     expressApp.set('trust proxy', 1);
   }
 
-  app.enableCors(createCorsOptions());
+  app.enableCors(createCorsOptions(appConfiguration));
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
@@ -102,7 +94,7 @@ export function configureApp(
     loggingMetricsMiddleware.use(req, res, next),
   );
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(validationPipe);
+  app.useGlobalPipes(createValidationPipe());
 
   if (!enableSwagger) {
     return;
@@ -110,11 +102,25 @@ export function configureApp(
 
   const documentConfig = new DocumentBuilder()
     .setTitle('Personal Portfolio API')
-    .setDescription('REST and GraphQL API for personal portfolio website')
+    .setDescription(
+      'REST API for the personal portfolio website. GraphQL is documented through the SDL exposed at /api/graphql/schema and Apollo Sandbox on /graphql outside production.',
+    )
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'opaque',
+        description: 'Admin bearer token based on ADMIN_TOKEN',
+      },
+      'admin-token',
+    )
+    .addTag('app', 'Basic application endpoints')
     .addTag('health', 'Health check endpoints')
     .addTag('portfolio', 'Portfolio item management')
     .addTag('contact', 'Contact form and messaging')
+    .addTag('chat', 'AI chat endpoints')
+    .addTag('metrics', 'Operational metrics')
     .addTag('links', 'External links and redirects')
     .build();
 
@@ -122,8 +128,11 @@ export function configureApp(
   SwaggerModule.setup('api/docs', app, document);
 }
 
-export function logBootstrapSuccess(logger: Logger, port: number): void {
+export function logBootstrapSuccess(
+  logger: Logger,
+  appConfiguration: AppRuntimeConfig,
+): void {
   logger.log(
-    `Starting application on port ${port} (env: ${process.env.NODE_ENV ?? 'development'})`,
+    `Starting application on port ${appConfiguration.port} (env: ${appConfiguration.nodeEnv})`,
   );
 }

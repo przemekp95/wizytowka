@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import * as winston from 'winston';
 import * as path from 'path';
+import { loggingConfig } from '../config';
 
 @Injectable()
 export class LoggingService {
   private logger: winston.Logger;
 
-  constructor() {
+  constructor(
+    @Inject(loggingConfig.KEY)
+    private readonly loggingConfiguration: ConfigType<typeof loggingConfig>,
+  ) {
     this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: this.loggingConfiguration.level,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),

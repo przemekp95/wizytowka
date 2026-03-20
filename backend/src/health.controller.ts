@@ -1,7 +1,19 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiServiceUnavailableResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  HealthLiveResponseDto,
+  HealthReadyResponseDto,
+  HealthResponseDto,
+} from './health.openapi.dto';
 import { PortfolioService } from './portfolio/portfolio.service';
 import { PrismaService } from './prisma/prisma.service';
 
+@ApiTags('health')
 @Controller()
 export class HealthController {
   constructor(
@@ -10,6 +22,10 @@ export class HealthController {
   ) {}
 
   @Get('health')
+  @ApiOperation({
+    summary: 'Get process health snapshot',
+  })
+  @ApiOkResponse({ type: HealthResponseDto })
   health() {
     return {
       ok: true,
@@ -22,6 +38,11 @@ export class HealthController {
   }
 
   @Get('health/ready')
+  @ApiOperation({
+    summary: 'Get dependency readiness status',
+  })
+  @ApiOkResponse({ type: HealthReadyResponseDto })
+  @ApiServiceUnavailableResponse({ type: HealthReadyResponseDto })
   async ready() {
     const dependencies = {
       prisma: await this.prismaService.getDependencyStatus(),
@@ -43,6 +64,10 @@ export class HealthController {
   }
 
   @Get('health/live')
+  @ApiOperation({
+    summary: 'Get process liveness status',
+  })
+  @ApiOkResponse({ type: HealthLiveResponseDto })
   live() {
     return {
       ok: true,

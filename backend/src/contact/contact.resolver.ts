@@ -11,7 +11,10 @@ import { GqlThrottlerGuard } from '../common/guards/gql-throttler.guard';
 export class ContactResolver {
   constructor(private readonly contactService: ContactService) {}
 
-  @Mutation(() => ContactResult)
+  @Mutation(() => ContactResult, {
+    description:
+      'Submit a public contact message. This mutation is rate-limited and returns ok=false when delivery fails.',
+  })
   async sendContact(
     @Args('input') input: ContactMessageInput,
     @Context('req') req: Request,

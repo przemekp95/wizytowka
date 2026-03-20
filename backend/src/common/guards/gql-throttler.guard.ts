@@ -1,22 +1,30 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { Request, Response } from 'express';
 import { GraphQLError } from 'graphql';
+import { throttleConfig } from '../../config';
 import { GqlThrottleStorageService } from './gql-throttle-storage.service';
-
-const DEFAULT_LIMIT = 30;
-const DEFAULT_TTL_MS = 60_000;
 
 @Injectable()
 export class GqlThrottlerGuard implements CanActivate {
-  constructor(private readonly storage: GqlThrottleStorageService) {}
+  constructor(
+    private readonly storage: GqlThrottleStorageService,
+    @Inject(throttleConfig.KEY)
+    private readonly throttleConfiguration: ConfigType<typeof throttleConfig>,
+  ) {}
 
   reset(): void {
     this.storage.reset();
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (process.env.THROTTLE_DISABLE === '1') {
+    if (this.throttleConfiguration.disabled) {
       return true;
     }
 
@@ -31,13 +39,20 @@ export class GqlThrottlerGuard implements CanActivate {
     const key = `${context.getClass().name}:${context.getHandler().name}:${tracker}`;
     const now = Date.now();
     const { activeHits, blocked } = await this.storage
-      .increment(key, DEFAULT_TTL_MS, DEFAULT_LIMIT, now)
+      .increment(
+        key,
+        this.throttleConfiguration.ttlMs,
+        this.throttleConfiguration.limit,
+        now,
+      )
       .catch((error) => this.throwStorageUnavailable(res, error));
 
     if (blocked) {
       const retryAfterSeconds = Math.max(
         1,
-        Math.ceil((activeHits[0] + DEFAULT_TTL_MS - now) / 1000),
+        Math.ceil(
+          (activeHits[0] + this.throttleConfiguration.ttlMs - now) / 1000,
+        ),
       );
 
       this.setRateLimitHeaders(res, activeHits.length, retryAfterSeconds);
@@ -47,7 +62,12 @@ export class GqlThrottlerGuard implements CanActivate {
     this.setRateLimitHeaders(
       res,
       activeHits.length,
-      Math.max(1, Math.ceil((activeHits[0] + DEFAULT_TTL_MS - now) / 1000)),
+      Math.max(
+        1,
+        Math.ceil(
+          (activeHits[0] + this.throttleConfiguration.ttlMs - now) / 1000,
+        ),
+      ),
     );
 
     return true;
@@ -108,10 +128,13 @@ export class GqlThrottlerGuard implements CanActivate {
           status: 429,
           headers: new Map<string, string>([
             ['Retry-After', retryAfterSeconds.toString()],
-            ['X-RateLimit-Limit', DEFAULT_LIMIT.toString()],
+            ['X-RateLimit-Limit', this.throttleConfiguration.limit.toString()],
             [
               'X-RateLimit-Remaining',
-              Math.max(0, DEFAULT_LIMIT - activeHits).toString(),
+              Math.max(
+                0,
+                this.throttleConfiguration.limit - activeHits,
+              ).toString(),
             ],
             ['X-RateLimit-Reset', retryAfterSeconds.toString()],
           ]),
@@ -139,10 +162,13 @@ export class GqlThrottlerGuard implements CanActivate {
     activeHits: number,
     resetSeconds: number,
   ): void {
-    res.setHeader('X-RateLimit-Limit', DEFAULT_LIMIT.toString());
+    res.setHeader(
+      'X-RateLimit-Limit',
+      this.throttleConfiguration.limit.toString(),
+    );
     res.setHeader(
       'X-RateLimit-Remaining',
-      Math.max(0, DEFAULT_LIMIT - activeHits).toString(),
+      Math.max(0, this.throttleConfiguration.limit - activeHits).toString(),
     );
     res.setHeader('X-RateLimit-Reset', resetSeconds.toString());
   }

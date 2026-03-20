@@ -1,14 +1,37 @@
 import { ExecutionContext } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { GqlThrottlerGuard } from './gql-throttler.guard';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { GraphQLError } from 'graphql';
 import { GqlThrottleStorageService } from './gql-throttle-storage.service';
+import { mongoConfig, throttleConfig } from '../../config';
 
 describe('GqlThrottlerGuard', () => {
   let guard: GqlThrottlerGuard;
 
   beforeEach(() => {
-    guard = new GqlThrottlerGuard(new GqlThrottleStorageService());
+    const storage = new GqlThrottleStorageService(
+      {
+        driver: 'memory',
+        disabled: false,
+        limit: 30,
+        ttlMs: 60_000,
+      } satisfies ConfigType<typeof throttleConfig>,
+      {
+        uri: undefined,
+        dbName: 'wizytowka',
+      } satisfies ConfigType<typeof mongoConfig>,
+    );
+
+    guard = new GqlThrottlerGuard(
+      storage,
+      {
+        driver: 'memory',
+        disabled: false,
+        limit: 30,
+        ttlMs: 60_000,
+      } satisfies ConfigType<typeof throttleConfig>,
+    );
   });
 
   it('should be defined', () => {

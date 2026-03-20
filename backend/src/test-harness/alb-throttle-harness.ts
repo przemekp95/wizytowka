@@ -16,12 +16,14 @@ import {
   Query,
   Resolver,
 } from '@nestjs/graphql';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import type { NextFunction, Request, Response } from 'express';
 import { hostname } from 'node:os';
 import { ContactMessageInput } from '../contact/dto/contact-message.input';
 import { ContactResult } from '../contact/dto/contact-result.type';
 import { GqlThrottleStorageService } from '../common/guards/gql-throttle-storage.service';
 import { GqlThrottlerGuard } from '../common/guards/gql-throttler.guard';
+import { appConfig, mongoConfig, throttleConfig } from '../config';
 
 const logger = new Logger('AlbThrottleHarness');
 const validationPipe = new ValidationPipe({
@@ -33,22 +35,6 @@ const validationPipe = new ValidationPipe({
 type ExpressLikeApp = {
   set?: (name: string, value: unknown) => void;
 };
-
-function toBool(value: unknown): boolean {
-  if (typeof value === 'boolean') {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return value === 1;
-  }
-
-  if (typeof value === 'string') {
-    return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
-  }
-
-  return false;
-}
 
 @Controller('api/health')
 class HarnessHealthController {
@@ -84,6 +70,10 @@ class HarnessResolver {
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, mongoConfig, throttleConfig],
+    }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: '/tmp/alb-throttle-harness-schema.gql',
@@ -107,14 +97,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AlbThrottleHarnessModule, {
     logger: ['error', 'warn', 'log'],
   });
+  const appConfiguration = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
   const instanceId = process.env.POD_NAME ?? hostname();
-  const port = Number(process.env.PORT ?? 4000);
+  const port = appConfiguration.port;
   const httpAdapter = app.getHttpAdapter().getInstance() as ExpressLikeApp;
 
-  if (
-    typeof httpAdapter.set === 'function' &&
-    toBool(process.env.TRUST_PROXY)
-  ) {
+  if (typeof httpAdapter.set === 'function' && appConfiguration.trustProxy) {
     httpAdapter.set('trust proxy', 1);
   }
 

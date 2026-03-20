@@ -4,6 +4,7 @@ import { AwsService } from './aws.service';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Logger } from '@nestjs/common';
+import awsConfig from '../config/aws.config';
 
 jest.mock('@aws-sdk/client-s3');
 jest.mock('@aws-sdk/lib-storage');
@@ -25,6 +26,30 @@ describe('AwsService', () => {
   let mockUpload: any;
   let loggerSpy: jest.SpyInstance;
 
+  const buildAwsConfiguration = (overrides?: {
+    bucketName?: string | undefined;
+    region?: string;
+    accessKeyId?: string | undefined;
+    secretAccessKey?: string | undefined;
+  }) => {
+    const hasBucketName = Boolean(overrides && 'bucketName' in overrides);
+    const hasAccessKeyId = Boolean(overrides && 'accessKeyId' in overrides);
+    const hasSecretAccessKey = Boolean(
+      overrides && 'secretAccessKey' in overrides,
+    );
+
+    return {
+      region: overrides?.region ?? 'us-east-1',
+      accessKeyId: hasAccessKeyId ? overrides?.accessKeyId : 'test-key',
+      secretAccessKey: hasSecretAccessKey
+        ? overrides?.secretAccessKey
+        : 'test-secret',
+      s3: {
+        bucketName: hasBucketName ? overrides?.bucketName : 'test-bucket',
+      },
+    };
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -32,14 +57,12 @@ describe('AwsService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => {
-              const config = {
-                'aws.s3.bucketName': 'test-bucket',
-                'aws.region': 'us-east-1',
-                'aws.accessKeyId': 'test-key',
-                'aws.secretAccessKey': 'test-secret',
-              };
-              return config[key];
+            getOrThrow: jest.fn((key: string) => {
+              if (key === awsConfig.KEY) {
+                return buildAwsConfiguration();
+              }
+
+              throw new Error(`Missing config for key ${key}`);
             }),
           },
         },
@@ -76,12 +99,12 @@ describe('AwsService', () => {
     const mockBucketName = 'test-bucket';
 
     beforeEach(() => {
-      (configService.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'aws.s3.bucketName') return mockBucketName;
-        if (key === 'aws.region') return 'us-east-1';
-        if (key === 'aws.accessKeyId') return 'test-key';
-        if (key === 'aws.secretAccessKey') return 'test-secret';
-        return undefined;
+      (configService.getOrThrow as jest.Mock).mockImplementation((key: string) => {
+        if (key === awsConfig.KEY) {
+          return buildAwsConfiguration({ bucketName: mockBucketName });
+        }
+
+        throw new Error(`Missing config for key ${key}`);
       });
     });
 
@@ -276,12 +299,12 @@ describe('AwsService', () => {
       'https://test-bucket.s3.amazonaws.com/portfolio/test-image.jpg';
 
     beforeEach(() => {
-      (configService.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'aws.s3.bucketName') return 'test-bucket';
-        if (key === 'aws.region') return 'us-east-1';
-        if (key === 'aws.accessKeyId') return 'test-key';
-        if (key === 'aws.secretAccessKey') return 'test-secret';
-        return undefined;
+      (configService.getOrThrow as jest.Mock).mockImplementation((key: string) => {
+        if (key === awsConfig.KEY) {
+          return buildAwsConfiguration();
+        }
+
+        throw new Error(`Missing config for key ${key}`);
       });
     });
 
@@ -343,12 +366,17 @@ describe('AwsService', () => {
         send: jest.fn(),
       }));
 
-      (configService.get as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'aws.s3.bucketName') return 'test-bucket';
-        if (key === 'aws.region') return 'us-west-2';
-        if (key === 'aws.accessKeyId') return 'custom-key';
-        if (key === 'aws.secretAccessKey') return 'custom-secret';
-        return undefined;
+      (configService.getOrThrow as jest.Mock).mockImplementation((key: string) => {
+        if (key === awsConfig.KEY) {
+          return buildAwsConfiguration({
+            bucketName: 'test-bucket',
+            region: 'us-west-2',
+            accessKeyId: 'custom-key',
+            secretAccessKey: 'custom-secret',
+          });
+        }
+
+        throw new Error(`Missing config for key ${key}`);
       });
 
       await service.uploadImage({
@@ -368,9 +396,12 @@ describe('AwsService', () => {
 
     it('should handle missing bucket name configuration', async () => {
       const testConfigService = {
-        get: jest.fn((key: string) => {
-          if (key === 'aws.region') return 'us-east-1';
-          return undefined;
+        getOrThrow: jest.fn((key: string) => {
+          if (key === awsConfig.KEY) {
+            return buildAwsConfiguration({ bucketName: undefined });
+          }
+
+          throw new Error(`Missing config for key ${key}`);
         }),
       };
 

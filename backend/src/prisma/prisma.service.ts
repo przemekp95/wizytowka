@@ -1,10 +1,13 @@
 import {
+  Inject,
   Injectable,
   Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
+import { appConfig } from '../config';
 
 @Injectable()
 export class PrismaService
@@ -15,10 +18,15 @@ export class PrismaService
   private connected = false;
   private lastError: string | null = null;
 
+  constructor(
+    @Inject(appConfig.KEY)
+    private readonly appConfiguration: ConfigType<typeof appConfig>,
+  ) {
+    super();
+  }
+
   private shouldSkipConnection(): boolean {
-    return (
-      process.env.SKIP_PRISMA === 'true' || process.env.NODE_ENV === 'test'
-    );
+    return this.appConfiguration.skipPrisma;
   }
 
   async onModuleInit() {

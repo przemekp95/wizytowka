@@ -102,7 +102,8 @@ kubectl apply -f k8s/
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000/api
 - **GraphQL Endpoint**: http://localhost:4000/graphql
-- **Swagger Docs**: http://localhost:4000/api/docs
+- **GraphQL Sandbox**: http://localhost:4000/graphql (`NODE_ENV != production`)
+- **Swagger Docs (REST only)**: http://localhost:4000/api/docs
 - **Liveness Check**: http://localhost:4000/api/health/live
 - **Readiness Check**: http://localhost:4000/api/health/ready
 
@@ -187,6 +188,7 @@ corepack pnpm -F backend typecheck    # Run TypeScript type checking
 
 # Testing
 corepack pnpm -F backend test         # Run unit tests
+corepack pnpm -F backend test:bdd     # Run backend Gherkin scenarios
 corepack pnpm -F backend test:e2e     # Run E2E tests
 corepack pnpm -F backend test:cov     # Run tests with coverage
 
@@ -223,9 +225,19 @@ corepack pnpm -F frontend coverage    # Run tests with coverage
 ```bash
 corepack pnpm lint         # Run lint in every workspace
 corepack pnpm typecheck    # Run TypeScript checks in every workspace
-corepack pnpm test         # Run backend and frontend unit tests
+corepack pnpm test         # Run backend unit + backend BDD + frontend unit tests
 corepack pnpm check        # Run lint + typecheck + tests + build
 ```
+
+## Engineering Conventions
+
+- **TDD**: for behavior changes, prefer starting with the smallest failing test.
+- **DDD**: backend slices with real business rules should preserve domain,
+  application, and infrastructure boundaries. Contact, chat, and portfolio are
+  the current reference slices.
+- **BDD**: user-visible backend behavior should be captured in
+  `backend/features/**/*.feature` and executed with
+  `corepack pnpm -F backend test:bdd`. Contact and chat are covered there now.
 
 ## APIs
 
@@ -233,15 +245,37 @@ corepack pnpm check        # Run lint + typecheck + tests + build
 
 | Method | Endpoint                | Description                               |
 | ------ | ----------------------- | ----------------------------------------- |
+| GET    | `/api`                  | Basic hello endpoint                      |
+| GET    | `/api/health`           | Process health snapshot                   |
 | GET    | `/api/health/live`      | Process liveness check                    |
 | GET    | `/api/health/ready`     | Dependency readiness check                |
 | GET    | `/api/portfolio`        | Get portfolio items                       |
+| POST   | `/api/portfolio`        | Create portfolio item (admin bearer token) |
+| PATCH  | `/api/portfolio/:id`    | Update portfolio item (admin bearer token) |
+| DELETE | `/api/portfolio/:id`    | Delete portfolio item (admin bearer token) |
+| POST   | `/api/contact`          | Public contact submission                 |
+| POST   | `/api/chat/message`     | Chat message endpoint                     |
 | GET    | `/api/contact/messages` | Get contact messages (admin bearer token) |
 | GET    | `/api/metrics`          | Prometheus metrics (admin bearer token)   |
+| GET    | `/api/links`            | List external links                       |
+| GET    | `/api/links/r/:slug`    | Redirect to external link                 |
 
 ### GraphQL Schema
 
-The GraphQL API provides public contact submission.
+The GraphQL API is documented through its schema and GraphQL-native tooling, not through OpenAPI.
+
+- Runtime endpoint: `http://localhost:4000/graphql`
+- Interactive explorer: Apollo Sandbox on `/graphql` outside production
+- Runtime SDL docs: `http://localhost:4000/api/graphql/schema`
+- Build artifact snapshot: [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql)
+- Swagger at `/api/docs` intentionally documents REST only
+
+In `NODE_ENV=production`, Apollo Sandbox and GraphQL introspection stay disabled. Use `/api/graphql/schema` as the production-safe runtime documentation endpoint.
+
+Current public operations:
+
+- `Query.hello`
+- `Mutation.sendContact(input: ContactMessageInput!): ContactResult!`
 
 Example query:
 
@@ -250,6 +284,21 @@ mutation SendContact($input: ContactMessageInput!) {
   sendContact(input: $input) {
     ok
     error
+  }
+}
+```
+
+Example introspection query:
+
+```graphql
+query GraphqlDocs {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    types {
+      name
+      description
+    }
   }
 }
 ```
@@ -302,7 +351,10 @@ corepack pnpm -F backend test:e2e:aws-alb
 - Frontend browser requests use same-origin `/api/contact` and `/api/chat` route handlers; the browser no longer talks to backend absolute URLs directly.
 - `/api/health/ready` returns `200` only when Prisma and MongoDB are healthy; otherwise it returns `503` with dependency details.
 - `/api/contact/messages` and `/api/metrics` require `Authorization: Bearer ${ADMIN_TOKEN}`.
+- `POST /api/portfolio`, `PATCH /api/portfolio/:id`, and `DELETE /api/portfolio/:id` also require `Authorization: Bearer ${ADMIN_TOKEN}`.
+- `/api/chat/message` is always mounted; when `OPENAI_API_KEY` is missing it returns `503` with `{ error, code: "CHAT_UNAVAILABLE" }`.
 - GraphQL contact throttling uses shared Mongo-backed storage by default; use `THROTTLE_STORAGE=memory` only for isolated local/test scenarios.
+- GraphQL schema documentation lives at `/api/graphql/schema` plus `backend/schema.gql`; OpenAPI remains REST-only by design.
 - `test:e2e:k8s-ingress` verifies the same shared throttling contract through a real Kubernetes ingress controller and is opt-in by design because it needs an existing cluster.
 - `test:e2e:aws-alb` verifies the same contract through AWS Load Balancer Controller and a real ALB. It is intentionally opt-in because it touches cloud infrastructure.
 

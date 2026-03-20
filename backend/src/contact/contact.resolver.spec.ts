@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import type { ConfigType } from '@nestjs/config';
 import type { Request } from 'express';
 import { GqlThrottleStorageService } from '../common/guards/gql-throttle-storage.service';
 import { GqlThrottlerGuard } from '../common/guards/gql-throttler.guard';
+import { mongoConfig, throttleConfig } from '../config';
 import { ContactResolver } from './contact.resolver';
 import { ContactService, type CreateContactResult } from './contact.service';
 
@@ -19,6 +21,22 @@ describe('ContactResolver', () => {
         ContactResolver,
         GqlThrottlerGuard,
         GqlThrottleStorageService,
+        {
+          provide: throttleConfig.KEY,
+          useValue: {
+            driver: 'memory',
+            disabled: false,
+            limit: 30,
+            ttlMs: 60_000,
+          } satisfies ConfigType<typeof throttleConfig>,
+        },
+        {
+          provide: mongoConfig.KEY,
+          useValue: {
+            uri: undefined,
+            dbName: 'wizytowka',
+          } satisfies ConfigType<typeof mongoConfig>,
+        },
         {
           provide: ContactService,
           useValue: contactService,
