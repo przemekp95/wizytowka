@@ -26,15 +26,25 @@ interface PortfolioSectionProps {
   items: PortfolioItem[];
   locale: string;
   translations: Record<string, string>;
+  degradedMessage?: string | null;
 }
 
-export default function PortfolioSection({ items, locale, translations }: PortfolioSectionProps) {
+export default function PortfolioSection({
+  items,
+  locale,
+  translations,
+  degradedMessage,
+}: PortfolioSectionProps) {
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const t = (key: string) =>
     translations[key] ??
     {
       title: locale === 'en' ? 'Portfolio' : 'Moje projekty',
+      noItems:
+        locale === 'en'
+          ? 'No projects found for this filter.'
+          : 'Nie znaleziono projektów dla tego filtru.',
       newTech: locale === 'en' ? 'New Tech' : 'Nowy Tech',
       technologies: locale === 'en' ? 'Technologies' : 'Wykorzystane technologie',
       repository: locale === 'en' ? 'Repository' : 'Repozytorium',
@@ -69,6 +79,8 @@ export default function PortfolioSection({ items, locale, translations }: Portfo
       return itemCategories.includes(activeFilter);
     });
   }, [items, activeFilter]);
+
+  const showDegradedState = Boolean(degradedMessage && items.length === 0);
 
   const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
     if (!category) return null;
@@ -206,16 +218,25 @@ export default function PortfolioSection({ items, locale, translations }: Portfo
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
           >
-            {filteredItems.length === 0 ? (
+            {showDegradedState ? (
+              <motion.p
+                className="col-span-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-100"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                role="status"
+                aria-live="polite"
+              >
+                {degradedMessage}
+              </motion.p>
+            ) : filteredItems.length === 0 ? (
               <motion.p
                 className="col-span-full text-center text-black dark:text-gray-500 py-12"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                {locale === 'en'
-                  ? 'No projects found for this filter.'
-                  : 'Nie znaleziono projektów dla tego filtru.'}
+                {t('noItems')}
               </motion.p>
             ) : (
               filteredItems.map((p, index) => {

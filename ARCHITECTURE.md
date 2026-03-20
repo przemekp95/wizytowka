@@ -99,14 +99,25 @@ src/
 ├── main.ts                     # Application bootstrap
 ├── common/                     # Shared utilities and guards
 ├── contact/                    # Contact form handling
+│   ├── application/            # Use cases + ports
+│   ├── domain/                 # ContactSubmission and domain rules
+│   ├── infrastructure/         # Prisma + SMTP adapters
 │   ├── contact.controller.ts   # REST endpoints
-│   ├── contact.service.ts      # Business logic (Documented)
+│   ├── contact.service.ts      # Application service facade
 │   ├── contact.resolver.ts     # GraphQL resolvers
-│   └── dto/                    # Data transfer objects
+│   └── dto/                    # Transport DTOs
+├── chat/                       # AI assistant behavior
+│   ├── application/            # Chat ports
+│   ├── domain/                 # Conversation model
+│   ├── infrastructure/         # OpenAI/context/session adapters
+│   ├── chat.controller.ts      # REST endpoint
+│   └── chat.service.ts         # Application service facade
 ├── portfolio/                  # Portfolio management
+│   ├── application/            # Use cases + ports
+│   ├── domain/                 # Portfolio aggregate and rules
+│   ├── infrastructure/         # Mongo + S3 adapters
 │   ├── portfolio.controller.ts # API endpoints
-│   ├── portfolio.service.ts    # MongoDB operations (Documented)
-│   └── entities/               # Data models
+│   └── portfolio.service.ts    # Application service facade
 ├── prisma/                     # Database service
 ├── graphql/                    # GraphQL module
 └── config/                     # Configuration modules
@@ -190,6 +201,20 @@ Kubernetes Cluster
 5. Success/error response → Client
 ```
 
+### Chat Message Submission
+
+```
+1. User sends message → Next.js Client
+    ↓   Validation (client-side)
+2. REST POST /api/chat/message → NestJS API
+    ↓   Validation pipe
+3. Chat application service → bounded context orchestration
+    ↓   System prompt/context port + session store port
+4. Completion adapter → OpenAI
+    ↓
+5. Assistant response/session id → Client
+```
+
 ### Portfolio Data Loading
 
 ```
@@ -225,3 +250,16 @@ Kubernetes Cluster
 - **Caching**: Browser cache, CDN cache, Redis cache
 
 This architecture follows clean architecture principles, ensuring maintainability, scalability, and security while providing an excellent developer and user experience.
+
+## Methodology Defaults
+
+- **TDD**: behavior changes should start with the smallest failing test that
+  proves the requirement when practical.
+- **DDD**: backend slices with real business behavior should preserve domain,
+  application, and infrastructure boundaries instead of collapsing everything
+  into controllers and SDK calls. Contact, chat, and portfolio are the current
+  reference bounded contexts in this repo.
+- **BDD**: user-visible backend behavior should be expressed as executable
+  Gherkin scenarios. In this repo the first-class path is
+  `backend/features/**/*.feature` plus TypeScript step definitions. Contact and
+  chat are the current baseline scenarios.

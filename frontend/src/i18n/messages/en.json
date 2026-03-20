@@ -17,13 +17,14 @@
   "portfolio": {
     "title": "Portfolio",
     "noItems": "No items to display.",
+    "unavailable": "Portfolio is temporarily unavailable. Please try again later.",
     "newTech": "New technology",
     "repository": "Repository",
     "technologies": "Technologies"
   },
   "about": {
     "title": "About me",
-    "description": "I am a developer combining law and technology. I build modern web applications in Next.js, Laravel and Symfony, design backends in Node/NestJS using Prisma and SQL databases (MySQL, PostgreSQL) and NoSQL (MongoDB). I create REST API and GraphQL API, deploy projects in CI/CD architecture (Docker, GitHub Actions, Passenger on Cyber_Folks), and also develop Kubernetes-based environments and integrate them with cloud services like Render or Vercel. I use automated tests (Jest, React Testing Library, Cypress, PHPUnit) in frontend and backend projects.",
+    "description": "I am a developer combining law and technology. I build modern web applications in Next.js, Laravel and Symfony, design backends in Node/NestJS using Prisma and SQL databases (MySQL, PostgreSQL) and NoSQL (MongoDB). I create REST API and GraphQL API, deploy projects in CI/CD architecture (Docker, GitHub Actions, Passenger on Cyber_Folks), and also develop Kubernetes-based environments and integrate them with cloud services like Render or Vercel. I use automated tests (Jest, React Testing Library, Playwright, PHPUnit) in frontend and backend projects.",
     "techStack": "Technology stack",
     "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
     "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
@@ -39,7 +40,7 @@
     "namePlaceholder": "Enter your full name",
     "emailPlaceholder": "Enter your email address",
     "messagePlaceholder": "Write your message here...",
-    "maxChars": "Maximum 5000 characters",
+    "maxChars": "Maximum 2000 characters",
     "send": "Send",
     "sending": "Sending...",
     "success": "Message sent ✅",

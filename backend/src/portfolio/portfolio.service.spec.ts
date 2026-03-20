@@ -1,166 +1,270 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import {
+  PORTFOLIO_IMAGE_STORAGE,
+  type PortfolioImageStoragePort,
+} from './application/ports/portfolio-image-storage.port';
+import {
+  PORTFOLIO_REPOSITORY,
+  type PortfolioRepositoryPort,
+} from './application/ports/portfolio-repository.port';
 import { PortfolioService } from './portfolio.service';
-import { AwsService } from '../aws/aws.service';
 
 describe('PortfolioService', () => {
   let service: PortfolioService;
-  let awsService: jest.Mocked<AwsService>;
 
-  const mockPortfolioItems = [
-    {
-      _id: '1',
-      title: 'Test Project 1',
-      title_en: 'Test Project 1 EN',
-      slug: 'test-project-1',
-      href: 'https://example.com/project1',
-      desc: 'Opis projektu testowego',
-      desc_en: 'A test project description',
-      tags: ['React', 'TypeScript'],
-      img: 'https://example.com/image1.jpg',
-      isLogo: false,
-      newTech: true,
-      order: 1,
-      status: 'published' as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      repoUrl: 'https://github.com/user/project1',
-    },
-    {
-      _id: '2',
-      title: 'Test Project 2',
-      title_en: 'Test Project 2 EN',
-      slug: 'test-project-2',
-      href: 'https://example.com/project2',
-      desc: 'Drugi projekt testowy',
-      desc_en: 'Another test project',
-      tags: ['Node.js', 'MongoDB'],
-      img: 'https://example.com/image2.jpg',
-      isLogo: false,
-      newTech: false,
-      order: 2,
-      status: 'published' as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  const repository: jest.Mocked<PortfolioRepositoryPort> = {
+    listPublished: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    deleteById: jest.fn(),
+    getDependencyStatus: jest.fn(),
+  };
+
+  const imageStorage: jest.Mocked<PortfolioImageStoragePort> = {
+    uploadImage: jest.fn(),
+    deleteImage: jest.fn(),
+  };
+
+  const mockPortfolioItem = {
+    _id: 'item-1',
+    title: 'Project One',
+    title_en: 'Project One EN',
+    slug: 'project-one',
+    href: '/portfolio/project-one',
+    desc: 'Testowy opis projektu portfolio.',
+    desc_en: 'English description.',
+    tags: ['NestJS', 'MongoDB'],
+    img: 'https://example.com/image.jpg',
+    isLogo: false,
+    newTech: true,
+    order: 1,
+    status: 'published' as const,
+    createdAt: new Date('2026-03-20T10:00:00.000Z'),
+    updatedAt: new Date('2026-03-20T10:00:00.000Z'),
+    repoUrl: 'https://github.com/user/project-one',
+  };
 
   beforeEach(async () => {
-    const mockAwsService = {
-      uploadImage: jest.fn(),
-      deleteImage: jest.fn(),
-    };
+    jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
+    repository.listPublished.mockResolvedValue([mockPortfolioItem]);
+    repository.findById.mockResolvedValue(mockPortfolioItem);
+    repository.create.mockImplementation(async (item) => item);
+    repository.update.mockImplementation(async (item) => item);
+    repository.deleteById.mockResolvedValue(true);
+    repository.getDependencyStatus.mockResolvedValue({
+      name: 'mongo',
+      ready: true,
+    });
+
+    imageStorage.uploadImage.mockResolvedValue(
+      'https://example.com/uploaded-image.jpg',
+    );
+    imageStorage.deleteImage.mockResolvedValue();
+
+    const moduleRef = await Test.createTestingModule({
       providers: [
         PortfolioService,
         {
-          provide: AwsService,
-          useValue: mockAwsService,
+          provide: PORTFOLIO_REPOSITORY,
+          useValue: repository,
+        },
+        {
+          provide: PORTFOLIO_IMAGE_STORAGE,
+          useValue: imageStorage,
         },
       ],
     }).compile();
 
-    service = module.get<PortfolioService>(PortfolioService);
-    awsService = module.get(AwsService);
+    service = moduleRef.get(PortfolioService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it('lists published items through the repository port', async () => {
+    await expect(service.listPublished()).resolves.toEqual([mockPortfolioItem]);
+    expect(repository.listPublished).toHaveBeenCalledTimes(1);
   });
 
-  describe('listPublished', () => {
-    it('should return published portfolio items', async () => {
-      // For unit tests, we need to directly access the database
-      // Since the service initializes the connection in onModuleInit
-      // we'll create a partial mock that bypasses the connection
-      const mockCollection = {
-        find: jest.fn().mockReturnValue({
-          sort: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue(mockPortfolioItems),
-          }),
-        }),
-      };
+  it('delegates dependency status to the repository port', async () => {
+    await expect(service.getDependencyStatus()).resolves.toEqual({
+      name: 'mongo',
+      ready: true,
+    });
+    expect(repository.getDependencyStatus).toHaveBeenCalledTimes(1);
+  });
 
-      const mockDb = {
-        collection: jest.fn().mockReturnValue(mockCollection),
-      };
-
-      (service as any).db = mockDb;
-
-      const result = await service.listPublished();
-
-      expect(mockDb.collection).toHaveBeenCalledWith('portfolio_items');
-      expect(mockCollection.find).toHaveBeenCalledWith({ status: 'published' });
-      expect(result).toEqual(mockPortfolioItems);
+  it('creates a portfolio item without uploading an image when img is provided', async () => {
+    const result = await service.createPortfolioItem({
+      title: '  Project Two  ',
+      slug: '  project-two  ',
+      href: ' /portfolio/project-two ',
+      desc: '  Drugi testowy opis projektu portfolio.  ',
+      tags: [' React ', ' TypeScript '],
+      img: ' https://example.com/image-2.jpg ',
+      status: 'draft',
     });
 
-    it('should throw error when database is not connected', async () => {
-      (service as any).db = null;
-
-      await expect(service.listPublished()).rejects.toThrow('MongoDB not connected');
-    });
-  });
-
-  describe('createPortfolioItem', () => {
-    it('should create a portfolio item without image upload', async () => {
-      const mockDb = {
-        collection: jest.fn().mockReturnValue({
-          insertOne: jest.fn().mockResolvedValue({ acknowledged: true }),
-        }),
-      };
-
-      (service as any).db = mockDb;
-      awsService.uploadImage.mockResolvedValue('uploaded-image-url');
-
-      const itemData = {
-        title: 'Test Portfolio Item',
-        slug: 'test-portfolio-item',
-        href: '/portfolio/test',
-        desc: 'Test description',
+    expect(imageStorage.uploadImage).not.toHaveBeenCalled();
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Project Two',
+        slug: 'project-two',
+        href: '/portfolio/project-two',
+        desc: 'Drugi testowy opis projektu portfolio.',
         tags: ['React', 'TypeScript'],
-        img: 'existing-image.jpg',
-        status: 'draft' as const,
-      };
+        img: 'https://example.com/image-2.jpg',
+        status: 'draft',
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        slug: 'project-two',
+      }),
+    );
+  });
 
-      const result = await service.createPortfolioItem(itemData);
-
-      expect(result.title).toBe('Test Portfolio Item');
-      expect(result.slug).toBe('test-portfolio-item');
-      expect(result.status).toBe('draft');
-      expect(result.createdAt).toBeDefined();
-      expect(result.updatedAt).toBeDefined();
-    });
-
-    it('should upload image when file is provided', async () => {
-      const mockDb = {
-        collection: jest.fn().mockReturnValue({
-          insertOne: jest.fn().mockResolvedValue({ acknowledged: true }),
-        }),
-      };
-
-      (service as any).db = mockDb;
-      awsService.uploadImage.mockResolvedValue('uploaded-image-url');
-
-      const mockFile = {
-        originalname: 'test.jpg',
-        buffer: Buffer.from('test'),
+  it('uploads an image before creating a portfolio item when a file is provided', async () => {
+    const result = await service.createPortfolioItem(
+      {
+        title: 'Project with file',
+        slug: 'project-with-file',
+        href: '/portfolio/project-with-file',
+        desc: 'Opis projektu z plikiem.',
+        tags: ['NestJS'],
+        img: '',
+        status: 'published',
+      },
+      {
+        originalname: 'portfolio.jpg',
+        buffer: Buffer.from('file'),
         mimetype: 'image/jpeg',
-      };
+      },
+    );
 
-      const itemData = {
-        title: 'Test with Image',
-        slug: 'test-with-image',
-        href: '/portfolio/test-image',
-        desc: 'Test description with image',
-        tags: ['React'],
-        img: 'placeholder.jpg',
-        status: 'published' as const,
-      };
+    expect(imageStorage.uploadImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        originalname: 'portfolio.jpg',
+      }),
+    );
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        img: 'https://example.com/uploaded-image.jpg',
+      }),
+    );
+    expect(result.img).toBe('https://example.com/uploaded-image.jpg');
+  });
 
-      const result = await service.createPortfolioItem(itemData, mockFile as any);
+  it('rolls back an uploaded image when create persistence fails', async () => {
+    repository.create.mockRejectedValue(new Error('Insert failed'));
 
-      expect(awsService.uploadImage).toHaveBeenCalledWith(mockFile, 'portfolio');
-      expect(result.img).toBe('uploaded-image-url');
-    });
+    await expect(
+      service.createPortfolioItem(
+        {
+          title: 'Project with file',
+          slug: 'project-with-file',
+          href: '/portfolio/project-with-file',
+          desc: 'Opis projektu z plikiem.',
+          tags: ['NestJS'],
+          img: '',
+          status: 'published',
+        },
+        {
+          originalname: 'portfolio.jpg',
+          buffer: Buffer.from('file'),
+          mimetype: 'image/jpeg',
+        },
+      ),
+    ).rejects.toThrow('Insert failed');
+
+    expect(imageStorage.deleteImage).toHaveBeenCalledWith(
+      'https://example.com/uploaded-image.jpg',
+    );
+  });
+
+  it('updates an item and deletes the replaced image after success', async () => {
+    repository.update.mockImplementation(async (item) => item);
+
+    const result = await service.updatePortfolioItem(
+      'item-1',
+      { title: ' Updated title ' },
+      {
+        originalname: 'new-image.jpg',
+        buffer: Buffer.from('image'),
+        mimetype: 'image/jpeg',
+      },
+    );
+
+    expect(repository.findById).toHaveBeenCalledWith('item-1');
+    expect(imageStorage.uploadImage).toHaveBeenCalled();
+    expect(repository.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: 'item-1',
+        title: 'Updated title',
+        img: 'https://example.com/uploaded-image.jpg',
+      }),
+    );
+    expect(imageStorage.deleteImage).toHaveBeenCalledWith(
+      'https://example.com/image.jpg',
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        _id: 'item-1',
+        title: 'Updated title',
+      }),
+    );
+  });
+
+  it('rolls back a freshly uploaded image when update persistence fails', async () => {
+    repository.update.mockRejectedValue(new Error('Update failed'));
+
+    await expect(
+      service.updatePortfolioItem(
+        'item-1',
+        { title: 'Updated title' },
+        {
+          originalname: 'new-image.jpg',
+          buffer: Buffer.from('image'),
+          mimetype: 'image/jpeg',
+        },
+      ),
+    ).rejects.toThrow('Update failed');
+
+    expect(imageStorage.deleteImage).toHaveBeenCalledWith(
+      'https://example.com/uploaded-image.jpg',
+    );
+    expect(imageStorage.deleteImage).not.toHaveBeenCalledWith(
+      mockPortfolioItem.img,
+    );
+  });
+
+  it('returns null when updating a missing item', async () => {
+    repository.findById.mockResolvedValue(null);
+
+    await expect(
+      service.updatePortfolioItem('missing-id', { title: 'Updated title' }),
+    ).resolves.toBeNull();
+    expect(repository.update).not.toHaveBeenCalled();
+  });
+
+  it('deletes the record before removing the image from storage', async () => {
+    await expect(service.deletePortfolioItem('item-1')).resolves.toBe(true);
+
+    expect(repository.deleteById).toHaveBeenCalledWith('item-1');
+    expect(imageStorage.deleteImage).toHaveBeenCalledWith(
+      'https://example.com/image.jpg',
+    );
+    expect(repository.deleteById.mock.invocationCallOrder[0]).toBeLessThan(
+      imageStorage.deleteImage.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('returns false when deleting a missing item', async () => {
+    repository.findById.mockResolvedValue(null);
+
+    await expect(service.deletePortfolioItem('missing-id')).resolves.toBe(
+      false,
+    );
+    expect(repository.deleteById).not.toHaveBeenCalled();
+    expect(imageStorage.deleteImage).not.toHaveBeenCalled();
   });
 });

@@ -1,68 +1,43 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Req,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { ContactService } from './contact.service';
-import { ContactDto } from './contact.dto';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { ContactDto } from './contact.dto';
+import { ContactHttpResponseDto } from './contact.openapi.dto';
+import { ContactService } from './contact.service';
 
 @ApiTags('contact')
 @Controller('contact')
 export class ContactController {
-  constructor(private readonly contact: ContactService) {}
+  constructor(private readonly contactService: ContactService) {}
 
   @Post()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(200)
   @ApiOperation({
-    summary: 'Send contact message',
-    description:
-      'Submits a contact form message and reports success only when storage and delivery succeed',
+    summary: 'Submit a public contact message',
   })
-  @ApiBody({
-    type: ContactDto,
-    description: 'Contact form data',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Message processed',
-    schema: {
-      type: 'object',
-      properties: {
-        ok: { type: 'boolean', example: true },
-        error: {
-          type: 'string',
-          example: 'Nie udalo sie dostarczyc wiadomosci.',
-          nullable: true,
-        },
-        messageId: { type: 'string', example: 'abc123@example.com' },
-        savedId: { type: 'string', example: 'uuid-string' },
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid request data',
-  })
-  async send(@Body() dto: ContactDto, @Req() req: Request) {
-    const ip =
-      (req.headers['x-forwarded-for'] as string | undefined)
-        ?.split(',')[0]
-        ?.trim() || req.ip;
-    const requestId = req.requestId;
-
-    const result = await this.contact.createAndNotify({
-      name: dto.name,
-      email: dto.email,
-      message: dto.message,
-      ip,
-      requestId,
+  @ApiBody({ type: ContactDto })
+  @ApiOkResponse({ type: ContactHttpResponseDto })
+  async create(
+    @Body() contactDto: ContactDto,
+    @Req() req: Request,
+  ): Promise<{ ok: boolean; error?: string }> {
+    const result = await this.contactService.createAndNotify({
+      name: contactDto.name,
+      email: contactDto.email,
+      message: contactDto.message,
+      ip: req.ip,
+      requestId: req.requestId,
     });
 
-    return result;
+    if (!result.ok) {
+      return {
+        ok: false,
+        error: result.error,
+      };
+    }
+
+    return {
+      ok: true,
+    };
   }
 }

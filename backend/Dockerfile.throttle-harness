@@ -1,0 +1,28 @@
+FROM node:20-alpine AS build
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY backend/package.json ./backend/package.json
+COPY backend/nest-cli.json ./backend/nest-cli.json
+COPY backend/tsconfig.json ./backend/tsconfig.json
+COPY backend/tsconfig.build.json ./backend/tsconfig.build.json
+COPY backend/prisma ./backend/prisma
+COPY backend/src ./backend/src
+
+RUN pnpm install --filter ./backend... --ignore-scripts --no-frozen-lockfile
+RUN pnpm --filter ./backend... exec prisma generate
+RUN pnpm --filter ./backend... exec nest build
+
+FROM node:20-alpine AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+COPY --from=build /app /app
+
+EXPOSE 4000
+
+CMD ["node", "/app/backend/dist/test-harness/alb-throttle-harness.js"]

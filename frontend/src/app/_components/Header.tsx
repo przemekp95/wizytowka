@@ -1,9 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
+import { buildLocaleRootHref, buildLocalizedHashHref } from '@/lib/routing';
 
 type HeaderTranslations = Record<string, string>;
 
@@ -13,7 +15,10 @@ type HeaderProps = {
 
 export default function Header({ translations }: HeaderProps) {
   const headerRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const homeHref = buildLocaleRootHref(pathname);
+  const sectionHref = (hash: string) => buildLocalizedHashHref(pathname, hash);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -57,25 +62,25 @@ export default function Header({ translations }: HeaderProps) {
   return (
     <header ref={headerRef} className="site-header sticky top-0 z-40">
       <nav className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-        <Link className="brand" href="/">
+        <Link className="brand" href={homeHref}>
           Przemysław Pietrzak
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden sm:flex items-center gap-6 text-sm">
-          <Link className="nav-link" href="/#portfolio">
+          <Link className="nav-link" href={sectionHref('#portfolio')}>
             {t('portfolio')}
           </Link>
-          <Link className="nav-link" href="/#about">
+          <Link className="nav-link" href={sectionHref('#about')}>
             {t('about')}
           </Link>
-          <Link className="nav-link" href="/#skills">
+          <Link className="nav-link" href={sectionHref('#skills')}>
             {t('skills')}
           </Link>
-          <Link className="nav-link" href="/#tech-analysis">
+          <Link className="nav-link" href={sectionHref('#tech-analysis')}>
             {t('techAnalysis')}
           </Link>
-          <Link className="nav-link" href="/#contact">
+          <Link className="nav-link" href={sectionHref('#contact')}>
             {t('contact')}
           </Link>
         </div>
@@ -83,7 +88,7 @@ export default function Header({ translations }: HeaderProps) {
         {/* Desktop Controls */}
         <div className="hidden sm:flex items-center gap-4">
           <LanguageSwitcher />
-          <Link className="nav-btn" href="/#contact">
+          <Link className="nav-btn" href={sectionHref('#contact')}>
             {t('contactMe')}
           </Link>
         </div>
@@ -124,11 +129,11 @@ export default function Header({ translations }: HeaderProps) {
               </motion.div>
 
               {[
-                { href: '/#portfolio', key: 'portfolio' },
-                { href: '/#about', key: 'about' },
-                { href: '/#skills', key: 'skills' },
-                { href: '/#tech-analysis', key: 'techAnalysis' },
-                { href: '/#contact', key: 'contact' },
+                { href: sectionHref('#portfolio'), key: 'portfolio' },
+                { href: sectionHref('#about'), key: 'about' },
+                { href: sectionHref('#skills'), key: 'skills' },
+                { href: sectionHref('#tech-analysis'), key: 'techAnalysis' },
+                { href: sectionHref('#contact'), key: 'contact' },
               ].map((item, index) => (
                 <motion.div
                   key={item.key}
@@ -154,7 +159,7 @@ export default function Header({ translations }: HeaderProps) {
               >
                 <Link
                   className="nav-btn block w-full text-center py-3"
-                  href="/#contact"
+                  href={sectionHref('#contact')}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t('contactMe')}

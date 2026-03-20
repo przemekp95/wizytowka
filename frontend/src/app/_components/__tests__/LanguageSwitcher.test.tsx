@@ -1,20 +1,12 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
-import { ComponentProps } from 'react';
 import LanguageSwitcher from '../LanguageSwitcher';
 
 // Mock next/navigation
-const mockPush = vi.fn();
-const mockReplace = vi.fn();
 let mockPathnameValue = '/';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathnameValue,
-  useRouter: () => ({
-    push: mockPush,
-    replace: mockReplace,
-    prefetch: vi.fn(),
-  }),
 }));
 
 // Mock framer-motion
@@ -134,7 +126,7 @@ describe('LanguageSwitcher', () => {
   describe('Language Switching', () => {
     it('should switch from Polish to English when clicked', () => {
       mockPathnameValue = '/pl/portfolio';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,
@@ -150,7 +142,7 @@ describe('LanguageSwitcher', () => {
 
     it('should switch from English to Polish when clicked', () => {
       mockPathnameValue = '/en/about';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,
@@ -166,7 +158,7 @@ describe('LanguageSwitcher', () => {
 
     it('should switch from root path to Polish when clicked', () => {
       mockPathnameValue = '/contact';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,
@@ -182,7 +174,7 @@ describe('LanguageSwitcher', () => {
 
     it('should add Polish prefix when switching from empty path', () => {
       mockPathnameValue = '/';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,
@@ -193,7 +185,7 @@ describe('LanguageSwitcher', () => {
       const dropdownItem = screen.getByTestId('dropdown-item');
       fireEvent.click(dropdownItem);
 
-      expect(mockWindow.location.href).toBe('/pl/');
+      expect(mockWindow.location.href).toBe('/pl');
     });
   });
 
@@ -248,7 +240,7 @@ describe('LanguageSwitcher', () => {
   describe('Edge Cases', () => {
     it('should handle empty pathname gracefully', () => {
       mockPathnameValue = '';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,
@@ -264,7 +256,7 @@ describe('LanguageSwitcher', () => {
 
     it('should handle complex path with parameters', () => {
       mockPathnameValue = '/en/portfolio?tab=projects';
-      const mockWindow = { location: { href: '' } };
+      const mockWindow = { location: { href: '', hash: '' } };
       Object.defineProperty(window, 'location', {
         value: mockWindow.location,
         writable: true,

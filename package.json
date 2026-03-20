@@ -10,13 +10,13 @@
     "start:prod": "corepack pnpm -F backend run start:prod",
     "lint": "corepack pnpm -r lint",
     "typecheck": "corepack pnpm -r typecheck",
-    "test": "corepack pnpm -F backend test && corepack pnpm -F frontend test",
+    "test": "corepack pnpm -F backend test && corepack pnpm -F backend test:bdd && corepack pnpm -F frontend test",
     "check": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build && echo '✅ Wszystkie sprawdzenia pomyślne!'",
     "test:e2e": "corepack pnpm -F frontend exec playwright test",
-    "test:all": "corepack pnpm -F backend test && corepack pnpm -F frontend test && corepack pnpm -F backend test:e2e && corepack pnpm -F frontend exec playwright test"
+    "test:all": "corepack pnpm -F backend test && corepack pnpm -F backend test:bdd && corepack pnpm -F frontend test && corepack pnpm -F backend test:e2e && corepack pnpm -F frontend exec playwright test"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.7"
+    "baseline-browser-mapping": "^2.10.9"
   },
   "dependencies": {
     "@types/jest": "^30.0.0",
