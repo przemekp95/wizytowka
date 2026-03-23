@@ -5,9 +5,34 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { timingSafeEqual } from 'node:crypto';
 import type { ConfigType } from '@nestjs/config';
 import type { Request } from 'express';
 import { opsConfig } from '../../config';
+
+function isMatchingBearerToken(
+  authorizationHeader: string | undefined,
+  expectedTokens: readonly string[],
+): boolean {
+  const providedToken = authorizationHeader?.startsWith('Bearer ')
+    ? authorizationHeader.slice('Bearer '.length)
+    : undefined;
+
+  if (!providedToken || expectedTokens.length === 0) {
+    return false;
+  }
+
+  return expectedTokens.some((expectedToken) => {
+    const providedBuffer = Buffer.from(providedToken);
+    const expectedBuffer = Buffer.from(expectedToken);
+
+    if (providedBuffer.length !== expectedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(providedBuffer, expectedBuffer);
+  });
+}
 
 @Injectable()
 export class OpsTokenGuard implements CanActivate {
@@ -18,12 +43,9 @@ export class OpsTokenGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest<Request>();
-    const expected = `Bearer ${this.opsConfiguration.adminToken ?? ''}`;
+    const expectedTokens = this.opsConfiguration.adminTokens ?? [];
 
-    if (
-      !this.opsConfiguration.adminToken ||
-      req.headers.authorization !== expected
-    ) {
+    if (!isMatchingBearerToken(req.headers.authorization, expectedTokens)) {
       throw new UnauthorizedException();
     }
 

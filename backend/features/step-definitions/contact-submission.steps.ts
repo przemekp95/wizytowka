@@ -7,19 +7,15 @@ import {
   When,
   setDefaultTimeout,
 } from '@cucumber/cucumber';
-import {
-  INestApplication,
-  Module,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { createValidationPipe } from '../../src/app.bootstrap';
-import {
-  CONTACT_MESSAGE_REPOSITORY,
-} from '../../src/contact/application/ports/contact-message-repository.port';
-import {
-  CONTACT_NOTIFICATION_PORT,
-} from '../../src/contact/application/ports/contact-notification.port';
+import { GqlThrottleStorageService } from '../../src/common/guards/gql-throttle-storage.service';
+import { ContactHttpThrottlerGuard } from '../../src/common/guards/public-http-throttler.guard';
+import { appConfig, mongoConfig, throttleConfig } from '../../src/config';
+import { CONTACT_MESSAGE_REPOSITORY } from '../../src/contact/application/ports/contact-message-repository.port';
+import { CONTACT_NOTIFICATION_PORT } from '../../src/contact/application/ports/contact-notification.port';
 import { ContactController } from '../../src/contact/contact.controller';
 import { ContactService } from '../../src/contact/contact.service';
 import { BehaviorWorld } from './behavior.world';
@@ -28,6 +24,8 @@ import { BehaviorWorld } from './behavior.world';
   controllers: [ContactController],
   providers: [
     ContactService,
+    GqlThrottleStorageService,
+    ContactHttpThrottlerGuard,
     {
       provide: CONTACT_MESSAGE_REPOSITORY,
       useValue: {},
@@ -35,6 +33,32 @@ import { BehaviorWorld } from './behavior.world';
     {
       provide: CONTACT_NOTIFICATION_PORT,
       useValue: {},
+    },
+    {
+      provide: appConfig.KEY,
+      useValue: {
+        internalProxySharedSecret: undefined,
+      },
+    },
+    {
+      provide: throttleConfig.KEY,
+      useValue: {
+        driver: 'memory',
+        disabled: false,
+        limit: 30,
+        ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
+      },
+    },
+    {
+      provide: mongoConfig.KEY,
+      useValue: {
+        uri: undefined,
+        dbName: 'wizytowka',
+      },
     },
   ],
 })
@@ -83,13 +107,14 @@ Given('contact notification fails', function (this: BehaviorWorld) {
 When(
   'I submit a valid public contact message',
   async function (this: BehaviorWorld) {
-    const response = await request(this.app!.getHttpServer())
-      .post('/api/contact')
-      .send({
-        name: 'Jan Testowy',
-        email: 'jan@example.com',
-        message: 'To jest poprawna wiadomosc testowa.',
-      });
+    const httpServer = this.app!.getHttpServer() as Parameters<
+      typeof request
+    >[0];
+    const response = await request(httpServer).post('/api/contact').send({
+      name: 'Jan Testowy',
+      email: 'jan@example.com',
+      message: 'To jest poprawna wiadomosc testowa.',
+    });
 
     this.response = {
       status: response.status,
@@ -101,13 +126,14 @@ When(
 When(
   'I submit an invalid public contact message',
   async function (this: BehaviorWorld) {
-    const response = await request(this.app!.getHttpServer())
-      .post('/api/contact')
-      .send({
-        name: 'J',
-        email: 'wrong-email',
-        message: 'short',
-      });
+    const httpServer = this.app!.getHttpServer() as Parameters<
+      typeof request
+    >[0];
+    const response = await request(httpServer).post('/api/contact').send({
+      name: 'J',
+      email: 'wrong-email',
+      message: 'short',
+    });
 
     this.response = {
       status: response.status,

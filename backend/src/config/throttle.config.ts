@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { readEnvBoolean, readEnvString } from './config.helpers';
+import { readEnvBoolean, readEnvNumber, readEnvString } from './config.helpers';
 
 export type ThrottleDriver = 'memory' | 'mongo';
 
@@ -22,4 +22,11 @@ export default registerAs('throttle', () => ({
   disabled: readEnvBoolean(process.env.THROTTLE_DISABLE, false),
   limit: 30,
   ttlMs: 60_000,
+  publicHttpLimit: readEnvNumber(process.env.PUBLIC_HTTP_THROTTLE_LIMIT, 30),
+  publicHttpTtlMs: readEnvNumber(
+    process.env.PUBLIC_HTTP_THROTTLE_TTL_MS,
+    60_000,
+  ),
+  chatHttpLimit: readEnvNumber(process.env.CHAT_HTTP_THROTTLE_LIMIT, 20),
+  chatHttpTtlMs: readEnvNumber(process.env.CHAT_HTTP_THROTTLE_TTL_MS, 60_000),
 }));

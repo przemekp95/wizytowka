@@ -45,6 +45,29 @@ type UploadedImageFile = {
   mimetype: string;
 };
 
+const PORTFOLIO_UPLOAD_FILE_SIZE_LIMIT = 5 * 1024 * 1024;
+const ALLOWED_PORTFOLIO_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
+function validatePortfolioImageFile(
+  _req: unknown,
+  file: UploadedImageFile,
+  callback: (error: Error | null, acceptFile: boolean) => void,
+): void {
+  if (!ALLOWED_PORTFOLIO_IMAGE_MIME_TYPES.has(file.mimetype)) {
+    callback(
+      new BadRequestException('Only JPEG, PNG, and WebP images are allowed.'),
+      false,
+    );
+    return;
+  }
+
+  callback(null, true);
+}
+
 @ApiTags('portfolio')
 @ApiExtraModels(
   CreatePortfolioItemDto,
@@ -100,6 +123,11 @@ export class PortfolioApiController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: memoryStorage(),
+      limits: {
+        fileSize: PORTFOLIO_UPLOAD_FILE_SIZE_LIMIT,
+        files: 1,
+      },
+      fileFilter: validatePortfolioImageFile,
     }),
   )
   async create(
@@ -174,6 +202,11 @@ export class PortfolioApiController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: memoryStorage(),
+      limits: {
+        fileSize: PORTFOLIO_UPLOAD_FILE_SIZE_LIMIT,
+        files: 1,
+      },
+      fileFilter: validatePortfolioImageFile,
     }),
   )
   async update(

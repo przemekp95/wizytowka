@@ -133,9 +133,11 @@ describe('GraphQL docs (e2e)', () => {
 describe('GraphQL docs in production (e2e)', () => {
   let app: INestApplication;
   const originalNodeEnv = process.env.NODE_ENV;
+  const originalGraphqlSchemaDocs = process.env.ENABLE_GRAPHQL_SCHEMA_DOCS;
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'production';
+    delete process.env.ENABLE_GRAPHQL_SCHEMA_DOCS;
     app = await createGraphqlDocsApp();
   });
 
@@ -144,19 +146,21 @@ describe('GraphQL docs in production (e2e)', () => {
 
     if (originalNodeEnv === undefined) {
       delete process.env.NODE_ENV;
-      return;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
     }
 
-    process.env.NODE_ENV = originalNodeEnv;
+    if (originalGraphqlSchemaDocs === undefined) {
+      delete process.env.ENABLE_GRAPHQL_SCHEMA_DOCS;
+    } else {
+      process.env.ENABLE_GRAPHQL_SCHEMA_DOCS = originalGraphqlSchemaDocs;
+    }
   });
 
-  it('keeps the SDL available at /api/graphql/schema without exposing the Apollo landing page', async () => {
+  it('hides the SDL endpoint by default without exposing the Apollo landing page', async () => {
     const schemaResponse = await request(app.getHttpServer())
       .get('/api/graphql/schema')
-      .expect(200);
-
-    expect(schemaResponse.text).toContain('type Query');
-    expect(schemaResponse.text).toContain('type Mutation');
+      .expect(404);
 
     const landingResponse = await request(app.getHttpServer())
       .get('/graphql')

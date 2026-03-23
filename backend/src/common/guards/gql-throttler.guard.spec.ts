@@ -4,7 +4,7 @@ import { GqlThrottlerGuard } from './gql-throttler.guard';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { GraphQLError } from 'graphql';
 import { GqlThrottleStorageService } from './gql-throttle-storage.service';
-import { mongoConfig, throttleConfig } from '../../config';
+import { appConfig, mongoConfig, throttleConfig } from '../../config';
 
 describe('GqlThrottlerGuard', () => {
   let guard: GqlThrottlerGuard;
@@ -16,6 +16,10 @@ describe('GqlThrottlerGuard', () => {
         disabled: false,
         limit: 30,
         ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
       {
         uri: undefined,
@@ -30,7 +34,24 @@ describe('GqlThrottlerGuard', () => {
         disabled: false,
         limit: 30,
         ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
+      {
+        nodeEnv: 'test',
+        port: 4000,
+        frontendUrl: undefined,
+        corsOrigins: [],
+        trustProxy: false,
+        skipPrisma: true,
+        graphqlPlayground: true,
+        graphqlIntrospection: true,
+        apiDocsEnabled: true,
+        graphqlSchemaDocsEnabled: true,
+        internalProxySharedSecret: undefined,
+      } satisfies ConfigType<typeof appConfig>,
     );
   });
 

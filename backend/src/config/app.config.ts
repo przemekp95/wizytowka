@@ -18,5 +18,14 @@ export default registerAs('app', () => {
     skipPrisma: readEnvBoolean(process.env.SKIP_PRISMA, nodeEnv === 'test'),
     graphqlPlayground: nodeEnv !== 'production',
     graphqlIntrospection: nodeEnv !== 'production',
+    apiDocsEnabled:
+      nodeEnv !== 'production' ||
+      readEnvBoolean(process.env.ENABLE_API_DOCS, false),
+    graphqlSchemaDocsEnabled:
+      nodeEnv !== 'production' ||
+      readEnvBoolean(process.env.ENABLE_GRAPHQL_SCHEMA_DOCS, false),
+    internalProxySharedSecret: readEnvString(
+      process.env.INTERNAL_PROXY_SHARED_SECRET,
+    ),
   };
 });

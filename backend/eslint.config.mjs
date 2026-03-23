@@ -20,7 +20,9 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['features/step-definitions/*.ts'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

@@ -4,5 +4,11 @@
     "rootDir": ".",
     "types": ["node", "express", "jest"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "src/types/**/*.d.ts"]
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "test/**/*.ts",
+    "features/**/*.ts",
+    "src/types/**/*.d.ts"
+  ]
 }

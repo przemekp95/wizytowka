@@ -34,6 +34,9 @@ describe('Domain config', () => {
       skipPrisma: false,
       graphqlPlayground: false,
       graphqlIntrospection: false,
+      apiDocsEnabled: false,
+      graphqlSchemaDocsEnabled: false,
+      internalProxySharedSecret: undefined,
     });
   });
 
@@ -60,6 +63,7 @@ describe('Domain config', () => {
     });
     expect(opsConfig()).toEqual({
       adminToken: 'ops-secret',
+      adminTokens: ['ops-secret'],
     });
   });
 
@@ -72,6 +76,10 @@ describe('Domain config', () => {
       disabled: false,
       limit: 30,
       ttlMs: 60_000,
+      publicHttpLimit: 30,
+      publicHttpTtlMs: 60_000,
+      chatHttpLimit: 20,
+      chatHttpTtlMs: 60_000,
     });
 
     process.env.NODE_ENV = 'production';
@@ -80,6 +88,10 @@ describe('Domain config', () => {
       disabled: false,
       limit: 30,
       ttlMs: 60_000,
+      publicHttpLimit: 30,
+      publicHttpTtlMs: 60_000,
+      chatHttpLimit: 20,
+      chatHttpTtlMs: 60_000,
     });
   });
 
@@ -87,6 +99,8 @@ describe('Domain config', () => {
     delete process.env.OPENAI_API_KEY;
     delete process.env.LOG_LEVEL;
     delete process.env.MONGODB_URI;
+    delete process.env.MONGODB_URL;
+    delete process.env.MONGO_URL;
     delete process.env.MONGODB_DB;
 
     expect(chatConfig()).toEqual({
@@ -103,6 +117,54 @@ describe('Domain config', () => {
     expect(mongoConfig()).toEqual({
       uri: undefined,
       dbName: 'wizytowka',
+    });
+  });
+
+  it('enables production docs only when explicitly configured', () => {
+    process.env.NODE_ENV = 'production';
+    delete process.env.SKIP_PRISMA;
+    process.env.ENABLE_API_DOCS = 'true';
+    process.env.ENABLE_GRAPHQL_SCHEMA_DOCS = 'true';
+    process.env.INTERNAL_PROXY_SHARED_SECRET = 'proxy-secret';
+
+    expect(appConfig()).toEqual({
+      nodeEnv: 'production',
+      port: 3000,
+      frontendUrl: undefined,
+      corsOrigins: [],
+      trustProxy: false,
+      skipPrisma: false,
+      graphqlPlayground: false,
+      graphqlIntrospection: false,
+      apiDocsEnabled: true,
+      graphqlSchemaDocsEnabled: true,
+      internalProxySharedSecret: 'proxy-secret',
+    });
+  });
+
+  it('accepts Mongo URI aliases and derives the database name from the URI', () => {
+    delete process.env.MONGODB_URI;
+    process.env.MONGODB_URL =
+      'mongodb+srv://user:secret@cluster.example.net/atlas-db?retryWrites=true&w=majority';
+    delete process.env.MONGO_URL;
+    delete process.env.MONGODB_DB;
+
+    expect(mongoConfig()).toEqual({
+      uri: 'mongodb+srv://user:secret@cluster.example.net/atlas-db?retryWrites=true&w=majority',
+      dbName: 'atlas-db',
+    });
+  });
+
+  it('prefers an explicit Mongo database name over the URI path', () => {
+    delete process.env.MONGODB_URI;
+    delete process.env.MONGODB_URL;
+    process.env.MONGO_URL =
+      'mongodb+srv://user:secret@cluster.example.net/atlas-db?retryWrites=true&w=majority';
+    process.env.MONGODB_DB = 'override-db';
+
+    expect(mongoConfig()).toEqual({
+      uri: 'mongodb+srv://user:secret@cluster.example.net/atlas-db?retryWrites=true&w=majority',
+      dbName: 'override-db',
     });
   });
 });

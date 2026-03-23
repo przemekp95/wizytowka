@@ -75,6 +75,29 @@ This repository contains:
    corepack pnpm -F backend exec prisma generate --schema prisma/schema.prisma
    ```
 
+### Portfolio Data Workflow
+
+Portfolio items for MongoDB are now tracked in
+[`backend/scripts/portfolio.data.json`](backend/scripts/portfolio.data.json).
+Use the backend scripts to sync that file with your local or remote MongoDB target selected by
+`MONGODB_URI` and `MONGODB_DB`. The scripts also accept `MONGODB_URL` or
+`MONGO_URL`, and they fall back to the database name embedded in the URI when
+`MONGODB_DB` is omitted.
+
+```bash
+# Pull current MongoDB portfolio data into the tracked JSON file
+corepack pnpm -F backend portfolio:pull
+
+# Edit backend/scripts/portfolio.data.json locally, then push changes back
+corepack pnpm -F backend portfolio:push
+
+# Optional: also delete remote portfolio entries missing from the file
+corepack pnpm -F backend portfolio:push:prune
+
+# Reset a local MongoDB instance from the tracked file
+corepack pnpm -F backend portfolio:seed
+```
+
 ### Running the Application
 
 **Development Mode:**
@@ -103,7 +126,8 @@ kubectl apply -f k8s/
 - **Backend API**: http://localhost:4000/api
 - **GraphQL Endpoint**: http://localhost:4000/graphql
 - **GraphQL Sandbox**: http://localhost:4000/graphql (`NODE_ENV != production`)
-- **Swagger Docs (REST only)**: http://localhost:4000/api/docs
+- **Swagger Docs (REST only)**: http://localhost:4000/api/docs (`NODE_ENV != production` or `ENABLE_API_DOCS=true`)
+- **GraphQL SDL Docs**: http://localhost:4000/api/graphql/schema (`NODE_ENV != production` or `ENABLE_GRAPHQL_SCHEMA_DOCS=true`)
 - **Liveness Check**: http://localhost:4000/api/health/live
 - **Readiness Check**: http://localhost:4000/api/health/ready
 
@@ -111,27 +135,34 @@ kubectl apply -f k8s/
 
 ### Backend (`backend/.env`)
 
-| Variable                | Description                                                   | Example                                       |
-| ----------------------- | ------------------------------------------------------------- | --------------------------------------------- |
-| `NODE_ENV`              | Environment mode                                              | `development`                                 |
-| `PORT`                  | Backend port                                                  | `4000`                                        |
-| `FRONTEND_URL`          | Primary frontend origin                                       | `http://localhost:3000`                       |
-| `CORS_ORIGINS`          | Additional allowed origins                                    | `http://localhost:3000,http://localhost:3001` |
-| `TRUST_PROXY`           | Trust reverse proxy for `req.ip`                              | `false`                                       |
-| `THROTTLE_STORAGE`      | Shared throttle storage driver (`mongo` or explicit `memory`) | `mongo`                                       |
-| `MONGODB_URI`           | MongoDB connection string                                     | `mongodb://localhost:27017/wizytowka`         |
-| `MONGODB_DB`            | MongoDB database name                                         | `wizytowka`                                   |
-| `SMTP_HOST`             | SMTP server host                                              | `localhost`                                   |
-| `SMTP_PORT`             | SMTP port                                                     | `1025`                                        |
-| `SMTP_SECURE`           | SMTP TLS flag                                                 | `false`                                       |
-| `SMTP_FROM`             | Sender address                                                | `portfolio@example.com`                       |
-| `SMTP_TO`               | Recipient address                                             | `owner@example.com`                           |
-| `ADMIN_TOKEN`           | Admin authentication token                                    | `your-secret-token`                           |
-| `OPENAI_API_KEY`        | Optional chat integration key                                 | `sk-...`                                      |
-| `AWS_REGION`            | AWS region                                                    | `us-east-1`                                   |
-| `AWS_ACCESS_KEY_ID`     | AWS access key                                                | `AKIA...`                                     |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key                                                | `your-secret`                                 |
-| `AWS_S3_BUCKET_NAME`    | S3 bucket name                                                | `your-bucket`                                 |
+| Variable                | Description                                                                 | Example                                       |
+| ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| `NODE_ENV`              | Environment mode                                                            | `development`                                 |
+| `PORT`                  | Backend port                                                                | `4000`                                        |
+| `FRONTEND_URL`          | Primary frontend origin                                                     | `http://localhost:3000`                       |
+| `CORS_ORIGINS`          | Additional allowed origins                                                  | `http://localhost:3000,http://localhost:3001` |
+| `TRUST_PROXY`           | Trust reverse proxy for `req.ip`                                            | `false`                                       |
+| `THROTTLE_STORAGE`      | Shared throttle storage driver (`mongo` or explicit `memory`)               | `mongo`                                       |
+| `ENABLE_API_DOCS`       | Keep REST Swagger docs enabled in production                                | `false`                                       |
+| `ENABLE_GRAPHQL_SCHEMA_DOCS` | Keep `/api/graphql/schema` enabled in production                       | `false`                                       |
+| `PUBLIC_HTTP_THROTTLE_LIMIT` | Shared per-IP limit for public HTTP contact submissions                 | `30`                                          |
+| `PUBLIC_HTTP_THROTTLE_TTL_MS` | Window for the public HTTP contact limit                              | `60000`                                       |
+| `CHAT_HTTP_THROTTLE_LIMIT` | Per-IP limit for the public chat HTTP endpoint                            | `20`                                          |
+| `CHAT_HTTP_THROTTLE_TTL_MS` | Window for the public chat HTTP limit                                   | `60000`                                       |
+| `INTERNAL_PROXY_SHARED_SECRET` | Shared HMAC secret for signed client IP forwarding from the frontend proxy | `change-me`                              |
+| `MONGODB_URI`           | Preferred MongoDB connection string (`MONGODB_URL` / `MONGO_URL` also work) | `mongodb://localhost:27017/wizytowka`         |
+| `MONGODB_DB`            | MongoDB database name (falls back to the database in the URI)               | `wizytowka`                                   |
+| `SMTP_HOST`             | SMTP server host                                                            | `localhost`                                   |
+| `SMTP_PORT`             | SMTP port                                                                   | `1025`                                        |
+| `SMTP_SECURE`           | SMTP TLS flag                                                               | `false`                                       |
+| `SMTP_FROM`             | Sender address                                                              | `portfolio@example.com`                       |
+| `SMTP_TO`               | Recipient address                                                           | `owner@example.com`                           |
+| `ADMIN_TOKEN`           | Admin bearer token, or a comma-separated token set for zero-downtime rotation | `current-token,next-token`                  |
+| `OPENAI_API_KEY`        | Optional chat integration key                                               | `sk-...`                                      |
+| `AWS_REGION`            | AWS region                                                                  | `us-east-1`                                   |
+| `AWS_ACCESS_KEY_ID`     | AWS access key                                                              | `AKIA...`                                     |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key                                                              | `your-secret`                                 |
+| `AWS_S3_BUCKET_NAME`    | S3 bucket name                                                              | `your-bucket`                                 |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -139,6 +170,7 @@ kubectl apply -f k8s/
 | -------------------------------------- | ---------------------------------------------------------- | ------------------------------- |
 | `BACKEND_GRAPHQL_URL`                  | Backend GraphQL endpoint for server route handlers/codegen | `http://localhost:4000/graphql` |
 | `BACKEND_API_URL`                      | Backend origin for server-side REST fetches and proxies    | `http://localhost:4000`         |
+| `INTERNAL_PROXY_SHARED_SECRET`         | Same shared secret as the backend for signed client IP forwarding | `change-me`               |
 | `SITE_URL`                             | Public site URL for sitemap and metadata                   | `http://localhost:3000`         |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID`        | Optional Google Analytics GA4 ID                           | `G-XXXXXXXXXX`                  |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional Search Console verification token                 | `token`                         |
@@ -197,6 +229,12 @@ corepack pnpm -F backend exec prisma migrate dev
 corepack pnpm -F backend exec prisma db push
 corepack pnpm -F backend exec prisma generate
 corepack pnpm -F backend exec prisma studio
+
+# Portfolio data sync
+corepack pnpm -F backend portfolio:pull
+corepack pnpm -F backend portfolio:push
+corepack pnpm -F backend portfolio:push:prune
+corepack pnpm -F backend portfolio:seed
 ```
 
 ### Frontend Scripts
@@ -243,22 +281,22 @@ corepack pnpm check        # Run lint + typecheck + tests + build
 
 ### REST API Endpoints
 
-| Method | Endpoint                | Description                               |
-| ------ | ----------------------- | ----------------------------------------- |
-| GET    | `/api`                  | Basic hello endpoint                      |
-| GET    | `/api/health`           | Process health snapshot                   |
-| GET    | `/api/health/live`      | Process liveness check                    |
-| GET    | `/api/health/ready`     | Dependency readiness check                |
-| GET    | `/api/portfolio`        | Get portfolio items                       |
+| Method | Endpoint                | Description                                |
+| ------ | ----------------------- | ------------------------------------------ |
+| GET    | `/api`                  | Basic hello endpoint                       |
+| GET    | `/api/health`           | Process health snapshot                    |
+| GET    | `/api/health/live`      | Process liveness check                     |
+| GET    | `/api/health/ready`     | Dependency readiness check                 |
+| GET    | `/api/portfolio`        | Get portfolio items                        |
 | POST   | `/api/portfolio`        | Create portfolio item (admin bearer token) |
 | PATCH  | `/api/portfolio/:id`    | Update portfolio item (admin bearer token) |
 | DELETE | `/api/portfolio/:id`    | Delete portfolio item (admin bearer token) |
-| POST   | `/api/contact`          | Public contact submission                 |
-| POST   | `/api/chat/message`     | Chat message endpoint                     |
-| GET    | `/api/contact/messages` | Get contact messages (admin bearer token) |
-| GET    | `/api/metrics`          | Prometheus metrics (admin bearer token)   |
-| GET    | `/api/links`            | List external links                       |
-| GET    | `/api/links/r/:slug`    | Redirect to external link                 |
+| POST   | `/api/contact`          | Public contact submission                  |
+| POST   | `/api/chat/message`     | Chat message endpoint                      |
+| GET    | `/api/contact/messages` | Get contact messages (admin bearer token)  |
+| GET    | `/api/metrics`          | Prometheus metrics (admin bearer token)    |
+| GET    | `/api/links`            | List external links                        |
+| GET    | `/api/links/r/:slug`    | Redirect to external link                  |
 
 ### GraphQL Schema
 
@@ -270,7 +308,7 @@ The GraphQL API is documented through its schema and GraphQL-native tooling, not
 - Build artifact snapshot: [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql)
 - Swagger at `/api/docs` intentionally documents REST only
 
-In `NODE_ENV=production`, Apollo Sandbox and GraphQL introspection stay disabled. Use `/api/graphql/schema` as the production-safe runtime documentation endpoint.
+In `NODE_ENV=production`, Apollo Sandbox and GraphQL introspection stay disabled. `/api/docs` and `/api/graphql/schema` are also hidden by default unless you explicitly set `ENABLE_API_DOCS=true` or `ENABLE_GRAPHQL_SCHEMA_DOCS=true`. Use [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql) as the default offline schema snapshot.
 
 Current public operations:
 
@@ -293,8 +331,12 @@ Example introspection query:
 ```graphql
 query GraphqlDocs {
   __schema {
-    queryType { name }
-    mutationType { name }
+    queryType {
+      name
+    }
+    mutationType {
+      name
+    }
     types {
       name
       description
@@ -349,12 +391,15 @@ corepack pnpm -F backend test:e2e:aws-alb
 ## Operational Notes
 
 - Frontend browser requests use same-origin `/api/contact` and `/api/chat` route handlers; the browser no longer talks to backend absolute URLs directly.
+- Frontend same-origin `/api/contact` and `/api/chat` route handlers can forward the real client IP with an HMAC signature when `INTERNAL_PROXY_SHARED_SECRET` is set to the same value on both frontend and backend.
 - `/api/health/ready` returns `200` only when Prisma and MongoDB are healthy; otherwise it returns `503` with dependency details.
 - `/api/contact/messages` and `/api/metrics` require `Authorization: Bearer ${ADMIN_TOKEN}`.
 - `POST /api/portfolio`, `PATCH /api/portfolio/:id`, and `DELETE /api/portfolio/:id` also require `Authorization: Bearer ${ADMIN_TOKEN}`.
+- Public `POST /api/contact`, GraphQL `sendContact`, and `POST /api/chat/message` are rate-limited per tracker using the shared throttle storage.
 - `/api/chat/message` is always mounted; when `OPENAI_API_KEY` is missing it returns `503` with `{ error, code: "CHAT_UNAVAILABLE" }`.
+- Portfolio image uploads only accept `image/jpeg`, `image/png`, and `image/webp` up to `5 MiB`.
 - GraphQL contact throttling uses shared Mongo-backed storage by default; use `THROTTLE_STORAGE=memory` only for isolated local/test scenarios.
-- GraphQL schema documentation lives at `/api/graphql/schema` plus `backend/schema.gql`; OpenAPI remains REST-only by design.
+- GraphQL schema documentation lives in [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql); the runtime `/api/graphql/schema` endpoint and `/api/docs` stay disabled by default in production.
 - `test:e2e:k8s-ingress` verifies the same shared throttling contract through a real Kubernetes ingress controller and is opt-in by design because it needs an existing cluster.
 - `test:e2e:aws-alb` verifies the same contract through AWS Load Balancer Controller and a real ALB. It is intentionally opt-in because it touches cloud infrastructure.
 

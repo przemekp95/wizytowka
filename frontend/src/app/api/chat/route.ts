@@ -1,8 +1,4 @@
-const DEFAULT_BACKEND_API_URL = 'http://localhost:4000';
-
-function resolveBackendApiUrl(): string {
-  return (process.env.BACKEND_API_URL ?? DEFAULT_BACKEND_API_URL).replace(/\/+$/, '');
-}
+import { createBackendProxyHeaders, resolveBackendApiUrl } from '../_lib/backend-proxy';
 
 export async function POST(request: Request): Promise<Response> {
   const body = await request.text();
@@ -10,10 +6,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const backendResponse = await fetch(`${resolveBackendApiUrl()}/api/chat/message`, {
       method: 'POST',
-      headers: {
-        'content-type': request.headers.get('content-type') ?? 'application/json',
-        accept: request.headers.get('accept') ?? 'application/json',
-      },
+      headers: createBackendProxyHeaders(request),
       body,
       cache: 'no-store',
     });
