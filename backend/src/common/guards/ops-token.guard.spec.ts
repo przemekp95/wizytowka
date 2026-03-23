@@ -6,6 +6,7 @@ import { OpsTokenGuard } from './ops-token.guard';
 describe('OpsTokenGuard', () => {
   const opsConfiguration: ConfigType<typeof opsConfig> = {
     adminToken: 'secret-token',
+    adminTokens: ['secret-token', 'rotating-token'],
   };
   const guard = new OpsTokenGuard(opsConfiguration);
 
@@ -15,6 +16,20 @@ describe('OpsTokenGuard', () => {
         getRequest: () => ({
           headers: {
             authorization: 'Bearer secret-token',
+          },
+        }),
+      }),
+    } as unknown as ExecutionContext;
+
+    expect(guard.canActivate(context)).toBe(true);
+  });
+
+  it('accepts rotated bearer tokens from the configured allowlist', () => {
+    const context = {
+      switchToHttp: () => ({
+        getRequest: () => ({
+          headers: {
+            authorization: 'Bearer rotating-token',
           },
         }),
       }),

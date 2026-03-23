@@ -139,12 +139,14 @@ export class MongoPortfolioRepository
     const mongoUri = this.mongoConfiguration.uri;
     if (!mongoUri) {
       this.connected = false;
-      this.lastError = 'MONGODB_URI is not configured';
+      this.lastError = 'MongoDB connection string is not configured';
       throw new Error(this.lastError);
     }
 
     this.logger.log('Starting MongoDB connection...');
-    this.logger.log(`MONGODB_URI: ${mongoUri ? 'SET' : 'NOT SET'}`);
+    this.logger.log(
+      `MongoDB connection string: ${mongoUri ? 'SET' : 'NOT SET'}`,
+    );
     this.logger.log(`MONGODB_DB: ${this.mongoConfiguration.dbName}`);
 
     let nextClient: MongoClient | null = null;

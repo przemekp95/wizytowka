@@ -11,27 +11,28 @@ import { Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { createValidationPipe } from '../../src/app.bootstrap';
-import {
-  CHAT_COMPLETION_PORT,
-} from '../../src/chat/application/ports/chat-completion.port';
-import {
-  CHAT_CONTEXT_PORT,
-} from '../../src/chat/application/ports/chat-context.port';
-import {
-  CHAT_SESSION_ID_PORT,
-} from '../../src/chat/application/ports/chat-session-id.port';
-import {
-  CHAT_SESSION_STORE_PORT,
-} from '../../src/chat/application/ports/chat-session-store.port';
+import { GqlThrottleStorageService } from '../../src/common/guards/gql-throttle-storage.service';
+import { ChatHttpThrottlerGuard } from '../../src/common/guards/public-http-throttler.guard';
+import { CHAT_COMPLETION_PORT } from '../../src/chat/application/ports/chat-completion.port';
+import { CHAT_CONTEXT_PORT } from '../../src/chat/application/ports/chat-context.port';
+import { CHAT_SESSION_ID_PORT } from '../../src/chat/application/ports/chat-session-id.port';
+import { CHAT_SESSION_STORE_PORT } from '../../src/chat/application/ports/chat-session-store.port';
 import { ChatController } from '../../src/chat/chat.controller';
 import { ChatService } from '../../src/chat/chat.service';
-import { chatConfig } from '../../src/config';
+import {
+  appConfig,
+  chatConfig,
+  mongoConfig,
+  throttleConfig,
+} from '../../src/config';
 import { BehaviorWorld } from './behavior.world';
 
 @Module({
   controllers: [ChatController],
   providers: [
     ChatService,
+    GqlThrottleStorageService,
+    ChatHttpThrottlerGuard,
     {
       provide: CHAT_COMPLETION_PORT,
       useValue: {},
@@ -51,6 +52,32 @@ import { BehaviorWorld } from './behavior.world';
     {
       provide: chatConfig.KEY,
       useValue: {},
+    },
+    {
+      provide: appConfig.KEY,
+      useValue: {
+        internalProxySharedSecret: undefined,
+      },
+    },
+    {
+      provide: throttleConfig.KEY,
+      useValue: {
+        driver: 'memory',
+        disabled: false,
+        limit: 30,
+        ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
+      },
+    },
+    {
+      provide: mongoConfig.KEY,
+      useValue: {
+        uri: undefined,
+        dbName: 'wizytowka',
+      },
     },
   ],
 })
@@ -105,11 +132,10 @@ Given('chat completion succeeds', function () {
 });
 
 When('I submit a valid chat message', async function (this: BehaviorWorld) {
-  const response = await request(this.app!.getHttpServer())
-    .post('/api/chat/message')
-    .send({
-      message: 'Opowiedz o portfolio',
-    });
+  const httpServer = this.app!.getHttpServer() as Parameters<typeof request>[0];
+  const response = await request(httpServer).post('/api/chat/message').send({
+    message: 'Opowiedz o portfolio',
+  });
 
   this.response = {
     status: response.status,
@@ -118,13 +144,12 @@ When('I submit a valid chat message', async function (this: BehaviorWorld) {
 });
 
 When('I submit an invalid chat message', async function (this: BehaviorWorld) {
-  const response = await request(this.app!.getHttpServer())
-    .post('/api/chat/message')
-    .send({
-      message: '',
-      sessionId:
-        'too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long',
-    });
+  const httpServer = this.app!.getHttpServer() as Parameters<typeof request>[0];
+  const response = await request(httpServer).post('/api/chat/message').send({
+    message: '',
+    sessionId:
+      'too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long',
+  });
 
   this.response = {
     status: response.status,

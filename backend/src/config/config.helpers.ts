@@ -3,6 +3,35 @@ export function readEnvString(value?: string): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+export function readFirstEnvString(
+  ...values: Array<string | undefined>
+): string | undefined {
+  for (const value of values) {
+    const normalized = readEnvString(value);
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return undefined;
+}
+
+export function readMongoDbNameFromUri(uri?: string): string | undefined {
+  if (!uri?.startsWith('mongodb')) {
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(uri);
+    const pathname = parsed.pathname.replace(/^\/+/, '').trim();
+
+    return pathname ? decodeURIComponent(pathname) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function readEnvBoolean(
   value: string | undefined,
   defaultValue: boolean,

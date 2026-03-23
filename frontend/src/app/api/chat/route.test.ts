@@ -3,10 +3,12 @@ import { POST } from './route';
 
 describe('POST /api/chat', () => {
   const originalEnv = process.env.BACKEND_API_URL;
+  const originalSharedSecret = process.env.INTERNAL_PROXY_SHARED_SECRET;
   let fetchSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     process.env.BACKEND_API_URL = 'http://backend.test';
+    process.env.INTERNAL_PROXY_SHARED_SECRET = 'proxy-secret';
     fetchSpy = vi.spyOn(globalThis, 'fetch');
   });
 
@@ -16,6 +18,12 @@ describe('POST /api/chat', () => {
       delete process.env.BACKEND_API_URL;
     } else {
       process.env.BACKEND_API_URL = originalEnv;
+    }
+
+    if (originalSharedSecret === undefined) {
+      delete process.env.INTERNAL_PROXY_SHARED_SECRET;
+    } else {
+      process.env.INTERNAL_PROXY_SHARED_SECRET = originalSharedSecret;
     }
   });
 
@@ -29,7 +37,11 @@ describe('POST /api/chat', () => {
 
     const request = new Request('http://localhost/api/chat', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-forwarded-for': '203.0.113.20, 10.0.0.1',
+        'x-request-id': 'req-123',
+      },
       body: JSON.stringify({ message: 'Cześć', sessionId: 'session-1' }),
     });
 
@@ -41,10 +53,17 @@ describe('POST /api/chat', () => {
       expect.objectContaining({
         method: 'POST',
         cache: 'no-store',
-        headers: expect.objectContaining({ 'content-type': 'application/json' }),
+        headers: expect.any(Headers),
         body: JSON.stringify({ message: 'Cześć', sessionId: 'session-1' }),
       })
     );
+    const fetchHeaders = fetchSpy.mock.calls[0]?.[1]?.headers as Headers;
+
+    expect(fetchHeaders.get('content-type')).toBe('application/json');
+    expect(fetchHeaders.get('x-request-id')).toBe('req-123');
+    expect(fetchHeaders.get('x-forwarded-client-ip')).toBe('203.0.113.20');
+    expect(fetchHeaders.get('x-forwarded-client-timestamp')).toMatch(/^\d+$/);
+    expect(fetchHeaders.get('x-forwarded-client-signature')).toMatch(/^[a-f0-9]{64}$/);
     expect(response.status).toBe(200);
     expect(body).toEqual({ response: 'OK', sessionId: 'session-123' });
   });
