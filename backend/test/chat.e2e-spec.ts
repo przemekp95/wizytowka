@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.bootstrap';
+import { ChatHttpThrottlerGuard } from '../src/common/guards/public-http-throttler.guard';
 
 describe('Chat HTTP (e2e)', () => {
   let app: INestApplication;
@@ -30,6 +31,10 @@ describe('Chat HTTP (e2e)', () => {
     await app.close();
   });
 
+  beforeEach(() => {
+    (app.get(ChatHttpThrottlerGuard) as any).storage.reset();
+  });
+
   it('POST /api/chat/message -> 503 with stable error payload when chat is disabled', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/chat/message')
@@ -40,5 +45,26 @@ describe('Chat HTTP (e2e)', () => {
       error: 'Chat is unavailable because OPENAI_API_KEY is not configured.',
       code: 'CHAT_UNAVAILABLE',
     });
+  });
+
+  it('POST /api/chat/message -> 429 after the chat public HTTP limit is exceeded', async () => {
+    for (let index = 0; index < 20; index += 1) {
+      await request(app.getHttpServer())
+        .post('/api/chat/message')
+        .send({ message: `Czesc ${index}` })
+        .expect(503);
+    }
+
+    const response = await request(app.getHttpServer())
+      .post('/api/chat/message')
+      .send({ message: 'Czesc ponownie' })
+      .expect(429);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        message: 'Too Many Requests',
+        code: 'TOO_MANY_REQUESTS',
+      }),
+    );
   });
 });

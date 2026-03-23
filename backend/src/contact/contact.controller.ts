@@ -1,9 +1,17 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { ContactDto } from './contact.dto';
 import { ContactHttpResponseDto } from './contact.openapi.dto';
 import { ContactService } from './contact.service';
+import { ContactHttpThrottlerGuard } from '../common/guards/public-http-throttler.guard';
 
 @ApiTags('contact')
 @Controller('contact')
@@ -12,6 +20,7 @@ export class ContactController {
 
   @Post()
   @HttpCode(200)
+  @UseGuards(ContactHttpThrottlerGuard)
   @ApiOperation({
     summary: 'Submit a public contact message',
   })

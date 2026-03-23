@@ -15,6 +15,10 @@ describe('GqlThrottleStorageService', () => {
         disabled: false,
         limit: 30,
         ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
       mongoConfiguration,
     );
@@ -38,6 +42,10 @@ describe('GqlThrottleStorageService', () => {
         disabled: false,
         limit: 30,
         ttlMs: 60_000,
+        publicHttpLimit: 30,
+        publicHttpTtlMs: 60_000,
+        chatHttpLimit: 20,
+        chatHttpTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
       mongoConfiguration,
     );

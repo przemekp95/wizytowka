@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.bootstrap';
+import { ContactHttpThrottlerGuard } from '../src/common/guards/public-http-throttler.guard';
 import { ContactService } from '../src/contact/contact.service';
 
 describe('Contact HTTP (e2e)', () => {
@@ -25,6 +26,7 @@ describe('Contact HTTP (e2e)', () => {
   });
 
   beforeEach(() => {
+    (app.get(ContactHttpThrottlerGuard) as any).storage.reset();
     contactService.createAndNotify.mockReset();
     contactService.createAndNotify.mockResolvedValue({
       ok: true,
@@ -90,5 +92,33 @@ describe('Contact HTTP (e2e)', () => {
       ok: false,
       error: 'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
     });
+  });
+
+  it('POST /api/contact -> 429 after the shared public HTTP limit is exceeded', async () => {
+    const payload = {
+      name: 'Jan Testowy',
+      email: 'jan@example.com',
+      message: 'To jest poprawna wiadomosc testowa.',
+    };
+
+    for (let index = 0; index < 30; index += 1) {
+      await request(app.getHttpServer())
+        .post('/api/contact')
+        .send(payload)
+        .expect(200);
+    }
+
+    const response = await request(app.getHttpServer())
+      .post('/api/contact')
+      .send(payload)
+      .expect(429);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        message: 'Too Many Requests',
+        code: 'TOO_MANY_REQUESTS',
+      }),
+    );
+    expect(contactService.createAndNotify).toHaveBeenCalledTimes(30);
   });
 });

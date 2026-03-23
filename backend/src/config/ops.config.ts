@@ -1,6 +1,11 @@
 import { registerAs } from '@nestjs/config';
-import { readEnvString } from './config.helpers';
+import { readEnvList } from './config.helpers';
 
-export default registerAs('ops', () => ({
-  adminToken: readEnvString(process.env.ADMIN_TOKEN),
-}));
+export default registerAs('ops', () => {
+  const adminTokens = readEnvList(process.env.ADMIN_TOKEN);
+
+  return {
+    adminToken: adminTokens[0],
+    adminTokens,
+  };
+});

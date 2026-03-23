@@ -104,10 +104,67 @@ describe('OpenAPI (e2e)', () => {
         'multipart/form-data'
       ],
     ).toBeDefined();
-    expect(response.body.paths['/api/contact'].post.requestBody.content).toEqual(
+    expect(
+      response.body.paths['/api/contact'].post.requestBody.content,
+    ).toEqual(
       expect.objectContaining({
         'application/json': expect.any(Object),
       }),
     );
+  });
+});
+
+describe('OpenAPI in production (e2e)', () => {
+  let app: INestApplication;
+  const originalNodeEnv = process.env.NODE_ENV;
+  const originalApiDocs = process.env.ENABLE_API_DOCS;
+
+  beforeAll(async () => {
+    process.env.NODE_ENV = 'production';
+    delete process.env.ENABLE_API_DOCS;
+
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(PortfolioService)
+      .useValue({
+        listPublished: jest.fn().mockResolvedValue([]),
+        getDependencyStatus: jest.fn().mockResolvedValue({
+          name: 'mongo',
+          ready: true,
+        }),
+      })
+      .overrideProvider(PrismaService)
+      .useValue({
+        getDependencyStatus: jest.fn().mockResolvedValue({
+          name: 'prisma',
+          ready: true,
+        }),
+      })
+      .compile();
+
+    app = moduleRef.createNestApplication();
+    configureApp(app);
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+
+    if (originalApiDocs === undefined) {
+      delete process.env.ENABLE_API_DOCS;
+    } else {
+      process.env.ENABLE_API_DOCS = originalApiDocs;
+    }
+  });
+
+  it('does not expose Swagger JSON by default in production', async () => {
+    await request(app.getHttpServer()).get('/api/docs-json').expect(404);
   });
 });

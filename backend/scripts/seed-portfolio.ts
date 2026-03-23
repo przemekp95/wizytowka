@@ -1,128 +1,38 @@
-import 'dotenv/config';
-import { MongoClient } from 'mongodb';
-
-type PortfolioSeedItem = {
-  title: string;
-  href: string;
-  desc: string;
-  tags: string[];
-  img: string;
-  isLogo: boolean;
-  newTech: boolean;
-  slug: string;
-  category?: string;
-  dateFrom: Date;
-  dateTo?: Date;
-};
-
-type PortfolioSeedDocument = PortfolioSeedItem & {
-  _id: string;
-  order: number;
-  status: 'published';
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-const items: PortfolioSeedItem[] = [
-  {
-    title: 'CASN Laravel',
-    href: 'https://casn.pietrzakprzemyslaw.pl',
-    desc: 'Stworzyłem aplikację webową...',
-    tags: ['Laravel', 'PHP', 'Blade', 'Github', 'Bootstrap'],
-    img: '/images/logo.jpg',
-    isLogo: true,
-    newTech: false,
-    slug: 'casn-laravel',
-    category: 'web-app, api', // multiple categories separated by commas
-    dateFrom: new Date('2022-03-01'),
-    dateTo: new Date('2022-07-31'),
-  },
-  {
-    title: 'CASN Next.js',
-    href: 'https://casn.pl',
-    desc: 'Migracja strony think-tanku...',
-    tags: ['Next.js', 'Prisma', 'MySQL', 'Typescript', 'Markdown', 'Github'],
-    img: '/images/logo.jpg',
-    isLogo: true,
-    newTech: false,
-    slug: 'casn-nextjs',
-    category: 'web-app, landing, api', // three categories: web-app, landing, and api
-    dateFrom: new Date('2022-08-01'),
-    dateTo: new Date('2023-02-28'),
-  },
-  {
-    title: 'Mazowieści',
-    href: 'https://mazowiesci.pl',
-    desc: 'Migracja z WIX do WordPress, import treści, SEO...',
-    tags: [
-      'Python (Scrapy)',
-      'WordPress',
-      'PHP',
-      'HTML',
-      'CSS',
-      'REST API',
-      'SEO',
-    ],
-    img: '/images/mazo.png',
-    isLogo: true,
-    newTech: false,
-    slug: 'mazowiesci',
-    dateFrom: new Date('2023-01-15'),
-    dateTo: new Date('2023-06-30'),
-  },
-  {
-    title: 'Strona Wizytówka',
-    href: 'https://pietrzakprzemyslaw.pl',
-    desc: 'One-pager w Next.js z Tailwind i Sass.',
-    tags: ['Next.js', 'Tailwind', 'Sass'],
-    img: '/images/PP-2-JPG-01.webp',
-    isLogo: true,
-    newTech: false,
-    slug: 'strona-wizytowka',
-    dateFrom: new Date('2024-03-01'),
-    // dateTo: null - ongoing project (until today)
-  },
-  {
-    title: 'Fundacja Służba Niepodległej',
-    href: 'https://sluzbaniepodleglej.pl',
-    desc: 'Administrowanie i rozwój strony (WordPress, SEO)...',
-    tags: ['WordPress', 'PHP', 'CSS', 'HTML', 'Google Search Console', 'SEO'],
-    img: '/images/logo-sluzba-niepodleglej.png',
-    isLogo: true,
-    newTech: false,
-    slug: 'fundacja-sluzba-niepodleglej',
-    dateFrom: new Date('2023-09-01'),
-    // dateTo: null - ongoing project
-  },
-];
+import {
+  getMongoConnectionConfig,
+  loadBackendScriptEnv,
+  openPortfolioCollection,
+  readPortfolioFile,
+  resolvePortfolioDataFilePath,
+  toPortfolioMongoDocument,
+} from './portfolio-file';
 
 void (async () => {
-  const uri =
-    process.env.MONGODB_URI ??
-    'mongodb://root:root@localhost:27017/?authSource=admin';
-  const dbName = process.env.MONGODB_DB ?? 'wizytowka';
+  loadBackendScriptEnv();
 
-  if (!uri.startsWith('mongodb')) {
-    throw new Error('Brak poprawnego MONGODB_URI w .env');
+  const filePath = resolvePortfolioDataFilePath();
+  const sourceItems = await readPortfolioFile(filePath);
+  const { uri, dbName } = getMongoConnectionConfig();
+  const { client, collection } = await openPortfolioCollection(uri, dbName);
+
+  try {
+    const now = new Date();
+    const documents = sourceItems.map((item, index) =>
+      toPortfolioMongoDocument(item, index, undefined, now),
+    );
+
+    await collection.deleteMany({});
+
+    if (documents.length > 0) {
+      await collection.insertMany(documents);
+    }
+
+    console.log(`Seeded ${documents.length} portfolio items from ${filePath}`);
+  } finally {
+    await client.close();
   }
-
-  const client = new MongoClient(uri);
-  await client.connect();
-  const db = client.db(dbName);
-  const col = db.collection<PortfolioSeedDocument>('portfolio_items');
-
-  const now = new Date();
-  await col.deleteMany({});
-  await col.insertMany(
-    items.map((item, index) => ({
-      ...item,
-      _id: item.slug,
-      order: index + 1,
-      status: 'published' as const,
-      createdAt: now,
-      updatedAt: now,
-    })),
-  );
-
-  await client.close();
-})();
+})().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`seed-portfolio failed: ${message}`);
+  process.exitCode = 1;
+});

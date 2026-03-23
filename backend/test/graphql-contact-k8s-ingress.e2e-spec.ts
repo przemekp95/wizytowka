@@ -2,6 +2,7 @@ import {
   execFileSync,
   spawn,
   spawnSync,
+  type ChildProcessByStdio,
   type ChildProcessWithoutNullStreams,
 } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -350,7 +351,7 @@ describe('GraphQL Contact shared throttling through Kubernetes ingress (e2e)', (
   }
 
   async function stopPortForward(
-    child: ChildProcessWithoutNullStreams,
+    child: ChildProcessByStdio<null, NodeJS.ReadableStream, NodeJS.ReadableStream>,
   ): Promise<void> {
     if (child.killed) {
       return;

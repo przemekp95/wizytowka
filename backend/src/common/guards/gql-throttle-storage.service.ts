@@ -224,7 +224,7 @@ export class GqlThrottleStorageService
 
     if (!mongoUri) {
       throw new Error(
-        'MONGODB_URI is required for shared GraphQL throttle storage',
+        'MongoDB connection string is required for shared GraphQL throttle storage (prefer MONGODB_URI; MONGODB_URL and MONGO_URL are also supported)',
       );
     }
 

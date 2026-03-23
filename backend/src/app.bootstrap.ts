@@ -49,7 +49,7 @@ function createCorsOptions(appConfiguration: AppRuntimeConfig): CorsOptions {
         return cb(null, true);
       }
 
-      return cb(new Error(`CORS blocked for origin: ${origin}`), false);
+      return cb(null, false);
     },
     credentials: false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -96,7 +96,7 @@ export function configureApp(
   app.setGlobalPrefix('api');
   app.useGlobalPipes(createValidationPipe());
 
-  if (!enableSwagger) {
+  if (!enableSwagger || !appConfiguration.apiDocsEnabled) {
     return;
   }
 

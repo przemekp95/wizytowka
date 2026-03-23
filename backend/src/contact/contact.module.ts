@@ -12,6 +12,7 @@ import { ContactService } from './contact.service';
 import { ContactResolver } from './contact.resolver';
 import { PrismaContactMessageRepository } from './infrastructure/prisma-contact-message.repository';
 import { SmtpContactNotificationAdapter } from './infrastructure/smtp-contact-notification.adapter';
+import { ContactHttpThrottlerGuard } from '../common/guards/public-http-throttler.guard';
 
 @Module({
   imports: [PrismaModule],
@@ -32,6 +33,7 @@ import { SmtpContactNotificationAdapter } from './infrastructure/smtp-contact-no
       useExisting: SmtpContactNotificationAdapter,
     },
     GqlThrottlerGuard,
+    ContactHttpThrottlerGuard,
     OpsTokenGuard,
   ],
 })

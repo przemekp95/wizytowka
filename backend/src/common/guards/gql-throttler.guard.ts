@@ -8,8 +8,9 @@ import type { ConfigType } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { Request, Response } from 'express';
 import { GraphQLError } from 'graphql';
-import { throttleConfig } from '../../config';
+import { appConfig, throttleConfig } from '../../config';
 import { GqlThrottleStorageService } from './gql-throttle-storage.service';
+import { resolveRequestTracker } from '../security/trusted-client-ip';
 
 @Injectable()
 export class GqlThrottlerGuard implements CanActivate {
@@ -17,6 +18,8 @@ export class GqlThrottlerGuard implements CanActivate {
     private readonly storage: GqlThrottleStorageService,
     @Inject(throttleConfig.KEY)
     private readonly throttleConfiguration: ConfigType<typeof throttleConfig>,
+    @Inject(appConfig.KEY)
+    private readonly appConfiguration: ConfigType<typeof appConfig>,
   ) {}
 
   reset(): void {
@@ -110,7 +113,10 @@ export class GqlThrottlerGuard implements CanActivate {
   }
 
   protected getTracker(req: Request): string {
-    return req.ip ?? 'unknown';
+    return resolveRequestTracker(
+      req,
+      this.appConfiguration.internalProxySharedSecret,
+    );
   }
 
   protected throwThrottlingException(

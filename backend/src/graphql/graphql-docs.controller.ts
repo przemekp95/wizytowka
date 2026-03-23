@@ -1,17 +1,29 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
   ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
+import type { ConfigType } from '@nestjs/config';
 import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { printSchema } from 'graphql';
+import { appConfig } from '../config';
 
 @ApiTags('app')
 @Controller('graphql')
 export class GraphqlDocsController {
-  constructor(private readonly schemaHost: GraphQLSchemaHost) {}
+  constructor(
+    private readonly schemaHost: GraphQLSchemaHost,
+    @Inject(appConfig.KEY)
+    private readonly appConfiguration: ConfigType<typeof appConfig>,
+  ) {}
 
   @Get('schema')
   @Header('Content-Type', 'text/plain; charset=utf-8')
@@ -29,6 +41,10 @@ export class GraphqlDocsController {
     },
   })
   getSchema(): string {
+    if (!this.appConfiguration.graphqlSchemaDocsEnabled) {
+      throw new NotFoundException();
+    }
+
     return printSchema(this.schemaHost.schema);
   }
 }

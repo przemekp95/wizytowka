@@ -1,8 +1,4 @@
-const DEFAULT_BACKEND_GRAPHQL_URL = 'http://localhost:4000/graphql';
-
-function resolveBackendGraphqlUrl(): string {
-  return (process.env.BACKEND_GRAPHQL_URL ?? DEFAULT_BACKEND_GRAPHQL_URL).replace(/\/+$/, '');
-}
+import { createBackendProxyHeaders, resolveBackendGraphqlUrl } from '../_lib/backend-proxy';
 
 export async function POST(request: Request): Promise<Response> {
   const body = await request.text();
@@ -10,10 +6,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const backendResponse = await fetch(resolveBackendGraphqlUrl(), {
       method: 'POST',
-      headers: {
-        'content-type': request.headers.get('content-type') ?? 'application/json',
-        accept: request.headers.get('accept') ?? 'application/json',
-      },
+      headers: createBackendProxyHeaders(request),
       body,
       cache: 'no-store',
     });

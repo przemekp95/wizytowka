@@ -4,7 +4,6 @@ import { INestApplication } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { type ContactMessageRepositoryPort } from '../../src/contact/application/ports/contact-message-repository.port';
 import { type ContactNotificationPort } from '../../src/contact/application/ports/contact-notification.port';
-import { ContactSubmission } from '../../src/contact/domain/contact-submission';
 import { type ChatCompletionPort } from '../../src/chat/application/ports/chat-completion.port';
 import { type ChatContextPort } from '../../src/chat/application/ports/chat-context.port';
 import { type ChatSessionIdPort } from '../../src/chat/application/ports/chat-session-id.port';
@@ -38,7 +37,7 @@ export class BehaviorWorld {
   };
 
   readonly repository: ContactMessageRepositoryPort = {
-    save: async (_submission: ContactSubmission) => {
+    save: async () => {
       this.persistenceCalls += 1;
 
       if (this.persistenceShouldFail) {
@@ -50,7 +49,7 @@ export class BehaviorWorld {
   };
 
   readonly notifier: ContactNotificationPort = {
-    send: async (_submission: ContactSubmission) => {
+    send: async () => {
       this.notificationCalls += 1;
 
       if (this.notificationShouldFail) {
