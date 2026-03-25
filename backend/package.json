@@ -34,10 +34,10 @@
     "pretest": "prisma generate"
   },
   "dependencies": {
-    "@apollo/server": "^5.4.0",
+    "@apollo/server": "^5.5.0",
     "@as-integrations/express5": "^1.1.2",
-    "@aws-sdk/client-s3": "^3.1014.0",
-    "@aws-sdk/lib-storage": "^3.1014.0",
+    "@aws-sdk/client-s3": "^3.1016.0",
+    "@aws-sdk/lib-storage": "^3.1016.0",
     "@nestjs/apollo": "^13.2.4",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/common": "^11.1.17",
@@ -58,7 +58,7 @@
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.3.1",
-    "graphql": "^16.13.1",
+    "graphql": "^16.13.2",
     "helmet": "^8.1.0",
     "mongodb": "^6.20.0",
     "multer": "^2.1.1",
@@ -84,7 +84,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "@types/supertest": "^7.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
     "dotenv": "^17.3.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.1",
@@ -101,6 +101,6 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.1"
+    "typescript-eslint": "^8.57.2"
   }
 }
