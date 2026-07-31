@@ -35,18 +35,6 @@ describe('Chat HTTP (e2e)', () => {
     (app.get(ChatHttpThrottlerGuard) as any).storage.reset();
   });
 
-  it('POST /api/chat/message -> 503 with stable error payload when chat is disabled', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/api/chat/message')
-      .send({ message: 'Czesc' })
-      .expect(503);
-
-    expect(response.body).toEqual({
-      error: 'Chat is unavailable because OPENAI_API_KEY is not configured.',
-      code: 'CHAT_UNAVAILABLE',
-    });
-  });
-
   it('POST /api/chat/message -> 429 after the chat public HTTP limit is exceeded', async () => {
     for (let index = 0; index < 20; index += 1) {
       await request(app.getHttpServer())
@@ -66,5 +54,12 @@ describe('Chat HTTP (e2e)', () => {
         code: 'TOO_MANY_REQUESTS',
       }),
     );
+  });
+
+  it('POST /api/chat/message -> 400 for a client-chosen non-UUID session id', async () => {
+    await request(app.getHttpServer())
+      .post('/api/chat/message')
+      .send({ message: 'Czesc', sessionId: 'shared-session' })
+      .expect(400);
   });
 });

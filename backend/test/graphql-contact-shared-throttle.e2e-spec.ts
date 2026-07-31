@@ -36,13 +36,15 @@ describe('GraphQL Contact shared throttling (e2e)', () => {
   };
 
   const contactServiceA = {
-    createAndNotify: jest.fn(),
+    createAndQueueNotification: jest.fn(),
   };
   const contactServiceB = {
-    createAndNotify: jest.fn(),
+    createAndQueueNotification: jest.fn(),
   };
 
-  async function createApp(contactService: { createAndNotify: jest.Mock }) {
+  async function createApp(contactService: {
+    createAndQueueNotification: jest.Mock;
+  }) {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -79,6 +81,7 @@ describe('GraphQL Contact shared throttling (e2e)', () => {
 
     return `
 upstream backend_pool {
+    zone backend_pool 64k;
     ${upstreamServers}
 }
 
@@ -254,17 +257,15 @@ server {
   });
 
   beforeEach(() => {
-    contactServiceA.createAndNotify.mockReset();
-    contactServiceB.createAndNotify.mockReset();
+    contactServiceA.createAndQueueNotification.mockReset();
+    contactServiceB.createAndQueueNotification.mockReset();
 
-    contactServiceA.createAndNotify.mockResolvedValue({
+    contactServiceA.createAndQueueNotification.mockResolvedValue({
       ok: true,
-      messageId: 'msg-a',
       savedId: 'saved-a',
     });
-    contactServiceB.createAndNotify.mockResolvedValue({
+    contactServiceB.createAndQueueNotification.mockResolvedValue({
       ok: true,
-      messageId: 'msg-b',
       savedId: 'saved-b',
     });
 
@@ -296,8 +297,8 @@ server {
     expect(JSON.stringify(throttled.body).toLowerCase()).toMatch(
       /rate|throttle|too many/i,
     );
-    expect(contactServiceA.createAndNotify).toHaveBeenCalledTimes(15);
-    expect(contactServiceB.createAndNotify).toHaveBeenCalledTimes(15);
+    expect(contactServiceA.createAndQueueNotification).toHaveBeenCalledTimes(15);
+    expect(contactServiceB.createAndQueueNotification).toHaveBeenCalledTimes(15);
   });
 
   nginxIt(
@@ -329,11 +330,11 @@ server {
         expect(JSON.stringify(throttled.body).toLowerCase()).toMatch(
           /rate|throttle|too many/i,
         );
-        expect(contactServiceA.createAndNotify).toHaveBeenCalled();
-        expect(contactServiceB.createAndNotify).toHaveBeenCalled();
+        expect(contactServiceA.createAndQueueNotification).toHaveBeenCalled();
+        expect(contactServiceB.createAndQueueNotification).toHaveBeenCalled();
         expect(
-          contactServiceA.createAndNotify.mock.calls.length +
-            contactServiceB.createAndNotify.mock.calls.length,
+          contactServiceA.createAndQueueNotification.mock.calls.length +
+            contactServiceB.createAndQueueNotification.mock.calls.length,
         ).toBe(30);
       } finally {
         await loadBalancer.stop();

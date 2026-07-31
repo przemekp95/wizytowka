@@ -20,6 +20,17 @@ import {
 import { ChatConversation } from './domain/chat-conversation';
 import { ChatUnavailableException } from './chat.errors';
 
+export type SendChatMessageResult =
+  | {
+      kind: 'completed';
+      content: string;
+      sessionId: string;
+    }
+  | {
+      kind: 'completion_failed';
+      sessionId: string;
+    };
+
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
@@ -40,7 +51,7 @@ export class ChatService {
   async sendMessage(
     message: string,
     sessionId?: string,
-  ): Promise<{ response: string; sessionId: string }> {
+  ): Promise<SendChatMessageResult> {
     this.ensureChatAvailable();
     const currentSessionId = sessionId?.trim() || this.sessionIdPort.next();
     const lastActivity = new Date();
@@ -75,7 +86,8 @@ export class ChatService {
       });
 
       return {
-        response,
+        kind: 'completed',
+        content: response,
         sessionId: currentSessionId,
       };
     } catch (error) {
@@ -85,8 +97,7 @@ export class ChatService {
 
       this.logger.error('Error communicating with OpenAI:', error);
       return {
-        response:
-          'Przepraszam, wystąpił błąd podczas przetwarzania Twojej wiadomości.',
+        kind: 'completion_failed',
         sessionId: currentSessionId,
       };
     }

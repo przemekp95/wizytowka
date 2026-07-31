@@ -15,21 +15,21 @@ input ContactMessageInput {
 }
 
 """
-Result returned after attempting to process a public contact submission.
+Result returned after attempting to process a public contact submission and queue async delivery.
 """
 type ContactResult {
   """Human-readable error returned when the contact submission fails."""
   error: String
 
   """
-  Indicates whether the message was persisted and delivered successfully.
+  Indicates whether the message was persisted and accepted for async delivery.
   """
   ok: Boolean!
 }
 
 type Mutation {
   """
-  Submit a public contact message. This mutation is rate-limited and returns ok=false when delivery fails.
+  Submit a public contact message. This mutation is rate-limited and returns ok=true once the message is persisted and queued for async delivery.
   """
   sendContact(input: ContactMessageInput!): ContactResult!
 }

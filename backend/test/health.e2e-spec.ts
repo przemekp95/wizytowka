@@ -48,7 +48,11 @@ describe('Health (e2e)', () => {
   });
 
   it('GET /api/health -> 200', async () => {
-    await request(app.getHttpServer()).get('/api/health').expect(200);
+    const response = await request(app.getHttpServer()).get('/api/health').expect(200);
+
+    expect(response.body).not.toHaveProperty('memory');
+    expect(response.body).not.toHaveProperty('uptime');
+    expect(response.body).not.toHaveProperty('version');
   });
 
   it('GET /api/health/ready -> 503 when dependencies are unavailable', async () => {
@@ -65,6 +69,8 @@ describe('Health (e2e)', () => {
         timestamp: expect.any(String),
       }),
     );
+    expect(res.body.dependencies.prisma).not.toHaveProperty('error');
+    expect(res.body.dependencies.mongo).not.toHaveProperty('error');
   });
 
   it('GET /api/health/ready -> 200 when dependencies are healthy', async () => {

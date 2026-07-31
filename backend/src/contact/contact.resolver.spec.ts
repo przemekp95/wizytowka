@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { createHmac } from 'node:crypto';
 import type { ConfigType } from '@nestjs/config';
 import type { Request } from 'express';
 import { GqlThrottleStorageService } from '../common/guards/gql-throttle-storage.service';
@@ -9,12 +10,26 @@ import { ContactService, type CreateContactResult } from './contact.service';
 
 describe('ContactResolver', () => {
   let resolver: ContactResolver;
+  let appConfiguration: ConfigType<typeof appConfig>;
   const contactService = {
-    createAndNotify: jest.fn<Promise<CreateContactResult>, []>(),
+    createAndQueueNotification: jest.fn<Promise<CreateContactResult>, []>(),
   };
 
   beforeEach(async () => {
-    contactService.createAndNotify.mockReset();
+    contactService.createAndQueueNotification.mockReset();
+    appConfiguration = {
+      nodeEnv: 'test',
+      port: 4000,
+      frontendUrl: undefined,
+      corsOrigins: [],
+      trustProxy: false,
+      skipPrisma: true,
+      graphqlPlayground: true,
+      graphqlIntrospection: true,
+      apiDocsEnabled: true,
+      graphqlSchemaDocsEnabled: true,
+      internalProxySharedSecret: undefined,
+    } satisfies ConfigType<typeof appConfig>;
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -32,6 +47,8 @@ describe('ContactResolver', () => {
             publicHttpTtlMs: 60_000,
             chatHttpLimit: 20,
             chatHttpTtlMs: 60_000,
+            chatHttpGlobalLimit: 100,
+            chatHttpGlobalTtlMs: 60_000,
           } satisfies ConfigType<typeof throttleConfig>,
         },
         {
@@ -43,19 +60,7 @@ describe('ContactResolver', () => {
         },
         {
           provide: appConfig.KEY,
-          useValue: {
-            nodeEnv: 'test',
-            port: 4000,
-            frontendUrl: undefined,
-            corsOrigins: [],
-            trustProxy: false,
-            skipPrisma: true,
-            graphqlPlayground: true,
-            graphqlIntrospection: true,
-            apiDocsEnabled: true,
-            graphqlSchemaDocsEnabled: true,
-            internalProxySharedSecret: undefined,
-          } satisfies ConfigType<typeof appConfig>,
+          useValue: appConfiguration,
         },
         {
           provide: ContactService,
@@ -68,9 +73,8 @@ describe('ContactResolver', () => {
   });
 
   it('returns ok=true only when the service succeeds', async () => {
-    contactService.createAndNotify.mockResolvedValue({
+    contactService.createAndQueueNotification.mockResolvedValue({
       ok: true,
-      messageId: 'msg-123',
       savedId: 'saved-123',
     });
 
@@ -91,7 +95,7 @@ describe('ContactResolver', () => {
       ),
     ).resolves.toEqual({ ok: true, error: undefined });
 
-    expect(contactService.createAndNotify).toHaveBeenCalledWith({
+    expect(contactService.createAndQueueNotification).toHaveBeenCalledWith({
       name: 'Jan',
       email: 'jan@example.com',
       message: 'To jest poprawna wiadomosc testowa.',
@@ -101,10 +105,9 @@ describe('ContactResolver', () => {
   });
 
   it('passes service failures through as ok=false', async () => {
-    contactService.createAndNotify.mockResolvedValue({
+    contactService.createAndQueueNotification.mockResolvedValue({
       ok: false,
-      error: 'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
-      savedId: 'saved-123',
+      failureCode: 'contact_persistence_failed',
     });
 
     const req = {
@@ -124,7 +127,50 @@ describe('ContactResolver', () => {
       ),
     ).resolves.toEqual({
       ok: false,
-      error: 'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
+      error: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',
+    });
+  });
+
+  it('uses the signed forwarded client IP when the shared secret is configured', async () => {
+    const timestamp = Date.now().toString();
+
+    appConfiguration.internalProxySharedSecret = 'proxy-secret';
+    contactService.createAndQueueNotification.mockResolvedValue({
+      ok: true,
+      savedId: 'saved-123',
+    });
+
+    const req = {
+      ip: '10.0.0.1',
+      requestId: 'req-789',
+      header(name: string) {
+        const headers: Record<string, string> = {
+          'X-Forwarded-Client-Ip': '203.0.113.25',
+          'X-Forwarded-Client-Timestamp': timestamp,
+          'X-Forwarded-Client-Signature': createHmac('sha256', 'proxy-secret')
+            .update(`203.0.113.25:${timestamp}`)
+            .digest('hex'),
+        };
+
+        return headers[name];
+      },
+    } as unknown as Request;
+
+    await resolver.sendContact(
+      {
+        name: 'Jan',
+        email: 'jan@example.com',
+        message: 'To jest poprawna wiadomosc testowa.',
+      },
+      req,
+    );
+
+    expect(contactService.createAndQueueNotification).toHaveBeenCalledWith({
+      name: 'Jan',
+      email: 'jan@example.com',
+      message: 'To jest poprawna wiadomosc testowa.',
+      ip: '203.0.113.25',
+      requestId: 'req-789',
     });
   });
 });

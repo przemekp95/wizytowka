@@ -42,6 +42,7 @@ describe('ContactSection', () => {
 
     expect(screen.getByLabelText(/Imię i nazwisko/i)).toHaveAttribute('aria-invalid', 'false');
     expect(screen.getByLabelText(/E-mail/i)).toHaveAttribute('aria-invalid', 'false');
+    expect(screen.getByText(/przechowywane maksymalnie przez 90 dni/i)).toBeInTheDocument();
   });
 
   it('sukces wysyłki - pokazuje komunikat i czyści dane', async () => {

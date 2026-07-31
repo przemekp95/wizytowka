@@ -20,13 +20,16 @@ env:
   REGISTRY: ghcr.io
   IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/wizytowka-backend-ci
   IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/wizytowka-frontend-ci
-  KUSTOMIZE_DIR: k8s
   SKIP_PRISMA: true
 
 jobs:
   backend_test:
-    name: backend-tests
+    name: backend-compatibility
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -39,7 +42,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
@@ -94,11 +97,22 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: backend-test-artifacts
+          name: backend-test-artifacts-node-${{ matrix.node-version }}
           if-no-files-found: warn
           path: |
             backend/reports/**
             backend/coverage/**
+
+  backend_required:
+    name: backend-tests
+    needs: backend_test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm backend compatibility matrix
+        env:
+          BACKEND_MATRIX_RESULT: ${{ needs.backend_test.result }}
+        run: test "$BACKEND_MATRIX_RESULT" = success
 
   frontend_test:
     name: frontend-tests
@@ -171,6 +185,51 @@ jobs:
             frontend/reports/**
             frontend/coverage/**
 
+  e2e:
+    name: backend-and-browser-e2e
+    needs: [backend_test, frontend_test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm -F backend exec prisma generate --schema prisma/schema.prisma
+
+      - name: Run backend E2E tests
+        run: pnpm test:e2e:backend
+
+      - name: Install Chromium
+        run: pnpm -F frontend exec playwright install --with-deps chromium
+
+      - name: Run browser E2E tests
+        run: pnpm test:e2e:frontend
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-artifacts
+          if-no-files-found: ignore
+          path: |
+            frontend/playwright-report/**
+            frontend/test-results/**
+
   app_build:
     name: app-build
     needs: [backend_test, frontend_test]
@@ -200,7 +259,7 @@ jobs:
         run: pnpm -r build
 
   build_and_push:
-    needs: [backend_test, frontend_test, app_build]
+    needs: [backend_test, frontend_test, app_build, e2e]
     if: github.ref == 'refs/heads/main'
     timeout-minutes: 30
     runs-on: ubuntu-latest

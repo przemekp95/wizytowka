@@ -10,7 +10,7 @@ describe('CORS', () => {
   let app: INestApplication;
   const ORIGIN = 'http://localhost:3001';
   const contactService = {
-    createAndNotify: jest.fn(),
+    createAndQueueNotification: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -27,10 +27,9 @@ describe('CORS', () => {
   });
 
   beforeEach(() => {
-    contactService.createAndNotify.mockReset();
-    contactService.createAndNotify.mockResolvedValue({
+    contactService.createAndQueueNotification.mockReset();
+    contactService.createAndQueueNotification.mockResolvedValue({
       ok: true,
-      messageId: 'msg-123',
       savedId: 'saved-123',
     });
   });

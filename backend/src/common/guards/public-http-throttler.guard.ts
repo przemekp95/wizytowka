@@ -17,6 +17,7 @@ type PublicHttpThrottlePolicy = {
   key: string;
   limit: number;
   ttlMs: number;
+  exposeHeaders?: boolean;
 };
 
 export abstract class PublicHttpThrottlerGuard implements CanActivate {
@@ -25,9 +26,9 @@ export abstract class PublicHttpThrottlerGuard implements CanActivate {
     protected readonly appConfiguration: ConfigType<typeof appConfig>,
   ) {}
 
-  protected abstract getPolicy(
+  protected abstract getPolicies(
     req: Request,
-  ): PublicHttpThrottlePolicy | undefined;
+  ): readonly PublicHttpThrottlePolicy[];
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const http = context.switchToHttp();
@@ -39,9 +40,9 @@ export abstract class PublicHttpThrottlerGuard implements CanActivate {
   }
 
   async canActivateHttp(req: Request, res: Response): Promise<boolean> {
-    const policy = this.getPolicy(req);
+    const policies = this.getPolicies(req);
 
-    if (!policy) {
+    if (policies.length === 0) {
       return true;
     }
 
@@ -49,42 +50,47 @@ export abstract class PublicHttpThrottlerGuard implements CanActivate {
       req,
       this.appConfiguration.internalProxySharedSecret,
     );
-    const key = `${policy.key}:${tracker}`;
-    const now = Date.now();
-    const { activeHits, blocked } = await this.storage
-      .increment(key, policy.ttlMs, policy.limit, now)
-      .catch((error) => {
-        throw new ServiceUnavailableException({
-          message: 'Rate limit storage unavailable',
-          code: 'SERVICE_UNAVAILABLE',
-          error: error instanceof Error ? error.message : String(error),
+    for (const policy of policies) {
+      const key = policy.key.endsWith('-global')
+        ? policy.key
+        : `${policy.key}:${tracker}`;
+      const now = Date.now();
+      const { activeHits, blocked } = await this.storage
+        .increment(key, policy.ttlMs, policy.limit, now)
+        .catch(() => {
+          throw new ServiceUnavailableException({
+            message: 'Rate limit storage unavailable',
+            code: 'SERVICE_UNAVAILABLE',
+          });
         });
-      });
-    const resetSeconds = Math.max(
-      1,
-      Math.ceil((activeHits[0] + policy.ttlMs - now) / 1000),
-    );
+      const resetSeconds = Math.max(
+        1,
+        Math.ceil((activeHits[0] + policy.ttlMs - now) / 1000),
+      );
 
-    res.setHeader('X-RateLimit-Limit', policy.limit.toString());
-    res.setHeader(
-      'X-RateLimit-Remaining',
-      Math.max(0, policy.limit - activeHits.length).toString(),
-    );
-    res.setHeader('X-RateLimit-Reset', resetSeconds.toString());
+      if (policy.exposeHeaders !== false || blocked) {
+        res.setHeader('X-RateLimit-Limit', policy.limit.toString());
+        res.setHeader(
+          'X-RateLimit-Remaining',
+          Math.max(0, policy.limit - activeHits.length).toString(),
+        );
+        res.setHeader('X-RateLimit-Reset', resetSeconds.toString());
+      }
 
-    if (!blocked) {
-      return true;
+      if (blocked) {
+        res.setHeader('Retry-After', resetSeconds.toString());
+        throw new HttpException(
+          {
+            message: 'Too Many Requests',
+            code: 'TOO_MANY_REQUESTS',
+            retryAfterSeconds: resetSeconds,
+          },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
     }
 
-    res.setHeader('Retry-After', resetSeconds.toString());
-    throw new HttpException(
-      {
-        message: 'Too Many Requests',
-        code: 'TOO_MANY_REQUESTS',
-        retryAfterSeconds: resetSeconds,
-      },
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
+    return true;
   }
 }
 
@@ -100,16 +106,18 @@ export class ContactHttpThrottlerGuard extends PublicHttpThrottlerGuard {
     super(storage, appConfiguration);
   }
 
-  protected getPolicy(req: Request): PublicHttpThrottlePolicy | undefined {
+  protected getPolicies(req: Request): readonly PublicHttpThrottlePolicy[] {
     if (req.method !== 'POST') {
-      return undefined;
+      return [];
     }
 
-    return {
-      key: 'contact-http',
-      limit: this.throttleConfiguration.publicHttpLimit,
-      ttlMs: this.throttleConfiguration.publicHttpTtlMs,
-    };
+    return [
+      {
+        key: 'contact-public',
+        limit: this.throttleConfiguration.publicHttpLimit,
+        ttlMs: this.throttleConfiguration.publicHttpTtlMs,
+      },
+    ];
   }
 }
 
@@ -125,15 +133,23 @@ export class ChatHttpThrottlerGuard extends PublicHttpThrottlerGuard {
     super(storage, appConfiguration);
   }
 
-  protected getPolicy(req: Request): PublicHttpThrottlePolicy | undefined {
+  protected getPolicies(req: Request): readonly PublicHttpThrottlePolicy[] {
     if (req.method !== 'POST') {
-      return undefined;
+      return [];
     }
 
-    return {
-      key: 'chat-http',
-      limit: this.throttleConfiguration.chatHttpLimit,
-      ttlMs: this.throttleConfiguration.chatHttpTtlMs,
-    };
+    return [
+      {
+        key: 'chat-http',
+        limit: this.throttleConfiguration.chatHttpLimit,
+        ttlMs: this.throttleConfiguration.chatHttpTtlMs,
+      },
+      {
+        key: 'chat-http-global',
+        limit: this.throttleConfiguration.chatHttpGlobalLimit,
+        ttlMs: this.throttleConfiguration.chatHttpGlobalTtlMs,
+        exposeHeaders: false,
+      },
+    ];
   }
 }

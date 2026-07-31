@@ -66,9 +66,6 @@ describe('OpenAPI (e2e)', () => {
         '/api/chat/message': expect.objectContaining({
           post: expect.any(Object),
         }),
-        '/api/metrics': expect.objectContaining({
-          get: expect.any(Object),
-        }),
         '/api/health': expect.objectContaining({
           get: expect.any(Object),
         }),
@@ -86,6 +83,8 @@ describe('OpenAPI (e2e)', () => {
         }),
       }),
     );
+
+    expect(response.body.paths['/api/metrics']).toBeUndefined();
 
     expect(response.body.components.securitySchemes).toEqual(
       expect.objectContaining({

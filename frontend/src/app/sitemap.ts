@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 const defaultBaseUrl = 'https://pietrzakprzemyslaw.pl';
-const localizedPaths = ['', '/en', '/pl'];
+const localizedPaths = ['/en', '/pl'];
 
 function resolveBaseUrl(): string {
   const configuredBaseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
@@ -18,6 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${path}`,
     lastModified,
     changeFrequency: 'weekly',
-    priority: path === '' ? 1 : 0.9,
+    priority: 1,
   }));
 }

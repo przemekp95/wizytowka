@@ -24,7 +24,7 @@
 │  │   Next.js 16    │ │   NestJS API    │ │ Access Control  │ │
 │  │   Frontend      │ │   Backend       │ │  (Admin Token)  │ │
 │  │                 │ │   TypeScript    │ │                 │ │
-│  │   - SSR/SSG     │ │   - Controllers │ │ - Bearer token  │ │
+│  │   - App Router  │ │   - Controllers │ │ - Bearer token  │ │
 │  │   - React 19    │ │   - Services    │ │ - Endpoint auth │ │
 │  │   - TailwindCSS │ │   - GraphQL     │ │                 │ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
@@ -47,11 +47,11 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                  Infrastructure Layer                       │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
-│  │   Docker        │ │   Kubernetes    │ │   Cloudflare    │ │
-│  │   Containers    │ │   Orchestration │ │   CDN/DNS       │ │
+│  │   Docker        │ │ Managed Hosting │ │   Edge / DNS    │ │
+│  │   Containers    │ │   App Runtime   │ │   TLS / Limits  │ │
 │  │                 │ │                 │ │                 │ │
-│  │   - Multi-stage │ │   - Auto-scale  │ │   - Global      │ │
-│  │   - Security    │ │   - Health      │ │   - SSL         │ │
+│  │   - Multi-stage │ │   - Frontend    │ │   - HTTPS       │ │
+│  │   - Local stack │ │   - Backend     │ │   - Rate limits │ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                                    │
@@ -59,11 +59,11 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                 Development & Operations                    │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ │
-│  │   GitHub CI/CD  │ │   Testing       │ │   Monitoring    │ │
-│  │   Pipelines     │ │   Suite         │ │   Stack         │ │
+│  │   GitHub CI/CD  │ │   Testing       │ │   Operations    │ │
+│  │   Pipelines     │ │   Suite         │ │   Checks        │ │
 │  │                 │ │                 │ │                 │ │
 │  │   - Lint/Test   │ │   - Jest         │ │   - Winston     │ │
-│  │   - Build/Deploy│ │   - E2E         │ │   - Prometheus   │ │
+│  │   - Build/Deploy│ │   - E2E         │ │   - Health checks│ │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -74,7 +74,7 @@
 
 ```
 src/
-├── app/                          # Next.js 13+ App Router
+├── app/                          # Next.js 16 App Router
 │   ├── layout.tsx               # Root layout with error boundaries
 │   ├── page.tsx                 # Homepage
 │   ├── [locale]/                # Internationalization routes
@@ -100,8 +100,8 @@ src/
 ├── common/                     # Shared utilities and guards
 ├── contact/                    # Contact form handling
 │   ├── application/            # Use cases + ports
-│   ├── domain/                 # ContactSubmission and domain rules
-│   ├── infrastructure/         # Prisma + SMTP adapters
+│   ├── domain/                 # ContactSubmission + notification lifecycle rules
+│   ├── infrastructure/         # Prisma + provider + dispatch/webhook adapters
 │   ├── contact.controller.ts   # REST endpoints
 │   ├── contact.service.ts      # Application service facade
 │   ├── contact.resolver.ts     # GraphQL resolvers
@@ -131,8 +131,8 @@ src/
 - **Language**: TypeScript 5.9
 - **Styling**: Tailwind CSS
 - **State Management**: React hooks
-- **GraphQL Client**: Apollo Client (potential)
-- **Internationalization**: next-i18n
+- **Data Fetching**: App Router `fetch`, route handlers, and same-origin proxy routes
+- **Internationalization**: next-intl
 
 ### Backend Stack
 
@@ -146,11 +146,11 @@ src/
 ### DevOps Stack
 
 - **Containerization**: Docker + Docker Compose
-- **Orchestration**: Kubernetes
+- **Runtime**: provider-managed frontend and backend services or containers
 - **CI/CD**: GitHub Actions
 - **Testing**: Jest + Playwright + Vitest
 - **Security**: Helmet + CORS + CSP
-- **Monitoring**: Winston (structured logging)
+- **Operations**: Winston structured logs and health checks
 
 ## Deployment Architecture
 
@@ -159,29 +159,28 @@ src/
 ```
 Local Machine
 ├── VS Code + Extensions
-├── Node.js 18+ + pnpm
+├── Node.js 20, 22 or 24+ + pnpm
 ├── Docker Desktop
-├── Git with premade hooks
-├── MongoDB/PostgreSQL containers
+├── Git
+├── MongoDB and optional local tooling containers
 └── Insomnia/Postman for API testing
 ```
 
 ### Production Environment
 
 ```
-Kubernetes Cluster
-├── Frontend Deployment (Next.js)
-│   ├── SSR/SSG static generation
-│   ├── CDN caching
-│   └── Horizontal Pod Autoscaler
-├── Backend Deployment (NestJS)
+Managed TLS edge / reverse proxy
+├── Frontend service (Next.js)
+│   ├── App Router pages and route handlers
+│   ├── Static generation where possible
+│   └── Same-origin API proxies
+├── Backend service (NestJS)
 │   ├── REST/GraphQL APIs
-│   ├── Database connections
-│   └── Health checks
-└── Infrastructure
-    ├── Ingress controller
-    ├── Certificate management
-    ├── Monitoring stack
+│   ├── Health checks
+│   └── Background contact dispatcher
+└── Private managed dependencies
+    ├── MongoDB
+    ├── Object storage
     └── Secret management
 ```
 
@@ -192,13 +191,20 @@ Kubernetes Cluster
 ```
 1. User submits form → Next.js Client
     ↓   Validation (client-side)
-2. GraphQL mutation → NestJS API
+2. GraphQL mutation / REST POST → NestJS API
     ↓   Validation + anti-abuse checks
-3. Database storage → Prisma (MongoDB)
-    ↓   Email notification
-4. SMTP send → Contact Service
-    ↓
-5. Success/error response → Client
+3. Contact application service → normalize + persist message/outbox state
+    ↓   Prisma (MongoDB)
+4. Success/error response → Client
+5. Background dispatcher claims pending notifications
+    ↓   Provider adapter
+6. SMTP marks delivered immediately or Resend submits with idempotency key
+    ↓   Signed provider callback (Resend only)
+7. Webhook confirms delivered/failed status, while retry policy stays in the outbox processor
+    ↓   Provider API reconciliation when confirmation does not arrive
+8. Stale `submitted` records are re-checked through the provider status API until they reach a terminal state
+    ↓   Timeout guard for prolonged provider outages
+9. Notifications that exceed the configured confirmation timeout are marked failed instead of remaining in `submitted`
 ```
 
 ### Chat Message Submission
@@ -218,9 +224,9 @@ Kubernetes Cluster
 ### Portfolio Data Loading
 
 ```
-1. Page request → Next.js SSR
-    ↓   getServerSideProps/getStaticProps
-2. GraphQL query → NestJS API
+1. Page request → Next.js App Router page
+    ↓   server component / route handler fetch
+2. GraphQL or REST query → NestJS API
     ↓   Service layer
 3. MongoDB aggregation → Portfolio Service
     ↓   File URLs (AWS S3)
@@ -229,36 +235,41 @@ Kubernetes Cluster
 
 ## Security Considerations
 
-- **Frontend Security**: Helmet, CSP headers, input sanitization
-- **API Security**: Rate limiting, admin bearer token checks, validation pipes
-- **Data Security**: SQL injection prevention, MongoDB validation
+- **Frontend Security**: same-origin API routes, bounded JSON bodies, input validation, and a per-request CSP script nonce
+- **API Security**: Apollo CSRF prevention, strict CORS without credentials, validation pipes, shared contact throttling, per-IP plus global chat throttling, and admin bearer-token checks
+- **Data Security**: Prisma/Mongo query layers, signed webhook verification, and MongoDB validation
 - **Infrastructure**: Container security, secret management, SSL/TLS
 
 ## Scalability Considerations
 
-- **Database Scaling**: MongoDB sharding, PostgreSQL read replicas
-- **API Scaling**: Rate limiting, caching, Redis clustering
+- **Database Scaling**: MongoDB sharding and workload-specific indexing
+- **API Scaling**: Stateless NestJS replicas with shared Mongo-backed throttling
 - **CDN**: Global content delivery for assets
-- **Monitoring**: Centralized logging, metric collection
+- **Operations**: Centralized logging and health checks
 - **CI/CD**: Automated testing, blue-green deployments
 
 ## Performance Optimizations
 
 - **Frontend**: Code splitting, lazy loading, image optimization
 - **Backend**: Database indexing, query optimization, compression
-- **Infrastructure**: Load balancing, auto-scaling, monitoring
-- **Caching**: Browser cache, CDN cache, Redis cache
+- **Infrastructure**: Load balancing and auto-scaling when traffic requires it
+- **Caching**: Browser cache and CDN cache
 
-This architecture follows clean architecture principles, ensuring maintainability, scalability, and security while providing an excellent developer and user experience.
+The backend is a layered ports-and-adapters hybrid. It borrows selected clean
+architecture and domain-modelling practices, but it is not a complete CQRS,
+hexagonal, clean-architecture, or DDD implementation. REST and GraphQL
+transports call shared application services; provider-specific persistence,
+mail, Resend, webhook, OpenAI, and S3 code remains behind explicit ports where
+that separation has concrete value.
 
 ## Methodology Defaults
 
 - **TDD**: behavior changes should start with the smallest failing test that
   proves the requirement when practical.
-- **DDD**: backend slices with real business behavior should preserve domain,
-  application, and infrastructure boundaries instead of collapsing everything
-  into controllers and SDK calls. Contact, chat, and portfolio are the current
-  reference bounded contexts in this repo.
+- **DDD**: contact, chat, and portfolio are pragmatic module boundaries with
+  some domain/application/infrastructure separation. Contact has the strongest
+  domain model; the repository does not claim a proven ubiquitous language or
+  a complete strategic DDD design.
 - **BDD**: user-visible backend behavior should be expressed as executable
   Gherkin scenarios. In this repo the first-class path is
   `backend/features/**/*.feature` plus TypeScript step definitions. Contact and

@@ -6,6 +6,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const defaultSiteUrl = 'https://pietrzakprzemyslaw.pl';
+
+function resolveSiteUrl(): string {
+  const configuredSiteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  return (configuredSiteUrl?.trim() || defaultSiteUrl).replace(/\/+$/, '');
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -14,6 +21,7 @@ export async function generateMetadata({
   const { locale } = await params;
 
   const isPolish = locale === 'pl';
+  const siteUrl = resolveSiteUrl();
 
   return {
     title: isPolish
@@ -29,6 +37,14 @@ export async function generateMetadata({
     creator: 'Przemysław Pietrzak',
     publisher: 'Przemysław Pietrzak',
     robots: 'index, follow',
+    alternates: {
+      canonical: `${siteUrl}/${locale}`,
+      languages: {
+        en: `${siteUrl}/en`,
+        pl: `${siteUrl}/pl`,
+        'x-default': `${siteUrl}/en`,
+      },
+    },
     openGraph: {
       title: isPolish
         ? 'Przemysław Pietrzak - Full Stack Developer'
@@ -36,7 +52,7 @@ export async function generateMetadata({
       description: isPolish
         ? 'Full Stack Web Developer specjalizujący się w nowoczesnych aplikacjach webowych (Next.js, Laravel, Node) oraz rozwiązaniach opartych na AI.'
         : 'PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.',
-      url: `https://pietrzakprzemyslaw.pl/${locale}`,
+      url: `${siteUrl}/${locale}`,
       siteName: isPolish ? 'Portfolio Przemysława Pietrzaka' : 'Przemysław Pietrzak Portfolio',
       images: [
         {

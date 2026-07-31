@@ -1,69 +1,64 @@
-version: '3.9'
-
 services:
-  # === Database Services ===
+  # Local development stack only. Production dependencies must stay private
+  # and receive credentials from the deployment secret manager.
   postgres:
     image: postgres:16
     container_name: wiz-postgres
     environment:
-      POSTGRES_DB: wizytowka
-      POSTGRES_USER: wiz_user
-      POSTGRES_PASSWORD: super_tajne_haslo
+      POSTGRES_DB: ${POSTGRES_DB:-wizytowka}
+      POSTGRES_USER: ${POSTGRES_USER:-wiz_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wiz_user -d wizytowka"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wiz_user} -d ${POSTGRES_DB:-wizytowka}"]
       interval: 5s
       timeout: 3s
       retries: 20
-    profiles: ["dev", "staging", "prod"]
+    profiles: ["dev"]
 
   mongo:
     image: mongo:7
     container_name: wiz-mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD}
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongodata:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--username", "root", "--password", "root", "--eval", "db.runCommand({ ping: 1 })"]
+      test: ["CMD-SHELL", "mongosh --username '$${MONGO_INITDB_ROOT_USERNAME}' --password '$${MONGO_INITDB_ROOT_PASSWORD}' --eval 'db.runCommand({ ping: 1 })'"]
       interval: 10s
       timeout: 3s
       retries: 12
-    profiles: ["dev", "staging", "prod"]
+    profiles: ["dev"]
 
-  # === Application Services ===
   backend:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
     container_name: wiz-backend
     ports:
-      - "3001:3001"
+      - "127.0.0.1:4000:4000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://wiz_user:super_tajne_haslo@postgres:5432/wizytowka
-      - MONGO_URL=mongodb://root:root@mongo:27017
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wiz_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wizytowka}
+      MONGO_URL: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD}@mongo:27017
+      MONGODB_DB: ${MONGODB_DB:-wizytowka}
+      FRONTEND_URL: http://localhost:3000
+      TRUST_PROXY: "false"
+      THROTTLE_STORAGE: mongo
+      INTERNAL_PROXY_SHARED_SECRET: ${INTERNAL_PROXY_SHARED_SECRET:?Set INTERNAL_PROXY_SHARED_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
       mongo:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-      - backend_logs:/app/logs
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    profiles: ["dev", "staging", "prod"]
+    profiles: ["dev"]
 
   frontend:
     build:
@@ -71,88 +66,53 @@ services:
       dockerfile: ./frontend/Dockerfile
     container_name: wiz-frontend
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_BACKEND_URL=http://backend:3001
+      NODE_ENV: production
+      BACKEND_API_URL: http://backend:4000
+      BACKEND_GRAPHQL_URL: http://backend:4000/graphql
+      INTERNAL_PROXY_SHARED_SECRET: ${INTERNAL_PROXY_SHARED_SECRET:?Set INTERNAL_PROXY_SHARED_SECRET}
     depends_on:
       backend:
         condition: service_healthy
-    profiles: ["dev", "staging", "prod"]
+    profiles: ["dev"]
 
   # === Development Tools ===
   mongo-express:
     image: mongo-express:1
     container_name: wiz-mongo-express
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD}@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:?Set MONGO_EXPRESS_PASSWORD}
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     depends_on:
       mongo:
         condition: service_healthy
-    profiles: ["dev", "admin"]
+    profiles: ["admin"]
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
     container_name: wiz-mailhog
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI
+      - "127.0.0.1:1025:1025"   # SMTP
+      - "127.0.0.1:8025:8025"   # Web UI
     profiles: ["dev", "dev-mail"]
 
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: wiz-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.test}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "5050:80"
+      - "127.0.0.1:5050:80"
     depends_on:
       postgres:
         condition: service_healthy
-    profiles: ["dev", "admin"]
-
-  # === Monitoring Services ===
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: wiz-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    profiles: ["dev", "staging", "prod"]
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: wiz-grafana
-    ports:
-      - "3002:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
-    profiles: ["dev", "staging", "prod"]
+    profiles: ["admin"]
 
 volumes:
   pgdata: {}
   mongodata: {}
-  backend_logs: {}
-  prometheus_data: {}
-  grafana_data: {}

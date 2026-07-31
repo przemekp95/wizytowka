@@ -3,10 +3,10 @@ import { validate } from 'class-validator';
 import { ChatMessageDto } from './chat-message.dto';
 
 describe('ChatMessageDto', () => {
-  it('accepts a bounded message payload', async () => {
+  it('accepts a bounded message payload with a UUID v4 session id', async () => {
     const payload = plainToInstance(ChatMessageDto, {
       message: 'Jakie technologie znasz?',
-      sessionId: 'session-123',
+      sessionId: '550e8400-e29b-41d4-a716-446655440000',
     });
 
     await expect(validate(payload)).resolves.toHaveLength(0);
@@ -22,10 +22,10 @@ describe('ChatMessageDto', () => {
     expect(errors.some((error) => error.property === 'message')).toBe(true);
   });
 
-  it('rejects an overlong session id', async () => {
+  it('rejects a client-chosen non-UUID session id', async () => {
     const payload = plainToInstance(ChatMessageDto, {
       message: 'test',
-      sessionId: 's'.repeat(101),
+      sessionId: 'session-123',
     });
 
     const errors = await validate(payload);

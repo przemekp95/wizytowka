@@ -36,24 +36,18 @@ DANE PORTFOLIO:
 PROJEKTY:
 ${this.formatPortfolioForPrompt(portfolioData)}
 
-UMIEJĘTNOŚCI TECHNIK:
+TECHNOLOGIE POTWIERDZONE W OPUBLIKOWANYCH PROJEKTACH:
+${this.formatTechnologiesForPrompt(portfolioData)}
 
-
-Kategorie umiejętności:
-- Frontend: React, Next.js, TypeScript, JavaScript, Tailwind CSS (poziom wiedzy: 90-95%)
-- Backend: Node.js, NestJS, Laravel, Symfony, PHP (poziom wiedzy: 80-85%)
-- Bazy danych: MySQL, PostgreSQL, MongoDB (poziom wiedzy: 75-80%)
-- DevOps: Docker, Kubernetes, AWS, Render (poziom wiedzy: 70-78%)
-
-Doświadczenie: ~3 lata komercyjnego doświadczenia, przy czym każdy projekt zajmuje około 3-6 miesięcy.
+Nie podawaj procentów, stażu ani czasu trwania projektów, jeśli nie wynikają wprost z danych portfolio.
 
 INFORMACJE DODATKOWE:
 - Lokalizacja: Polska (Warszawa/Powiat Włoszakowicki)
 - Specjalizacja: Full-stack web development
 - Technologie wspólne: Docker dla konteneryzacji, Git dla kontroli wersji
-- Osoba: Ciężko pracuje nad własnymi projektami i jest otwarty na nowe wyzwania
+- Kontakt: w razie pytań spoza danych portfolio skieruj użytkownika do formularza kontaktowego
 
-Odpowiedzi powinny być krótkie ale poważne, maksymalnie10-20 słów.
+Odpowiedzi powinny być krótkie, profesjonalne i oparte wyłącznie na powyższych danych.
     `;
   }
 
@@ -68,5 +62,18 @@ Odpowiedzi powinny być krótkie ale poważne, maksymalnie10-20 słów.
           `- ${project.title}: ${project.desc} (Technologie: ${project.tags.join(', ')})`,
       )
       .join('\n');
+  }
+
+  private formatTechnologiesForPrompt(projects: PortfolioItem[]): string {
+    const technologies = [
+      ...new Set(projects.flatMap((project) => project.tags)),
+    ]
+      .map((technology) => technology.trim())
+      .filter(Boolean)
+      .sort((left, right) => left.localeCompare(right));
+
+    return technologies.length > 0
+      ? technologies.join(', ')
+      : 'Brak potwierdzonych danych o technologiach.';
   }
 }
