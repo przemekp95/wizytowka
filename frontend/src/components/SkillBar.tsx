@@ -19,19 +19,19 @@ interface SkillBarProps {
 const colorMap = {
   frontEnd: {
     indicator: 'bg-indigo-500',
-    text: 'text-indigo-600',
+    text: 'text-indigo-300',
   },
   backEnd: {
     indicator: 'bg-purple-500',
-    text: 'text-purple-600',
+    text: 'text-purple-300',
   },
   database: {
     indicator: 'bg-cyan-500',
-    text: 'text-cyan-600',
+    text: 'text-cyan-300',
   },
   devops: {
     indicator: 'bg-emerald-500',
-    text: 'text-emerald-600',
+    text: 'text-emerald-300',
   },
 } as const;
 
@@ -93,7 +93,7 @@ export function SkillBar({ skill, locale = 'pl', maxProjects }: SkillBarProps) {
           className={`h-full ${colors.indicator} rounded-full`}
         />
       </Progress.Root>
-      <div className="text-xs text-black dark:text-slate-500 mt-1">
+      <div className="text-xs text-slate-300 mt-1">
         {locale === 'en'
           ? `Used in ${pluralizeProjects(skill.projectCount, locale).toLowerCase()}`
           : pluralizeProjects(skill.projectCount, locale)}
