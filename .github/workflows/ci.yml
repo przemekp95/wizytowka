@@ -24,7 +24,7 @@ env:
 
 jobs:
   backend_test:
-    name: backend-tests
+    name: backend-compatibility
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -102,6 +102,17 @@ jobs:
           path: |
             backend/reports/**
             backend/coverage/**
+
+  backend_required:
+    name: backend-tests
+    needs: backend_test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm backend compatibility matrix
+        env:
+          BACKEND_MATRIX_RESULT: ${{ needs.backend_test.result }}
+        run: test "$BACKEND_MATRIX_RESULT" = success
 
   frontend_test:
     name: frontend-tests
