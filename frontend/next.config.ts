@@ -6,6 +6,7 @@ const repoRoot = path.resolve(frontendDir, '..');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
   outputFileTracingRoot: repoRoot,
   turbopack: {
     root: repoRoot,

@@ -18,8 +18,8 @@ function createContentSecurityPolicy(nonce: string): string {
   ].join('; ');
 }
 
-export function middleware(request: NextRequest): NextResponse {
-  const nonce = crypto.randomUUID();
+export function proxy(request: NextRequest): NextResponse {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const policy = createContentSecurityPolicy(nonce);
   const requestHeaders = new Headers(request.headers);
   const routeLocale = request.nextUrl.pathname.split('/')[1] ?? '';
@@ -40,7 +40,7 @@ export function middleware(request: NextRequest): NextResponse {
 export const config = {
   matcher: [
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+      source: '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
