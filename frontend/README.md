@@ -10,7 +10,7 @@ Next.js 16 frontend for the portfolio site. It serves the locale-aware onepager,
 - `pnpm lint` - ESLint and Prettier check
 - `pnpm typecheck` - TypeScript check
 - `pnpm test` - Vitest unit tests
-- `pnpm test:e2e` - Playwright browser tests
+- `pnpm test:e2e` - Playwright browser tests, including axe-core WCAG A/AA checks
 
 ## Environment
 

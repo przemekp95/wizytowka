@@ -25,7 +25,6 @@
       "NextJS",
       "React",
       "JavaScript",
-      "React",
       "TypeScript",
       "MDX",
       "Cypress",
@@ -48,8 +47,8 @@
     "title": "Mazowieści",
     "slug": "mazowiesci",
     "href": "https://mazowiesci.pl",
-    "desc": "Przeprowadziłem pełną migrację serwisu informacyjnego z WIX do WordPress. Zautomatyzowałem ekstrakcję artykułów z pomocą Python (Scrapy) i zaimportowałem treści do bazy danych WordPress. Stworzyłem niestandardowe skrypty PHP do integracji danych, wdrożyłem politykę optymalizacji SEO, przebudowałem menu i system tagów. Zoptymalizowałem szybkość strony i poprawiłem jej pozycję w Google.",
-    "desc_en": "I have conducted a full migration of the WIX news service to WordPress. I automated the extraction of articles with the help of Python (Scrapy) and imported content into the WordPress database. I created custom PHP scripts for data integration, implemented an SEO optimization policy, rebuilt the menu and tag system. I optimized the speed of the page and improved its position on Google.",
+    "desc": "Przeprowadziłem migrację serwisu informacyjnego z Wix do WordPress. Zautomatyzowałem ekstrakcję artykułów w Pythonie (Scrapy), przygotowałem import treści oraz skrypty PHP do integracji danych, a także przebudowałem menu, tagi i techniczne elementy SEO.",
+    "desc_en": "I migrated a news website from Wix to WordPress. I automated article extraction in Python (Scrapy), prepared content imports and PHP data-integration scripts, and rebuilt the menu, tags and technical SEO elements.",
     "tags": ["WordPress", "PHP", "Python", "HTML", "CSS", "SEO"],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/mazo.png",
     "isLogo": true,
@@ -63,11 +62,11 @@
     "title": "Strona Wizytówka",
     "slug": "strona-wizytowka",
     "href": "https://pietrzakprzemyslaw.pl",
-    "desc": "One-pager w Next.js z Tailwind i Sass.",
-    "desc_en": "One-pager in Next.js with Tailwind and Sass.",
+    "desc": "Dwujęzyczne portfolio w Next.js i React z backendem NestJS, REST/GraphQL, formularzem kontaktowym z outboxem oraz chatbotem korzystającym z OpenAI.",
+    "desc_en": "A bilingual Next.js and React portfolio with a NestJS backend, REST/GraphQL APIs, an outbox-backed contact flow and an OpenAI-powered chatbot.",
     "tags": [
       "NextJS",
-      "JavaScript",
+      "React",
       "NestJS",
       "TypeScript",
       "Tailwind",
@@ -77,8 +76,7 @@
       "MongoDB",
       "REST API",
       "GraphQL API",
-      "Docker",
-      "Kubernetes"
+      "Docker"
     ],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/PP-2-JPG-01.webp",
     "isLogo": true,
@@ -116,7 +114,7 @@
     "dateFrom": "2025-12-01",
     "dateTo": null,
     "order": 6,
-    "status": "published"
+    "status": "draft"
   },
   {
     "title": "AI-enhanced Eisenhower Matrix",
@@ -166,7 +164,7 @@
     "dateFrom": "2025-11-01",
     "dateTo": null,
     "order": 8,
-    "status": "published"
+    "status": "draft"
   },
   {
     "title": "LegatoDesk Shop™",
@@ -180,44 +178,45 @@
     "dateFrom": "2025-11-01",
     "dateTo": null,
     "order": 9,
-    "status": "published"
+    "status": "draft"
   },
   {
     "title": "ORGON™ – System HR",
     "slug": "my-hr-vision-system",
-    "desc": "Modułowy system HR tworzony w Symfony, Twig i MySQL z architekturą mikroserwisową.",
-    "desc_en": "Modular HR management system built with Symfony, Twig and MySQL, using a microservice architecture.",
+    "desc": "Modułowy system HR rozwijany jako monorepo z API i workerem Symfony, interfejsem Next.js, narzędziami Go oraz PostgreSQL.",
+    "desc_en": "A modular HR system developed as a monorepo with a Symfony API and worker, a Next.js interface, Go tooling and PostgreSQL.",
     "tags": [
       "PHP",
-      "MySQL",
       "Symfony",
-      "Twig",
+      "NextJS",
+      "React",
+      "TypeScript",
+      "Go",
+      "PostgreSQL",
       "Docker",
-      "Trivy",
-      "Kubernetes",
-      "Microservices"
+      "Trivy"
     ],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/Logo+PP+Legal+Solutions+-+3.png",
     "isLogo": true,
-    "category": "services, mobile-app, ai",
+    "category": "web-app, services",
     "dateFrom": "2025-09-01",
     "dateTo": "2025-12-31",
     "order": 10,
-    "status": "published"
+    "status": "draft"
   },
   {
     "title": "ORGON™ – Landing Page",
     "slug": "my-hr-vision-landing",
-    "desc": "Landing page sprzedażowy dla systemu ORGON™.",
-    "desc_en": "Sales landing page for the ORGON™ system.",
-    "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
+    "desc": "Landing produktowy ORGON™ utrzymywany w kanonicznej aplikacji Next.js.",
+    "desc_en": "The ORGON™ product landing page maintained in the canonical Next.js application.",
+    "tags": ["NextJS", "React", "TypeScript", "Tailwind", "Trivy"],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/Logo+PP+Legal+Solutions+-+3.png",
     "isLogo": true,
     "category": "landing",
     "dateFrom": "2025-11-01",
     "dateTo": "2025-11-30",
     "order": 11,
-    "status": "published"
+    "status": "draft"
   },
   {
     "title": "PP Solutions P.S.A. – Website & Maintenance",

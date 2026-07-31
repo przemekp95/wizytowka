@@ -14,4 +14,12 @@ describe('localized metadata', () => {
       },
     });
   });
+
+  it.each(['en', 'pl'])('keeps public positioning factual for %s', async (locale) => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ locale }) });
+    const description = String(metadata.description);
+
+    expect(description).toContain('TypeScript');
+    expect(description).not.toMatch(/offline AI|Kubernetes/i);
+  });
 });

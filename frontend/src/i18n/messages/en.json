@@ -9,8 +9,8 @@
     "contactMe": "Contact me"
   },
   "hero": {
-    "title": "Next.js & PHP Web Developer",
-    "description": "I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.",
+    "title": "Full-stack TypeScript Developer",
+    "description": "I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP projects. I work with REST, GraphQL, SQL and MongoDB.",
     "viewProjects": "View projects",
     "contactMe": "Contact me"
   },
@@ -24,12 +24,12 @@
   },
   "about": {
     "title": "About me",
-    "description": "I am a developer combining law and technology. I build modern web applications in Next.js, Laravel and Symfony, design backends in Node/NestJS using Prisma and SQL databases (MySQL, PostgreSQL) and NoSQL (MongoDB). I create REST API and GraphQL API, deploy projects in CI/CD architecture (Docker, GitHub Actions, Passenger on Cyber_Folks), and also develop Kubernetes-based environments and integrate them with cloud services like Render or Vercel. I use automated tests (Jest, React Testing Library, Playwright, PHPUnit) in frontend and backend projects.",
+    "description": "I am a developer combining law and technology. I build applications with React/Next.js and Node/NestJS, and maintain PHP projects in Laravel and Symfony. I work with REST, GraphQL, PostgreSQL, MySQL and MongoDB, and automate testing and delivery with Docker and GitHub Actions.",
     "techStack": "Technology stack",
     "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
     "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
     "databases": "Databases: Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL",
-    "devops": "DevOps: Docker / GitHub Actions / Kubernetes / Passenger (Cyber_Folks) / Render / Vercel / AWS"
+    "devops": "Delivery: Docker / GitHub Actions / Passenger (Cyber_Folks) / Render / Vercel / AWS"
   },
   "contact": {
     "title": "Contact",
