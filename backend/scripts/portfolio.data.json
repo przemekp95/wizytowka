@@ -105,6 +105,7 @@
   {
     "title": "LegatoDesk™ – Landing Page",
     "slug": "legatodesk-landing",
+    "href": "",
     "desc": "Landing page sprzedażowo–kontaktowy dla systemu LegatoDesk™.",
     "desc_en": "Sales and contact landing page for the LegatoDesk™ system.",
     "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
@@ -119,6 +120,7 @@
   {
     "title": "AI-enhanced Eisenhower Matrix",
     "slug": "eisenhower-ai",
+    "href": "",
     "desc": "Aplikacja do zarządzania priorytetami, wzbogacona o funkcje AI i architekturę mikroserwisową.",
     "desc_en": "Priority management application enhanced with AI and microservice architecture.",
     "tags": [
@@ -142,6 +144,7 @@
   {
     "title": "LegatoDesk™ – System",
     "slug": "legatodesk-main",
+    "href": "",
     "desc": "Główny system LegatoDesk™ oparty na Next.js i Nest.js, z integracjami blockchain, BullMQ i Redis.",
     "desc_en": "Main LegatoDesk™ system built with Next.js and Nest.js, featuring blockchain, BullMQ and Redis integrations.",
     "tags": [
@@ -169,6 +172,7 @@
   {
     "title": "LegatoDesk Shop™",
     "slug": "legatodesk-shop",
+    "href": "",
     "desc": "Sklep online dla systemu LegatoDesk™, zbudowany na Next.js i Nest.js.",
     "desc_en": "E-commerce shop for the LegatoDesk™ system, built using Next.js and Nest.js.",
     "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
@@ -183,6 +187,7 @@
   {
     "title": "ORGON™ – System HR",
     "slug": "my-hr-vision-system",
+    "href": "",
     "desc": "Modułowy system HR rozwijany jako monorepo z API i workerem Symfony, interfejsem Next.js, narzędziami Go oraz PostgreSQL.",
     "desc_en": "A modular HR system developed as a monorepo with a Symfony API and worker, a Next.js interface, Go tooling and PostgreSQL.",
     "tags": [
@@ -207,6 +212,7 @@
   {
     "title": "ORGON™ – Landing Page",
     "slug": "my-hr-vision-landing",
+    "href": "",
     "desc": "Landing produktowy ORGON™ utrzymywany w kanonicznej aplikacji Next.js.",
     "desc_en": "The ORGON™ product landing page maintained in the canonical Next.js application.",
     "tags": ["NextJS", "React", "TypeScript", "Tailwind", "Trivy"],

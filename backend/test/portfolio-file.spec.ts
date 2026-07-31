@@ -51,6 +51,14 @@ describe('portfolio file sync helpers', () => {
     );
   });
 
+  it('keeps every tracked portfolio item valid for production synchronization', () => {
+    expect(() =>
+      portfolioData.map((item, index) =>
+        toPortfolioMongoDocument(item as PortfolioFileItem, index),
+      ),
+    ).not.toThrow();
+  });
+
   it('normalizes a file item into a Mongo document while preserving existing identity', () => {
     const now = new Date('2026-03-23T10:00:00.000Z');
     const createdAt = new Date('2026-03-01T09:00:00.000Z');
