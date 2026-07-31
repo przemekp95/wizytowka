@@ -25,6 +25,7 @@ export default function ProfileImage({ src, alt, className, priority }: ProfileI
         src={src}
         alt={alt}
         fill
+        sizes="(min-width: 1024px) 448px, (min-width: 640px) 50vw, 100vw"
         className={`object-cover transition-all duration-500 ${mounted && isDark ? 'filter brightness-110 contrast-110' : ''} ${className || ''}`}
         priority={priority}
         style={{

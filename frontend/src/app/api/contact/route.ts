@@ -1,9 +1,22 @@
-import { createBackendProxyHeaders, resolveBackendGraphqlUrl } from '../_lib/backend-proxy';
+import {
+  createBackendProxyHeaders,
+  createBackendProxyResponseHeaders,
+  isJsonRequest,
+  ProxyPayloadTooLargeError,
+  readBoundedRequestText,
+  resolveBackendGraphqlUrl,
+} from '../_lib/backend-proxy';
 
 export async function POST(request: Request): Promise<Response> {
-  const body = await request.text();
+  if (!isJsonRequest(request)) {
+    return Response.json(
+      { errors: [{ message: 'Content-Type must be application/json' }] },
+      { status: 415 }
+    );
+  }
 
   try {
+    const body = await readBoundedRequestText(request);
     const backendResponse = await fetch(resolveBackendGraphqlUrl(), {
       method: 'POST',
       headers: createBackendProxyHeaders(request),
@@ -15,16 +28,16 @@ export async function POST(request: Request): Promise<Response> {
 
     return new Response(responseBody, {
       status: backendResponse.status,
-      headers: {
-        'content-type': backendResponse.headers.get('content-type') ?? 'application/json',
-      },
+      headers: createBackendProxyResponseHeaders(backendResponse.headers),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown proxy error';
+    if (error instanceof ProxyPayloadTooLargeError) {
+      return Response.json({ errors: [{ message: error.message }] }, { status: 413 });
+    }
 
     return Response.json(
       {
-        errors: [{ message }],
+        errors: [{ message: 'Backend service unavailable' }],
       },
       { status: 502 }
     );

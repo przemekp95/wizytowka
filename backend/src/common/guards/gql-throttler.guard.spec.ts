@@ -20,6 +20,8 @@ describe('GqlThrottlerGuard', () => {
         publicHttpTtlMs: 60_000,
         chatHttpLimit: 20,
         chatHttpTtlMs: 60_000,
+        chatHttpGlobalLimit: 100,
+        chatHttpGlobalTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
       {
         uri: undefined,
@@ -38,6 +40,8 @@ describe('GqlThrottlerGuard', () => {
         publicHttpTtlMs: 60_000,
         chatHttpLimit: 20,
         chatHttpTtlMs: 60_000,
+        chatHttpGlobalLimit: 100,
+        chatHttpGlobalTtlMs: 60_000,
       } satisfies ConfigType<typeof throttleConfig>,
       {
         nodeEnv: 'test',
@@ -119,5 +123,31 @@ describe('GqlThrottlerGuard', () => {
 
     expect(status).toHaveBeenCalledWith(429);
     expect(setHeader).toHaveBeenCalledWith('Retry-After', '60');
+  });
+
+  it('shares the contact submission bucket with the REST endpoint', async () => {
+    const increment = jest
+      .spyOn((guard as any).storage, 'increment')
+      .mockResolvedValue({ activeHits: [Date.now()], blocked: false });
+    const req = { ip: '198.51.100.30' };
+    const res = { setHeader: jest.fn(), status: jest.fn() };
+    const context = {
+      getType: () => 'graphql',
+      getClass: () => ({ name: 'ContactResolver' }),
+      getHandler: () => ({ name: 'sendContact' }),
+    } as unknown as ExecutionContext;
+
+    jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
+      getContext: () => ({ req, res }),
+    } as unknown as GqlExecutionContext);
+
+    await guard.canActivate(context);
+
+    expect(increment).toHaveBeenCalledWith(
+      'contact-public:198.51.100.30',
+      60_000,
+      30,
+      expect.any(Number),
+    );
   });
 });

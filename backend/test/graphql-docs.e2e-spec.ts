@@ -109,20 +109,23 @@ describe('GraphQL docs (e2e)', () => {
         expect.objectContaining({
           name: 'ContactResult',
           description:
-            'Result returned after attempting to process a public contact submission.',
+            'Result returned after attempting to process a public contact submission and queue async delivery.',
         }),
       ]),
     );
   });
 
-  it('writes the GraphQL SDL with descriptions to backend/schema.gql', async () => {
-    const schemaSdl = await readFile(join(process.cwd(), 'schema.gql'), 'utf8');
+  it('writes the GraphQL SDL with descriptions to the configured artifact', async () => {
+    const schemaSdl = await readFile(
+      process.env.GRAPHQL_SCHEMA_FILE ?? join(process.cwd(), 'schema.gql'),
+      'utf8',
+    );
 
     expect(schemaSdl).toContain(
       'Public contact form input accepted by the sendContact mutation.',
     );
     expect(schemaSdl).toContain(
-      'Submit a public contact message. This mutation is rate-limited and returns ok=false when delivery fails.',
+      'Submit a public contact message. This mutation is rate-limited and returns ok=true once the message is persisted and queued for async delivery.',
     );
     expect(schemaSdl).toContain(
       'Minimal GraphQL hello query exposed for smoke testing and tooling checks.',

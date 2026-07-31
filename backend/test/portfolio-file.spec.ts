@@ -5,6 +5,7 @@ import {
   type PortfolioFileItem,
   type PortfolioMongoDocument,
 } from '../scripts/portfolio-file';
+import portfolioData from '../scripts/portfolio.data.json';
 
 describe('portfolio file sync helpers', () => {
   const originalEnv = { ...process.env };
@@ -15,6 +16,23 @@ describe('portfolio file sync helpers', () => {
 
   afterAll(() => {
     process.env = originalEnv;
+  });
+
+  it('keeps published portfolio links and the business-card stack factual', () => {
+    const items = portfolioData as PortfolioFileItem[];
+    const businessCard = items.find((item) => item.slug === 'strona-wizytowka');
+    const ppSolutions = items.find((item) => item.slug === 'pp-solutions-website');
+
+    expect(items.filter((item) => item.status === 'published')).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ href: '' })]),
+    );
+    expect(ppSolutions?.repoUrl).toBeUndefined();
+    expect(businessCard?.tags).toEqual(
+      expect.arrayContaining(['NextJS', 'NestJS', 'Prisma', 'MongoDB']),
+    );
+    expect(businessCard?.tags).not.toEqual(
+      expect.arrayContaining(['PostgreSQL', 'MUI', 'Microservices']),
+    );
   });
 
   it('normalizes a file item into a Mongo document while preserving existing identity', () => {

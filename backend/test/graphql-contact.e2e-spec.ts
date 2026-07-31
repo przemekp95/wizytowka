@@ -9,7 +9,7 @@ import { GqlThrottlerGuard } from '../src/common/guards/gql-throttler.guard';
 describe('GraphQL Contact (e2e)', () => {
   let app: INestApplication;
   const contactService = {
-    createAndNotify: jest.fn(),
+    createAndQueueNotification: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -32,10 +32,9 @@ describe('GraphQL Contact (e2e)', () => {
 
   beforeEach(() => {
     app.get(GqlThrottlerGuard).reset();
-    contactService.createAndNotify.mockReset();
-    contactService.createAndNotify.mockResolvedValue({
+    contactService.createAndQueueNotification.mockReset();
+    contactService.createAndQueueNotification.mockResolvedValue({
       ok: true,
-      messageId: 'msg-123',
       savedId: 'saved-123',
     });
   });
@@ -111,6 +110,6 @@ describe('GraphQL Contact (e2e)', () => {
 
     expect(throttled.status).toBe(429);
     expect(JSON.stringify(throttled.body).toLowerCase()).toMatch(/rate|throttle|too many/i);
-    expect(contactService.createAndNotify).toHaveBeenCalledTimes(30);
+    expect(contactService.createAndQueueNotification).toHaveBeenCalledTimes(30);
   });
 });

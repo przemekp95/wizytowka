@@ -3,8 +3,8 @@
     "title": "CASN Laravel",
     "slug": "casn-laravel",
     "href": "https://casn.pietrzakprzemyslaw.pl",
-    "desc": "Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade), deploy na hosting. (link prowadzi do zdjętej wersji strony)",
-    "desc_en": "I created a web application in the Laravel framework for the Analysis Center of the Służba Niepodległej Foundation. I have implemented routing, responsive front (Blade), deploying to hosting. (link leads to the snapshot version of the page)",
+    "desc": "Stworzyłem aplikację webową w frameworku Laravel dla Centrum Analiz Służby Niepodległej. Wdrożyłem routing, responsywny front (Blade) i deploy na hosting.",
+    "desc_en": "I created a Laravel web application for the Analysis Center of the Służba Niepodległej Foundation, including routing, a responsive Blade frontend and deployment.",
     "tags": ["jQuery", "Laravel", "PHP", "Blade"],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/logo.jpg",
     "isLogo": true,
@@ -23,6 +23,7 @@
     "desc_en": "Migration of the think tank from Laravel on Next.js 15 App Router.",
     "tags": [
       "NextJS",
+      "React",
       "JavaScript",
       "React",
       "TypeScript",
@@ -72,14 +73,12 @@
       "Tailwind",
       "CSS",
       "SCSS",
-      "PostgreSQL",
+      "Prisma",
       "MongoDB",
       "REST API",
       "GraphQL API",
       "Docker",
-      "Kubernetes",
-      "MUI",
-      "Microservices"
+      "Kubernetes"
     ],
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/PP-2-JPG-01.webp",
     "isLogo": true,
@@ -108,7 +107,6 @@
   {
     "title": "LegatoDesk™ – Landing Page",
     "slug": "legatodesk-landing",
-    "href": "",
     "desc": "Landing page sprzedażowo–kontaktowy dla systemu LegatoDesk™.",
     "desc_en": "Sales and contact landing page for the LegatoDesk™ system.",
     "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
@@ -123,7 +121,6 @@
   {
     "title": "AI-enhanced Eisenhower Matrix",
     "slug": "eisenhower-ai",
-    "href": "",
     "desc": "Aplikacja do zarządzania priorytetami, wzbogacona o funkcje AI i architekturę mikroserwisową.",
     "desc_en": "Priority management application enhanced with AI and microservice architecture.",
     "tags": [
@@ -147,7 +144,6 @@
   {
     "title": "LegatoDesk™ – System",
     "slug": "legatodesk-main",
-    "href": "",
     "desc": "Główny system LegatoDesk™ oparty na Next.js i Nest.js, z integracjami blockchain, BullMQ i Redis.",
     "desc_en": "Main LegatoDesk™ system built with Next.js and Nest.js, featuring blockchain, BullMQ and Redis integrations.",
     "tags": [
@@ -175,7 +171,6 @@
   {
     "title": "LegatoDesk Shop™",
     "slug": "legatodesk-shop",
-    "href": "",
     "desc": "Sklep online dla systemu LegatoDesk™, zbudowany na Next.js i Nest.js.",
     "desc_en": "E-commerce shop for the LegatoDesk™ system, built using Next.js and Nest.js.",
     "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
@@ -190,7 +185,6 @@
   {
     "title": "ORGON™ – System HR",
     "slug": "my-hr-vision-system",
-    "href": "",
     "desc": "Modułowy system HR tworzony w Symfony, Twig i MySQL z architekturą mikroserwisową.",
     "desc_en": "Modular HR management system built with Symfony, Twig and MySQL, using a microservice architecture.",
     "tags": [
@@ -214,7 +208,6 @@
   {
     "title": "ORGON™ – Landing Page",
     "slug": "my-hr-vision-landing",
-    "href": "",
     "desc": "Landing page sprzedażowy dla systemu ORGON™.",
     "desc_en": "Sales landing page for the ORGON™ system.",
     "tags": ["NextJS", "JavaScript", "NestJS", "TypeScript", "CSS", "Trivy"],
@@ -258,7 +251,6 @@
     "img": "https://wizytowka.s3.eu-north-1.amazonaws.com/Logo+PP+Legal+Solutions+-+3.png",
     "isLogo": true,
     "category": "web-app",
-    "repoUrl": "https://github.com/przemekp95/PP_Solutions_P.S.A.",
     "dateFrom": "2025-10-01",
     "dateTo": "2025-11-30",
     "order": 12,

@@ -11,14 +11,35 @@ datasource db {
 }
 
 model ContactMessage {
-  id        String   @id @default(cuid()) @map("_id")
-  name      String
-  email     String
-  message   String
-  ip        String?
-  createdAt DateTime @default(now())
+  id                         String   @id @default(cuid()) @map("_id")
+  name                       String
+  email                      String
+  message                    String
+  ip                         String?
+  requestId                  String?
+  notificationStatus         String   @default("pending")
+  notificationAttempts       Int      @default(0)
+  notificationNextAttemptAt  DateTime? @default(now())
+  notificationLeaseExpiresAt DateTime?
+  notificationLastError      String?
+  notificationSubmittedAt    DateTime?
+  notificationSentAt         DateTime?
+  notificationMessageId      String?
+  createdAt                  DateTime @default(now())
 
   @@map("contact_messages")
+}
+
+model ContactNotificationWebhookEvent {
+  id                    String   @id @map("_id")
+  provider              String
+  eventType             String
+  contactMessageId      String?
+  notificationMessageId String?
+  eventCreatedAt        DateTime
+  receivedAt            DateTime @default(now())
+
+  @@map("contact_notification_webhook_events")
 }
 
 model PortfolioItem {

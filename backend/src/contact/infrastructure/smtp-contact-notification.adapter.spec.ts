@@ -18,6 +18,7 @@ describe('SmtpContactNotificationAdapter', () => {
     jest.clearAllMocks();
 
     contactConfiguration = {
+      notificationProvider: 'smtp',
       smtpHost: 'smtp.test.local',
       smtpPort: 465,
       smtpSecure: true,
@@ -26,6 +27,20 @@ describe('SmtpContactNotificationAdapter', () => {
       smtpUser: 'smtpuser@test.local',
       smtpPass: 'smtppass123',
       smtpDebug: false,
+      resendApiKey: undefined,
+      resendWebhookSecret: undefined,
+      notificationDispatchEnabled: true,
+      notificationDispatchIntervalMs: 1000,
+      notificationDispatchBatchSize: 10,
+      notificationLeaseMs: 30_000,
+      notificationMaxAttempts: 5,
+      notificationBaseDelayMs: 30_000,
+      notificationMaxDelayMs: 900_000,
+      notificationSubmittedRecheckMs: 300_000,
+      notificationSubmittedTimeoutMs: 86_400_000,
+      dataRetentionEnabled: true,
+      dataRetentionMs: 90 * 24 * 60 * 60_000,
+      retentionSweepIntervalMs: 60 * 60_000,
     };
 
     sendMailMock = jest.fn().mockResolvedValue({
@@ -49,24 +64,32 @@ describe('SmtpContactNotificationAdapter', () => {
   });
 
   it('sends SMTP notification and returns message id', async () => {
-    const result = await adapter.send(
-      ContactSubmission.create({
+    const result = await adapter.send({
+      submission: ContactSubmission.create({
         name: 'Jan',
         email: 'JAN@test.local',
         message: 'Treść wiadomości',
         ip: '203.0.113.7',
         requestId: 'req-123',
       }),
-    );
+      deliveryKey: 'contact-1',
+    });
 
-    expect(result).toEqual({ messageId: 'test-id' });
+    expect(result).toEqual({
+      messageId: '<contact-contact-1@test.local>',
+      deliveryState: 'delivered',
+    });
     expect(sendMailMock).toHaveBeenCalledWith({
       from: 'from@test.local',
       to: 'to@test.local',
       replyTo: 'jan@test.local',
       subject: 'Wiadomość ze strony – Jan',
       text: expect.stringContaining('Imię i nazwisko: Jan'),
-      headers: { 'X-Request-Id': 'req-123' },
+      messageId: '<contact-contact-1@test.local>',
+      headers: {
+        'X-Request-Id': 'req-123',
+        'X-Contact-Delivery-Key': 'contact-1',
+      },
     });
   });
 
@@ -74,35 +97,32 @@ describe('SmtpContactNotificationAdapter', () => {
     contactConfiguration.smtpHost = undefined;
 
     await expect(
-      adapter.send(
-        ContactSubmission.create({
+      adapter.send({
+        submission: ContactSubmission.create({
           name: 'Test',
           email: 'test@test.local',
           message: 'Test message',
         }),
-      ),
+        deliveryKey: 'contact-2',
+      }),
     ).rejects.toThrow(/Brak konfiguracji SMTP/i);
   });
 
-  it('retries once before succeeding on temporary failure', async () => {
-    sendMailMock
-      .mockRejectedValueOnce(new Error('Temporary SMTP error'))
-      .mockResolvedValueOnce({
-        messageId: 'retried-success-id',
-        accepted: ['to@example.com'],
-        rejected: [],
-      });
+  it('bubbles SMTP transport errors so the outbox processor can retry', async () => {
+    sendMailMock.mockRejectedValueOnce(new Error('Temporary SMTP error'));
 
-    const result = await adapter.send(
-      ContactSubmission.create({
-        name: 'Test',
-        email: 'test@test.local',
-        message: 'Test message',
-        requestId: 'retry-test',
+    await expect(
+      adapter.send({
+        submission: ContactSubmission.create({
+          name: 'Test',
+          email: 'test@test.local',
+          message: 'Test message',
+          requestId: 'retry-test',
+        }),
+        deliveryKey: 'contact-3',
       }),
-    );
+    ).rejects.toThrow('Temporary SMTP error');
 
-    expect(result).toEqual({ messageId: 'retried-success-id' });
-    expect(sendMailMock).toHaveBeenCalledTimes(2);
+    expect(sendMailMock).toHaveBeenCalledTimes(1);
   });
 });

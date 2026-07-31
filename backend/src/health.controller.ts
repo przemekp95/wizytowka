@@ -31,9 +31,6 @@ export class HealthController {
       ok: true,
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      version: '1.0.0',
     };
   }
 
@@ -44,9 +41,11 @@ export class HealthController {
   @ApiOkResponse({ type: HealthReadyResponseDto })
   @ApiServiceUnavailableResponse({ type: HealthReadyResponseDto })
   async ready() {
+    const prisma = await this.prismaService.getDependencyStatus();
+    const mongo = await this.portfolioService.getDependencyStatus();
     const dependencies = {
-      prisma: await this.prismaService.getDependencyStatus(),
-      mongo: await this.portfolioService.getDependencyStatus(),
+      prisma: { name: prisma.name, ready: prisma.ready },
+      mongo: { name: mongo.name, ready: mongo.ready },
     };
 
     const payload = {

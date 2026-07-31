@@ -190,7 +190,7 @@ describe('AwsService', () => {
       });
     });
 
-    it('should handle files without extension', async () => {
+    it('derives the stored extension from the validated MIME type', async () => {
       const { v4: uuidv4 } = require('uuid');
       (uuidv4 as jest.Mock).mockReturnValue('mocked-uuid');
       (pathMock.extname as jest.Mock).mockReturnValue('');
@@ -215,13 +215,13 @@ describe('AwsService', () => {
       const result = await service.uploadImage(fileWithoutExtension);
 
       expect(result).toBe(
-        'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid',
+        'https://test-bucket.s3.amazonaws.com/portfolio/mocked-uuid.jpg',
       );
       expect(mockUpload).toHaveBeenCalledWith({
         client: expect.any(Object),
         params: {
           Bucket: mockBucketName,
-          Key: 'portfolio/mocked-uuid',
+          Key: 'portfolio/mocked-uuid.jpg',
           Body: fileWithoutExtension.buffer,
           ContentType: fileWithoutExtension.mimetype,
           ACL: 'public-read',
@@ -249,23 +249,24 @@ describe('AwsService', () => {
     });
 
     it('should handle timeout on upload', async () => {
-      jest.setTimeout(35000); // Increase timeout for this test
+      jest.useFakeTimers();
       const mockUploadInstance = {
-        done: jest
-          .fn()
-          .mockImplementation(
-            () => new Promise((resolve) => setTimeout(resolve, 35000)),
-          ),
+        done: jest.fn().mockImplementation(() => new Promise(() => undefined)),
       };
       (mockUpload as any).mockImplementation(() => mockUploadInstance);
       (mockS3Client as any).mockImplementation(() => ({
         send: jest.fn(),
       }));
 
-      await expect(service.uploadImage(mockFile)).rejects.toThrow(
+      const timeoutExpectation = expect(
+        service.uploadImage(mockFile),
+      ).rejects.toThrow(
         'Upload timeout after 30s',
       );
-    }, 40000);
+      await jest.advanceTimersByTimeAsync(30000);
+      await timeoutExpectation;
+      jest.useRealTimers();
+    });
 
     it('should reuse S3 client instance', async () => {
       const mockUploadInstance = {

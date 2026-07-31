@@ -39,7 +39,7 @@ export class GqlThrottlerGuard implements CanActivate {
 
     const { req, res } = this.getRequestResponse(context);
     const tracker = this.getTracker(req);
-    const key = `${context.getClass().name}:${context.getHandler().name}:${tracker}`;
+    const key = this.getThrottleKey(context, tracker);
     const now = Date.now();
     const { activeHits, blocked } = await this.storage
       .increment(
@@ -48,7 +48,7 @@ export class GqlThrottlerGuard implements CanActivate {
         this.throttleConfiguration.limit,
         now,
       )
-      .catch((error) => this.throwStorageUnavailable(res, error));
+      .catch(() => this.throwStorageUnavailable(res));
 
     if (blocked) {
       const retryAfterSeconds = Math.max(
@@ -149,7 +149,7 @@ export class GqlThrottlerGuard implements CanActivate {
     });
   }
 
-  protected throwStorageUnavailable(res: Response, error: unknown): never {
+  protected throwStorageUnavailable(res: Response): never {
     res.status(503);
 
     throw new GraphQLError('Rate limit storage unavailable', {
@@ -158,9 +158,19 @@ export class GqlThrottlerGuard implements CanActivate {
         http: {
           status: 503,
         },
-        originalError: error instanceof Error ? error.message : String(error),
       },
     });
+  }
+
+  private getThrottleKey(context: ExecutionContext, tracker: string): string {
+    const className = context.getClass().name;
+    const handlerName = context.getHandler().name;
+
+    if (className === 'ContactResolver' && handlerName === 'sendContact') {
+      return `contact-public:${tracker}`;
+    }
+
+    return `${className}:${handlerName}:${tracker}`;
   }
 
   private setRateLimitHeaders(

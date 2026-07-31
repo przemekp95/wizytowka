@@ -4,7 +4,6 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.bootstrap';
 import { LoggingService } from '../src/logging/logging.service';
-import { MetricsService } from '../src/metrics/metrics.service';
 
 describe('App HTTP (e2e)', () => {
   let app: INestApplication;
@@ -16,24 +15,12 @@ describe('App HTTP (e2e)', () => {
     logRequest: jest.fn(),
     logDatabase: jest.fn(),
   };
-  const metricsService = {
-    recordHttpRequest: jest.fn(),
-    incrementActiveConnections: jest.fn(),
-    decrementActiveConnections: jest.fn(),
-    recordDatabaseOperation: jest.fn(),
-    recordError: jest.fn(),
-    getMetrics: jest.fn(),
-    getRegister: jest.fn(),
-  };
-
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(LoggingService)
       .useValue(loggingService)
-      .overrideProvider(MetricsService)
-      .useValue(metricsService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -45,7 +32,7 @@ describe('App HTTP (e2e)', () => {
     await app.close();
   });
 
-  it('GET /api -> Hello World! with request tracing and metrics', async () => {
+  it('GET /api -> Hello World! with request tracing and logging', async () => {
     const response = await request(app.getHttpServer())
       .get('/api')
       .expect(200)
@@ -64,12 +51,6 @@ describe('App HTTP (e2e)', () => {
       200,
       expect.any(Number),
       expect.any(String),
-    );
-    expect(metricsService.recordHttpRequest).toHaveBeenCalledWith(
-      'GET',
-      '/api',
-      200,
-      expect.any(Number),
     );
   });
 });

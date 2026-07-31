@@ -4,26 +4,26 @@ import {
   type ContactMessageRepositoryPort,
 } from './application/ports/contact-message-repository.port';
 import {
-  CONTACT_NOTIFICATION_PORT,
-  type ContactNotificationPort,
-} from './application/ports/contact-notification.port';
-import {
   ContactSubmission,
   type ContactSubmissionProps,
 } from './domain/contact-submission';
+import {
+  CONTACT_NOTIFICATION_DISPATCH_PORT,
+  type ContactNotificationDispatchPort,
+} from './application/ports/contact-notification-dispatch.port';
 
 export type CreateContactInput = ContactSubmissionProps;
+
+export type ContactSubmissionFailureCode = 'contact_persistence_failed';
 
 export type CreateContactResult =
   | {
       ok: true;
-      messageId: string;
       savedId: string;
     }
   | {
       ok: false;
-      error: string;
-      savedId?: string;
+      failureCode: ContactSubmissionFailureCode;
     };
 
 @Injectable()
@@ -33,40 +33,31 @@ export class ContactService {
   constructor(
     @Inject(CONTACT_MESSAGE_REPOSITORY)
     private readonly repository: ContactMessageRepositoryPort,
-    @Inject(CONTACT_NOTIFICATION_PORT)
-    private readonly notifier: ContactNotificationPort,
+    @Inject(CONTACT_NOTIFICATION_DISPATCH_PORT)
+    private readonly notificationDispatch: ContactNotificationDispatchPort,
   ) {}
 
-  async sendMail(params: CreateContactInput): Promise<{ messageId: string }> {
-    return this.notifier.send(ContactSubmission.create(params));
-  }
-
-  async createAndNotify(
+  async createAndQueueNotification(
     params: CreateContactInput,
   ): Promise<CreateContactResult> {
     const submission = ContactSubmission.create(params);
 
     try {
       const saved = await this.repository.save(submission);
-      const savedId = saved.id;
-
       try {
-        const { messageId } = await this.notifier.send(submission);
-        return { ok: true, messageId, savedId };
+        this.notificationDispatch.kick();
       } catch (error) {
-        const deliveryError =
-          error instanceof Error ? error : new Error(String(error));
-        this.logger.error(
-          `Mail send failed. requestId=${submission.requestId} savedId=${savedId} reason=${deliveryError.message}`,
+        this.logger.warn(
+          `Queued contact notification dispatch trigger failed. savedId=${saved.id} reason=${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
-
-        return {
-          ok: false,
-          error:
-            'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
-          savedId,
-        };
       }
+
+      return {
+        ok: true,
+        savedId: saved.id,
+      };
     } catch (error) {
       const saveError =
         error instanceof Error ? error : new Error(String(error));
@@ -76,7 +67,7 @@ export class ContactService {
 
       return {
         ok: false,
-        error: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',
+        failureCode: 'contact_persistence_failed',
       };
     }
   }

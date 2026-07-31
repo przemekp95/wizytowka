@@ -2,17 +2,12 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import nodemailer from 'nodemailer';
 import { contactConfig } from '../../config';
-import { ContactSubmission } from '../domain/contact-submission';
 import type {
-  ContactNotificationPort,
+  ContactNotificationRequest,
+  ContactNotificationSenderPort,
   SentContactNotification,
 } from '../application/ports/contact-notification.port';
-
-interface RetryOptions {
-  maxRetries: number;
-  baseDelay: number;
-  maxDelay: number;
-}
+import { ContactNotificationError } from '../application/ports/contact-notification.port';
 
 type SentMailResult = {
   messageId: string;
@@ -27,6 +22,7 @@ type MailTransporter = {
     replyTo: string;
     subject: string;
     text: string;
+    messageId: string;
     headers: Record<string, string>;
   }) => Promise<SentMailResult>;
 };
@@ -39,7 +35,7 @@ type NodemailerModule = {
 };
 
 @Injectable()
-export class SmtpContactNotificationAdapter implements ContactNotificationPort {
+export class SmtpContactNotificationAdapter implements ContactNotificationSenderPort {
   private readonly logger = new Logger(SmtpContactNotificationAdapter.name);
   private readonly nodemailerModule = nodemailer as unknown as NodemailerModule;
   private transporter: MailTransporter | null = null;
@@ -86,47 +82,10 @@ export class SmtpContactNotificationAdapter implements ContactNotificationPort {
     return this.transporter;
   }
 
-  private async retryWithBackoff<T>(
-    operation: () => Promise<T>,
-    options: RetryOptions,
-    requestId?: string,
-  ): Promise<T> {
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          this.logger.warn(
-            `Retry attempt ${attempt}/${options.maxRetries} for requestId=${requestId}`,
-          );
-        }
-
-        return await operation();
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-
-        if (attempt === options.maxRetries) {
-          break;
-        }
-
-        const delay = Math.min(
-          options.baseDelay * Math.pow(2, attempt),
-          options.maxDelay,
-        );
-
-        this.logger.warn(
-          `Email send failed (attempt ${attempt + 1}), retrying in ${delay}ms. ` +
-            `Error: ${lastError.message} requestId=${requestId}`,
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-
-    throw lastError!;
-  }
-
-  async send(submission: ContactSubmission): Promise<SentContactNotification> {
+  async send({
+    submission,
+    deliveryKey,
+  }: ContactNotificationRequest): Promise<SentContactNotification> {
     const from =
       this.contactConfiguration.smtpFrom ??
       this.contactConfiguration.smtpUser ??
@@ -137,7 +96,10 @@ export class SmtpContactNotificationAdapter implements ContactNotificationPort {
       '';
 
     if (!this.contactConfiguration.smtpHost || !from || !to) {
-      throw new Error('Brak konfiguracji SMTP (HOST/FROM/TO)');
+      throw new ContactNotificationError(
+        'Brak konfiguracji SMTP (HOST/FROM/TO)',
+        false,
+      );
     }
 
     const lines: string[] = [
@@ -149,33 +111,39 @@ export class SmtpContactNotificationAdapter implements ContactNotificationPort {
       submission.message,
     ].filter(Boolean);
 
-    const info = await this.retryWithBackoff(
-      async () => {
-        const transporter = this.getTransporter();
-
-        return transporter.sendMail({
-          from,
-          to,
-          replyTo: submission.email,
-          subject: `Wiadomość ze strony – ${submission.name}`,
-          text: lines.join('\n'),
-          headers: { 'X-Request-Id': submission.requestId ?? '' },
-        });
+    const transporter = this.getTransporter();
+    const messageId = this.buildStableMessageId(deliveryKey, from);
+    const info = await transporter.sendMail({
+      from,
+      to,
+      replyTo: submission.email,
+      subject: `Wiadomość ze strony – ${submission.name}`,
+      text: lines.join('\n'),
+      messageId,
+      headers: {
+        'X-Request-Id': submission.requestId ?? '',
+        'X-Contact-Delivery-Key': deliveryKey,
       },
-      {
-        maxRetries: 3,
-        baseDelay: 1000,
-        maxDelay: 10_000,
-      },
-      submission.requestId,
-    );
+    });
 
     this.logger.log(
-      `Mail sent successfully: messageId=${info.messageId} ` +
+      `Mail sent successfully: messageId=${messageId} ` +
         `accepted=${JSON.stringify(info.accepted)} ` +
         `rejected=${JSON.stringify(info.rejected)} req=${submission.requestId}`,
     );
 
-    return { messageId: info.messageId };
+    return {
+      messageId,
+      deliveryState: 'delivered',
+    };
+  }
+  private buildStableMessageId(deliveryKey: string, from: string): string {
+    const sanitizedKey = deliveryKey.replace(/[^a-zA-Z0-9_.-]/g, '-');
+    const domainMatch = from.match(/@([^>\s]+)/);
+    const sanitizedDomain = (domainMatch?.[1] ?? 'localhost')
+      .toLowerCase()
+      .replace(/[^a-z0-9.-]/g, '');
+
+    return `<contact-${sanitizedKey}@${sanitizedDomain || 'localhost'}>`;
   }
 }

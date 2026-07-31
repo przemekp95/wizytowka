@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { AOSInitializer } from '../components/AOSInitializer';
 import { CustomCursor } from '../components/CustomCursor';
-import { GoogleAnalytics } from '../components/GoogleAnalytics';
 import './globals.css';
 
 const geistSans = Geist({
@@ -23,7 +20,6 @@ const supportedLocales = new Set(['pl', 'en']);
 const defaultLocale = 'en';
 const googleSiteVerification =
   process.env.GOOGLE_SITE_VERIFICATION || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
-const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.GA_MEASUREMENT_ID;
 
 function resolveHtmlLocale(rawLocale: string | null): string {
   if (!rawLocale) {
@@ -116,11 +112,6 @@ export default async function RootLayout({
         <AOSInitializer />
         <ErrorBoundary>{children}</ErrorBoundary>
         <CustomCursor />
-        {gaMeasurementId && process.env.NODE_ENV === 'production' ? (
-          <GoogleAnalytics measurementId={gaMeasurementId} />
-        ) : null}
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
