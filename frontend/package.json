@@ -44,6 +44,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/eslintrc": "^3.3.5",
     "@graphql-codegen/cli": "^6.2.1",
     "@graphql-codegen/client-preset": "^4.2.1",

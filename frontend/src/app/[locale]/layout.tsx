@@ -25,11 +25,11 @@ export async function generateMetadata({
 
   return {
     title: isPolish
-      ? 'Przemysław Pietrzak - Full Stack Developer | Next.js, PHP, AI'
-      : 'IT Business Card - Przemysław Pietrzak',
+      ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
+      : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description: isPolish
-      ? 'Full Stack Web Developer specjalizujący się w nowoczesnych aplikacjach webowych (Next.js, Laravel, Node) oraz rozwiązaniach opartych na AI.'
-      : 'PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.',
+      ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
+      : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
     keywords: isPolish
       ? 'Przemysław Pietrzak, Full Stack Developer, Next.js, React, TypeScript, PHP, Laravel, Node.js, AI, Web Applications, Portfolio'
       : 'Next.js, PHP, Laravel, Web Developer, React, Prisma, Docker, AI, Web Applications, Przemysław Pietrzak',
@@ -47,11 +47,11 @@ export async function generateMetadata({
     },
     openGraph: {
       title: isPolish
-        ? 'Przemysław Pietrzak - Full Stack Developer'
-        : 'IT Business Card - Przemysław Pietrzak',
+        ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
+        : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
       description: isPolish
-        ? 'Full Stack Web Developer specjalizujący się w nowoczesnych aplikacjach webowych (Next.js, Laravel, Node) oraz rozwiązaniach opartych na AI.'
-        : 'PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.',
+        ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
+        : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
       url: `${siteUrl}/${locale}`,
       siteName: isPolish ? 'Portfolio Przemysława Pietrzaka' : 'Przemysław Pietrzak Portfolio',
       images: [
@@ -70,11 +70,11 @@ export async function generateMetadata({
     twitter: {
       card: 'summary_large_image',
       title: isPolish
-        ? 'Przemysław Pietrzak - Full Stack Developer'
-        : 'IT Business Card - Przemysław Pietrzak',
+        ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
+        : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
       description: isPolish
-        ? 'Full Stack Web Developer specjalizujący się w nowoczesnych aplikacjach webowych (Next.js, Laravel, Node) oraz rozwiązaniach opartych na AI.'
-        : 'PHP & Next.js Web Developer specializing in modern web applications, Laravel, and offline AI systems.',
+        ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
+        : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
       images: ['/images/PP-2-JPG-01.webp'],
       creator: '@przemekp95',
     },

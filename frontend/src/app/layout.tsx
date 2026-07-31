@@ -30,9 +30,9 @@ function resolveHtmlLocale(rawLocale: string | null): string {
 }
 
 export const metadata: Metadata = {
-  title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+  title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
   description:
-    'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
+    'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
   keywords:
     'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
   authors: [{ name: 'Przemysław Pietrzak' }],
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     canonical: 'https://pietrzakprzemyslaw.pl',
   },
   openGraph: {
-    title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+    title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description:
-      'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
+      'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
 
     url: 'https://pietrzakprzemyslaw.pl',
     siteName: 'Przemyslaw Pietrzak - Developer Portfolio',
@@ -79,9 +79,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Przemysław Pietrzak - Next.js & PHP Web Developer',
+    title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description:
-      'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.',
+      'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
     creator: '@przemekp95',
   },
   verification: googleSiteVerification

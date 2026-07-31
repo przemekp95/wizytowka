@@ -12,7 +12,7 @@ This repository contains:
 - **Contact Flow**: persistence-backed outbox semantics, where a submission is considered successful once it is stored and accepted for asynchronous provider delivery; `resend` mode adds idempotent submission plus signed webhook confirmation
 - **File Storage**: AWS S3 integration for portfolio assets
 - **Internationalization**: locale-aware frontend routes and translations
-- **Testing**: backend/frontend unit tests, executable Cucumber BDD scenarios, backend transport E2E, and Playwright browser E2E
+- **Testing**: backend/frontend unit tests, executable Cucumber BDD scenarios, backend transport E2E, and Playwright browser E2E with automated WCAG A/AA checks
 - **Deployment Assets**: Docker and CI workflow definitions
 
 ## Architecture Overview
@@ -382,7 +382,7 @@ Test ownership is intentionally split to avoid duplicate scenarios:
 - executable BDD owns visitor-facing contact and chat behavior;
 - backend E2E owns transport and infrastructure contracts such as GraphQL,
   authorization, throttling, signed proxy metadata, health, and webhooks;
-- Playwright owns browser flows, accessibility, and SEO behavior.
+- Playwright owns browser flows, SEO behavior, keyboard interactions, and automated WCAG A/AA scans with axe-core.
 
 Playwright owns isolated local ports `3100` (frontend) and `4100` (backend) and
 does not reuse unrelated development servers. Override them with

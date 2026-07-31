@@ -152,11 +152,11 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Przemysław Pietrzak',
-    jobTitle: locale === 'en' ? 'Full Stack Web Developer' : 'Full Stack Web Developer',
+    jobTitle: 'Full-stack TypeScript Developer',
     description:
       locale === 'en'
-        ? 'I build modern web applications (Next.js, Laravel, Node) and design solutions based on SQL, NoSQL and API (REST, GraphQL). I combine legal knowledge with technology.'
-        : 'Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.',
+        ? 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.'
+        : 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.',
     knowsAbout: [
       'Next.js',
       'React',
@@ -169,11 +169,10 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
       'REST API',
       'GraphQL',
       'Docker',
-      'Kubernetes',
     ],
     hasOccupation: {
       '@type': 'Occupation',
-      name: 'Full Stack Developer',
+      name: 'Full-stack TypeScript Developer',
       occupationalCategory: 'Software Development',
     },
     sameAs: [
@@ -341,7 +340,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                       ))}
                   </div>
                 ) : (
-                  <p className="text-center text-gray-500">
+                  <p className="text-center text-gray-300">
                     {locale === 'en' ? 'No skills data available' : 'Brak danych o umiejętnościach'}
                   </p>
                 )}
@@ -368,7 +367,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
 
         <section id="contact" className="py-24 bg-transparent text-white">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="section-title text-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+            <h2 className="text-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">
               {t('contact.title')}
             </h2>
             <div className="mt-10 flex justify-center">

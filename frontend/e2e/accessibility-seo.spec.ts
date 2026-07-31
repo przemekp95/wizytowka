@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 const appBaseUrl = process.env.E2E_BASE_URL ?? '';
 
@@ -45,4 +46,22 @@ test('mobile navigation exposes its expanded state', async ({ page }) => {
   await menuButton.click();
   await expect(menuButton).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('#mobile-navigation')).toBeVisible();
+});
+
+test('localized desktop and mobile pages have no automated WCAG A/AA violations', async ({
+  page,
+}) => {
+  for (const scenario of [
+    { locale: 'en', width: 1440, height: 900 },
+    { locale: 'pl', width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize({ width: scenario.width, height: scenario.height });
+    await page.goto(`${appBaseUrl}/${scenario.locale}`);
+
+    const scan = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    expect(scan.violations, `${scenario.locale} ${scenario.width}px`).toEqual([]);
+  }
 });
