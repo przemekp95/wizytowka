@@ -281,7 +281,7 @@ corepack pnpm -F frontend coverage    # Run tests with coverage
 ### Workspace Checks
 
 ```bash
-corepack pnpm lint         # Run lint in every workspace
+corepack pnpm lint         # Generate Prisma client, then lint every workspace
 corepack pnpm typecheck    # Run TypeScript checks in every workspace
 corepack pnpm test:unit    # Run backend and frontend unit tests
 corepack pnpm test:bdd     # Run executable Cucumber scenarios
@@ -427,6 +427,29 @@ docker compose --profile dev up -d --build
 The Compose file is a local integration environment, not a production
 deployment recipe. In production, keep databases off public ports and place the
 application services behind TLS and request-size/rate-limit controls.
+
+### Vercel + Render production baseline
+
+- Vercel terminates TLS for `pietrzakprzemyslaw.pl`; keep the HTTP-to-HTTPS
+  redirect, HSTS, and automatic platform DDoS mitigations enabled.
+- Protect `POST /api/contact` and `POST /api/chat` with one IP-keyed Vercel WAF
+  rate-limit rule (40 requests per 60 seconds across both paths). This outer
+  ceiling protects the frontend functions; the stricter endpoint-specific and
+  global application limits remain authoritative.
+- Configure Vercel with `BACKEND_API_URL`, `BACKEND_GRAPHQL_URL`,
+  `SITE_URL=https://pietrzakprzemyslaw.pl`,
+  `INTERNAL_PROXY_CLIENT_IP_HEADER=x-vercel-forwarded-for`, and a generated
+  `INTERNAL_PROXY_SHARED_SECRET`.
+- Configure Render with `TRUST_PROXY=true`, `THROTTLE_STORAGE=mongo`, the
+  documented public/chat limits, and the same `INTERNAL_PROXY_SHARED_SECRET`.
+  MongoDB throttling must remain fail-closed when its shared storage is
+  unavailable.
+- Rotate the proxy secret on both providers in one maintenance window. Never
+  place the value in Git, build logs, client-visible variables, or issue/PR
+  text.
+- Apply provider variables before deploying the matching code, publish the WAF
+  draft after the deployment is healthy, then verify HTTPS, security headers,
+  readiness, same-origin contact/chat behavior, and `429` responses.
 
 ## Contributing
 

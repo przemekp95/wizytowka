@@ -25,3 +25,22 @@ The repository's Compose configuration is a local integration reference.
 Production operators must provide managed TLS, private databases, secret
 management, request-size and rate limits, backups, and monitoring appropriate
 to their hosting environment.
+
+For the supported Vercel + Render topology, the minimum production baseline is:
+
+- automatic TLS redirect, HSTS, and platform DDoS protection on Vercel;
+- an IP-keyed Vercel WAF rate-limit rule covering only same-origin
+  `POST /api/contact` and `POST /api/chat`;
+- `TRUST_PROXY=true` on the single-proxy Render web-service topology;
+- shared Mongo-backed application throttling (`THROTTLE_STORAGE=mongo`);
+- a high-entropy `INTERNAL_PROXY_SHARED_SECRET` shared only by Vercel and
+  Render, with Vercel reading the platform-controlled
+  `x-vercel-forwarded-for` header;
+- direct backend requests treated as public and untrusted despite CORS, with
+  validation, body limits, authentication where applicable, and application
+  throttling enforced server-side.
+
+Apollo CSRF prevention stays enabled. The public REST endpoints are stateless
+and same-origin from the browser-facing application; CORS is not considered an
+authorization control. SMTP, Resend, webhook, and outbox behavior remains
+behind ports/adapters in the layered hybrid architecture.

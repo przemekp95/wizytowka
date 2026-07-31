@@ -29,4 +29,5 @@ Create `frontend/.env.local` from [`frontend/.env.example`](./.env.example).
 - Contact form and chat submit through same-origin `/api/contact` and `/api/chat` routes.
 - Both proxy routes require JSON, stream at most 16 KiB, and return generic upstream errors.
 - Dynamic pages receive a per-request CSP nonce; scripts no longer depend on `unsafe-inline`.
+- The security boundary uses the Next.js 16 `src/proxy.ts` convention; the production build must retain its traced proxy artifact and the per-request nonce headers.
 - No third-party analytics is loaded. Contact data is retained for at most 90 days by default; chat text is sent to OpenAI and its application session is retained in memory for at most 24 hours by default.
