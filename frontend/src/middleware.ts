@@ -18,7 +18,7 @@ function createContentSecurityPolicy(nonce: string): string {
   ].join('; ');
 }
 
-export function proxy(request: NextRequest): NextResponse {
+export function middleware(request: NextRequest): NextResponse {
   const nonce = crypto.randomUUID();
   const policy = createContentSecurityPolicy(nonce);
   const requestHeaders = new Headers(request.headers);
