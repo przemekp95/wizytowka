@@ -9,19 +9,19 @@
     "contactMe": "Napisz do mnie"
   },
   "hero": {
-    "title": "Next.js & PHP Web Developer",
-    "description": "Buduję nowoczesne aplikacje webowe (Next.js, Laravel, Node) i projektuję rozwiązania oparte na SQL, NoSQL oraz API (REST, GraphQL). Łączę wiedzę prawniczą z technologią.",
+    "title": "Full-stack TypeScript Developer",
+    "description": "Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP. Pracuję z REST, GraphQL, SQL i MongoDB.",
     "viewProjects": "Zobacz projekty",
     "contactMe": "Skontaktuj się"
   },
   "about": {
     "title": "O mnie",
-    "description": "Jestem developerem łączącym prawo i technologię. Buduję nowoczesne aplikacje webowe w Next.js, Laravel i Symfony, projektuję backendy w Node/NestJS z użyciem Prisma oraz baz danych SQL (MySQL, PostgreSQL) i NoSQL (MongoDB). Tworzę REST API i GraphQL API, wdrażam projekty w architekturze CI/CD (Docker, GitHub Actions, Passenger na Cyber_Folks), a także rozwijam środowiska oparte na Kubernetes i integruję je z usługami chmurowymi jak Render czy Vercel. Stosuję testy automatyczne (Jest, React Testing Library, Playwright, PHPUnit) w projektach frontendowych i backendowych.",
+    "description": "Jestem developerem łączącym prawo i technologię. Buduję aplikacje w React/Next.js i Node/NestJS, a także rozwijam projekty PHP w Laravelu i Symfony. Pracuję z REST, GraphQL, PostgreSQL, MySQL i MongoDB oraz automatyzuję testy i dostarczanie zmian za pomocą Dockera i GitHub Actions.",
     "techStack": "Stack technologiczny",
     "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
     "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
     "databases": "Bazy danych: Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL",
-    "devops": "DevOps: Docker / GitHub Actions / Kubernetes / Passenger (Cyber_Folks) / Render / Vercel / AWS"
+    "devops": "Dostarczanie: Docker / GitHub Actions / Passenger (Cyber_Folks) / Render / Vercel / AWS"
   },
   "contact": {
     "title": "Kontakt",

@@ -20,18 +20,34 @@ describe('portfolio file sync helpers', () => {
 
   it('keeps published portfolio links and the business-card stack factual', () => {
     const items = portfolioData as PortfolioFileItem[];
+    const publishedItems = items.filter((item) => item.status === 'published');
     const businessCard = items.find((item) => item.slug === 'strona-wizytowka');
+    const orgonSystem = items.find((item) => item.slug === 'my-hr-vision-system');
     const ppSolutions = items.find((item) => item.slug === 'pp-solutions-website');
 
-    expect(items.filter((item) => item.status === 'published')).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ href: '' })]),
-    );
+    expect(
+      publishedItems.every(
+        (item) => Boolean(item.href?.trim()) || Boolean(item.repoUrl?.trim()),
+      ),
+    ).toBe(true);
     expect(ppSolutions?.repoUrl).toBeUndefined();
     expect(businessCard?.tags).toEqual(
       expect.arrayContaining(['NextJS', 'NestJS', 'Prisma', 'MongoDB']),
     );
     expect(businessCard?.tags).not.toEqual(
-      expect.arrayContaining(['PostgreSQL', 'MUI', 'Microservices']),
+      expect.arrayContaining([
+        'PostgreSQL',
+        'MUI',
+        'Microservices',
+        'Kubernetes',
+      ]),
+    );
+    expect(orgonSystem?.status).toBe('draft');
+    expect(orgonSystem?.tags).toEqual(
+      expect.arrayContaining(['Symfony', 'NextJS', 'Go', 'PostgreSQL']),
+    );
+    expect(orgonSystem?.tags).not.toEqual(
+      expect.arrayContaining(['MySQL', 'Twig', 'Kubernetes', 'Microservices']),
     );
   });
 
