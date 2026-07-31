@@ -1,53 +1,9 @@
-# AWS Integration
+# S3 image storage
 
-Amazon Web Services integration module for cloud services and infrastructure.
+This module provides the S3 upload adapter used by portfolio mutations. It does
+not provide SES or CloudWatch integration.
 
-## Description
-
-This module handles AWS services integration including S3 storage, SES email, CloudWatch monitoring, and other AWS services used by the application.
-
-## Getting Started
-
-### Dependencies
-
-* AWS SDK for JavaScript/TypeScript
-* NestJS framework
-* TypeScript 5.9+
-* AWS credentials and configuration
-
-### Installing
-
-* Install AWS SDK: `npm install @aws-sdk/client-s3` or similar
-* Configure AWS credentials in environment variables
-* Module is automatically imported in the main application
-
-### Executing program
-
-* AWS services are available when the application runs
-* Services are injected into other modules as needed
-```
-npm run start:dev
-```
-
-## Help
-
-For AWS integration issues, check AWS credentials, region settings, and service permissions.
-
-## Authors
-
-TBD
-
-## Version History
-
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-* AWS SDK
-* Amazon Web Services
-* Cloud infrastructure patterns
+The portfolio controller accepts JPEG, PNG, or WebP up to 5 MiB and verifies
+that the file signature matches the declared MIME type before the adapter is
+called. Object filename extensions are derived from the verified MIME type,
+not from the client-provided filename.

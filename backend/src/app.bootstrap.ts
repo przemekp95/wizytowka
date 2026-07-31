@@ -4,13 +4,18 @@ import type { ConfigType } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
-import type { NextFunction, Request, Response } from 'express';
+import {
+  json,
+  urlencoded,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 import helmet from 'helmet';
 import { appConfig } from './config';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
-import { LoggingMetricsMiddleware } from './common/middleware/logging-metrics.middleware';
+import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { LoggingService } from './logging/logging.service';
-import { MetricsService } from './metrics/metrics.service';
 
 export function createValidationPipe(): ValidationPipe {
   return new ValidationPipe({
@@ -66,16 +71,32 @@ export function configureApp(
   const expressApp = app as INestApplication & Partial<NestExpressApplication>;
   const appConfiguration = app.get<AppRuntimeConfig>(appConfig.KEY);
   const requestIdMiddleware = new RequestIdMiddleware();
-  const loggingMetricsMiddleware = new LoggingMetricsMiddleware(
-    app.get(LoggingService),
-    app.get(MetricsService),
-  );
+  const loggingMiddleware = new LoggingMiddleware(app.get(LoggingService));
 
   if (typeof expressApp.set === 'function' && appConfiguration.trustProxy) {
     expressApp.set('trust proxy', 1);
   }
 
+  if (typeof expressApp.disable === 'function') {
+    expressApp.disable('x-powered-by');
+  }
+
   app.enableCors(createCorsOptions(appConfiguration));
+  app.use(
+    json({
+      limit: '16kb',
+      verify: (req, _res, buffer) => {
+        (req as Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+      },
+    }),
+  );
+  app.use(
+    urlencoded({
+      extended: false,
+      limit: '16kb',
+      parameterLimit: 50,
+    }),
+  );
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
@@ -91,7 +112,7 @@ export function configureApp(
     requestIdMiddleware.use(req, res, next),
   );
   app.use((req: Request, res: Response, next: NextFunction) =>
-    loggingMetricsMiddleware.use(req, res, next),
+    loggingMiddleware.use(req, res, next),
   );
   app.setGlobalPrefix('api');
   app.useGlobalPipes(createValidationPipe());
@@ -120,7 +141,6 @@ export function configureApp(
     .addTag('portfolio', 'Portfolio item management')
     .addTag('contact', 'Contact form and messaging')
     .addTag('chat', 'AI chat endpoints')
-    .addTag('metrics', 'Operational metrics')
     .addTag('links', 'External links and redirects')
     .build();
 

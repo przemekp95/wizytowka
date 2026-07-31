@@ -18,11 +18,15 @@ Create `frontend/.env.local` from [`frontend/.env.example`](./.env.example).
 
 - `BACKEND_GRAPHQL_URL` - backend GraphQL endpoint used by server route handlers and codegen
 - `BACKEND_API_URL` - backend origin used by server fetches and route handlers
-- `INTERNAL_PROXY_SHARED_SECRET` - optional shared secret used by `/api/contact` and `/api/chat` to forward the real client IP to the backend safely; set the same value on the backend to enable signed per-client throttling
+- `INTERNAL_PROXY_SHARED_SECRET` - optional shared secret used by `/api/contact` and `/api/chat` to forward a signed client IP to the backend
+- `INTERNAL_PROXY_CLIENT_IP_HEADER` - optional trusted platform header to sign, limited to `cf-connecting-ip` or `x-vercel-forwarded-for`; leave unset to disable client-IP forwarding instead of trusting browser-controlled headers
 - `SITE_URL` - public site URL for sitemap and metadata
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID` - optional GA4 ID
 
 ## Testing Notes
 
 - Playwright is the only maintained browser E2E path.
+- Playwright starts isolated servers on ports 3100 and 4100 and never reuses an unrelated local server.
 - Contact form and chat submit through same-origin `/api/contact` and `/api/chat` routes.
+- Both proxy routes require JSON, stream at most 16 KiB, and return generic upstream errors.
+- Dynamic pages receive a per-request CSP nonce; scripts no longer depend on `unsafe-inline`.
+- No third-party analytics is loaded. Contact data is retained for at most 90 days by default; chat text is sent to OpenAI and its application session is retained in memory for at most 24 hours by default.

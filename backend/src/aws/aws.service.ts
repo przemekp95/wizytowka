@@ -7,7 +7,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { v4 as uuidv4 } from 'uuid';
-import * as path from 'path';
 import awsConfig from '../config/aws.config';
 
 interface MulterFile {
@@ -15,6 +14,12 @@ interface MulterFile {
   buffer: Buffer;
   mimetype: string;
 }
+
+const IMAGE_EXTENSION_BY_MIME_TYPE: Readonly<Record<string, string>> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
 
 @Injectable()
 export class AwsService {
@@ -75,7 +80,10 @@ export class AwsService {
     file: MulterFile,
     folder: string = 'portfolio',
   ): Promise<string> {
-    const fileExtension = path.extname(file.originalname);
+    const fileExtension = IMAGE_EXTENSION_BY_MIME_TYPE[file.mimetype];
+    if (!fileExtension) {
+      throw new Error('Unsupported portfolio image MIME type');
+    }
     const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
     try {

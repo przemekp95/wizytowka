@@ -1,9 +1,19 @@
-import { createBackendProxyHeaders, resolveBackendApiUrl } from '../_lib/backend-proxy';
+import {
+  createBackendProxyHeaders,
+  createBackendProxyResponseHeaders,
+  isJsonRequest,
+  ProxyPayloadTooLargeError,
+  readBoundedRequestText,
+  resolveBackendApiUrl,
+} from '../_lib/backend-proxy';
 
 export async function POST(request: Request): Promise<Response> {
-  const body = await request.text();
+  if (!isJsonRequest(request)) {
+    return Response.json({ error: 'Content-Type must be application/json' }, { status: 415 });
+  }
 
   try {
+    const body = await readBoundedRequestText(request);
     const backendResponse = await fetch(`${resolveBackendApiUrl()}/api/chat/message`, {
       method: 'POST',
       headers: createBackendProxyHeaders(request),
@@ -15,16 +25,16 @@ export async function POST(request: Request): Promise<Response> {
 
     return new Response(responseBody, {
       status: backendResponse.status,
-      headers: {
-        'content-type': backendResponse.headers.get('content-type') ?? 'application/json',
-      },
+      headers: createBackendProxyResponseHeaders(backendResponse.headers),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown proxy error';
+    if (error instanceof ProxyPayloadTooLargeError) {
+      return Response.json({ error: error.message }, { status: 413 });
+    }
 
     return Response.json(
       {
-        error: message,
+        error: 'Backend service unavailable',
       },
       { status: 502 }
     );

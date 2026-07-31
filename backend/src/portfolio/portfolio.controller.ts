@@ -30,7 +30,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { OpsTokenGuard } from '../common/guards/ops-token.guard';
-import { PortfolioService, PortfolioItem } from './portfolio.service';
+import { validatePortfolioImageContent } from './portfolio-image.validation';
+import { PortfolioService } from './portfolio.service';
 import {
   CreatePortfolioItemDto,
   PortfolioDeleteResponseDto,
@@ -38,6 +39,11 @@ import {
   PortfolioMutationResponseDto,
   UpdatePortfolioItemDto,
 } from './dto/portfolio-rest.dto';
+import {
+  toPublicPortfolioDeleteResponse,
+  toPublicPortfolioListResponse,
+  toPublicPortfolioMutationResponse,
+} from './portfolio.public-response';
 
 type UploadedImageFile = {
   originalname: string;
@@ -85,9 +91,9 @@ export class PortfolioApiController {
     summary: 'List published portfolio items',
   })
   @ApiOkResponse({ type: PortfolioListResponseDto })
-  async list(): Promise<{ ok: boolean; items: PortfolioItem[] }> {
+  async list(): Promise<PortfolioListResponseDto> {
     const items = await this.service.listPublished();
-    return { ok: true, items };
+    return toPublicPortfolioListResponse(items);
   }
 
   @Post()
@@ -133,7 +139,11 @@ export class PortfolioApiController {
   async create(
     @Body() body: CreatePortfolioItemDto,
     @UploadedFile() imageFile?: UploadedImageFile,
-  ): Promise<{ ok: boolean; item: PortfolioItem }> {
+  ): Promise<PortfolioMutationResponseDto> {
+    if (imageFile) {
+      validatePortfolioImageContent(imageFile);
+    }
+
     if (!imageFile && !body.img) {
       throw new BadRequestException(
         'Provide either img or an uploaded image file.',
@@ -159,7 +169,7 @@ export class PortfolioApiController {
       imageFile,
     );
 
-    return { ok: true, item };
+    return toPublicPortfolioMutationResponse(item);
   }
 
   @Patch(':id')
@@ -213,7 +223,11 @@ export class PortfolioApiController {
     @Param('id') id: string,
     @Body() body: UpdatePortfolioItemDto,
     @UploadedFile() imageFile?: UploadedImageFile,
-  ): Promise<{ ok: boolean; item: PortfolioItem }> {
+  ): Promise<PortfolioMutationResponseDto> {
+    if (imageFile) {
+      validatePortfolioImageContent(imageFile);
+    }
+
     if (!imageFile && Object.keys(body).length === 0) {
       throw new BadRequestException(
         'Provide at least one field or an uploaded image file.',
@@ -226,7 +240,7 @@ export class PortfolioApiController {
       throw new NotFoundException(`Portfolio item ${id} not found`);
     }
 
-    return { ok: true, item };
+    return toPublicPortfolioMutationResponse(item);
   }
 
   @Delete(':id')
@@ -246,15 +260,13 @@ export class PortfolioApiController {
   @ApiUnauthorizedResponse({
     description: 'Missing or invalid admin bearer token',
   })
-  async remove(
-    @Param('id') id: string,
-  ): Promise<{ ok: boolean; deleted: true }> {
+  async remove(@Param('id') id: string): Promise<PortfolioDeleteResponseDto> {
     const deleted = await this.service.deletePortfolioItem(id);
 
     if (!deleted) {
       throw new NotFoundException(`Portfolio item ${id} not found`);
     }
 
-    return { ok: true, deleted: true };
+    return toPublicPortfolioDeleteResponse();
   }
 }

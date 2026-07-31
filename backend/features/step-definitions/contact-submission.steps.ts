@@ -8,15 +8,23 @@ import {
   setDefaultTimeout,
 } from '@cucumber/cucumber';
 import { Module } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { createValidationPipe } from '../../src/app.bootstrap';
 import { GqlThrottleStorageService } from '../../src/common/guards/gql-throttle-storage.service';
 import { ContactHttpThrottlerGuard } from '../../src/common/guards/public-http-throttler.guard';
-import { appConfig, mongoConfig, throttleConfig } from '../../src/config';
+import {
+  appConfig,
+  contactConfig,
+  mongoConfig,
+  throttleConfig,
+} from '../../src/config';
 import { CONTACT_MESSAGE_REPOSITORY } from '../../src/contact/application/ports/contact-message-repository.port';
-import { CONTACT_NOTIFICATION_PORT } from '../../src/contact/application/ports/contact-notification.port';
+import { CONTACT_NOTIFICATION_DISPATCH_PORT } from '../../src/contact/application/ports/contact-notification-dispatch.port';
+import { CONTACT_NOTIFICATION_SENDER_PORT } from '../../src/contact/application/ports/contact-notification.port';
 import { ContactController } from '../../src/contact/contact.controller';
+import { ContactDataRetentionService } from '../../src/contact/contact-data-retention.service';
 import { ContactService } from '../../src/contact/contact.service';
 import { BehaviorWorld } from './behavior.world';
 
@@ -31,8 +39,42 @@ import { BehaviorWorld } from './behavior.world';
       useValue: {},
     },
     {
-      provide: CONTACT_NOTIFICATION_PORT,
+      provide: CONTACT_NOTIFICATION_SENDER_PORT,
       useValue: {},
+    },
+    {
+      provide: CONTACT_NOTIFICATION_DISPATCH_PORT,
+      useValue: {
+        kick: () => undefined,
+      },
+    },
+    {
+      provide: contactConfig.KEY,
+      useValue: {
+        notificationProvider: 'smtp',
+        smtpHost: 'smtp.test.local',
+        smtpPort: 465,
+        smtpSecure: true,
+        smtpFrom: 'from@test.local',
+        smtpTo: 'to@test.local',
+        smtpUser: undefined,
+        smtpPass: undefined,
+        smtpDebug: false,
+        resendApiKey: undefined,
+        resendWebhookSecret: undefined,
+        notificationDispatchEnabled: false,
+        notificationDispatchIntervalMs: 1000,
+        notificationDispatchBatchSize: 10,
+        notificationLeaseMs: 30000,
+        notificationMaxAttempts: 5,
+        notificationBaseDelayMs: 30000,
+        notificationMaxDelayMs: 900000,
+        notificationSubmittedRecheckMs: 300000,
+        notificationSubmittedTimeoutMs: 86400000,
+        dataRetentionEnabled: false,
+        dataRetentionMs: 90 * 24 * 60 * 60_000,
+        retentionSweepIntervalMs: 60 * 60_000,
+      },
     },
     {
       provide: appConfig.KEY,
@@ -51,6 +93,8 @@ import { BehaviorWorld } from './behavior.world';
         publicHttpTtlMs: 60_000,
         chatHttpLimit: 20,
         chatHttpTtlMs: 60_000,
+        chatHttpGlobalLimit: 100,
+        chatHttpGlobalTtlMs: 60_000,
       },
     },
     {
@@ -72,13 +116,15 @@ Before({ tags: '@contact' }, async function (this: BehaviorWorld) {
   this.notificationCalls = 0;
   this.persistenceShouldFail = false;
   this.notificationShouldFail = false;
+  this.contactRetentionDays = 90;
+  this.deletedContactDataBefore = undefined;
 
   const moduleRef = await Test.createTestingModule({
     imports: [ContactBehaviorTestModule],
   })
     .overrideProvider(CONTACT_MESSAGE_REPOSITORY)
     .useValue(this.repository)
-    .overrideProvider(CONTACT_NOTIFICATION_PORT)
+    .overrideProvider(CONTACT_NOTIFICATION_SENDER_PORT)
     .useValue(this.notifier)
     .compile();
 
@@ -96,13 +142,40 @@ Given('contact persistence succeeds', function (this: BehaviorWorld) {
   this.persistenceShouldFail = false;
 });
 
-Given('contact notification succeeds', function (this: BehaviorWorld) {
-  this.notificationShouldFail = false;
+Given('contact persistence fails', function (this: BehaviorWorld) {
+  this.persistenceShouldFail = true;
 });
 
-Given('contact notification fails', function (this: BehaviorWorld) {
-  this.notificationShouldFail = true;
-});
+Given(
+  'contact data is retained for {int} days',
+  function (this: BehaviorWorld, days: number) {
+    this.contactRetentionDays = days;
+  },
+);
+
+When(
+  'the contact retention sweep runs on 23 March 2026',
+  async function (this: BehaviorWorld) {
+    const retention = new ContactDataRetentionService(this.repository, {
+      dataRetentionEnabled: false,
+      dataRetentionMs: this.contactRetentionDays * 24 * 60 * 60_000,
+      retentionSweepIntervalMs: 60 * 60_000,
+    } as ConfigType<typeof contactConfig>);
+
+    await retention.purgeExpiredData(new Date('2026-03-23T00:00:00.000Z'));
+    retention.onModuleDestroy();
+  },
+);
+
+Then(
+  'contact data older than 23 December 2025 should be removed',
+  function (this: BehaviorWorld) {
+    assert.equal(
+      this.deletedContactDataBefore?.toISOString(),
+      '2025-12-23T00:00:00.000Z',
+    );
+  },
+);
 
 When(
   'I submit a valid public contact message',
@@ -153,6 +226,13 @@ Then(
   'the contact response body should be:',
   function (this: BehaviorWorld, expectedBody: string) {
     assert.deepEqual(this.response?.body, JSON.parse(expectedBody));
+  },
+);
+
+Then(
+  'no contact notification should run during the request',
+  function (this: BehaviorWorld) {
+    assert.equal(this.notificationCalls, 0);
   },
 );
 

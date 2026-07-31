@@ -1,51 +1,8 @@
-# Configuration
+# Backend configuration
 
-Application configuration files and environment-specific settings.
+Typed NestJS configuration modules live here. The documented baseline is
+`backend/.env.example`; production secrets must be supplied by the hosting
+platform and must not be committed.
 
-## Description
-
-This directory contains all configuration files for the backend application including database, AWS, logging, validation, and other service configurations.
-
-## Getting Started
-
-### Dependencies
-
-* NestJS framework
-* TypeScript 5.9+
-* Configuration management libraries
-
-### Installing
-
-* Configuration files are included in the main application
-* Environment variables should be set in `.env` file
-* No additional installation required
-
-### Executing program
-
-* Configuration is loaded automatically when the application starts
-* Changes to configuration files require application restart
-```
-npm run start:dev
-```
-
-## Help
-
-For configuration issues, check environment variables and ensure all required values are properly set.
-
-## Authors
-
-TBD
-
-## Version History
-
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-* NestJS configuration system
-* dotenv package
+Configuration compatibility and safe local Compose assumptions are covered by
+`tooling-compatibility.spec.ts` and the other colocated unit tests.

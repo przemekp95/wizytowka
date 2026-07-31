@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import Header from '../Header';
 
@@ -91,5 +92,18 @@ describe('Header', () => {
     const header = screen.getByRole('banner');
     expect(header).toBeInTheDocument();
     expect(header).toHaveClass('site-header', 'sticky', 'top-0', 'z-40');
+  });
+
+  it('exposes the mobile menu expanded state and controlled region', async () => {
+    render(<Header translations={navTranslations} />);
+
+    const toggle = screen.getByRole('button', { name: /toggle mobile menu/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', 'mobile-navigation');
+
+    await userEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(document.getElementById('mobile-navigation')).toBeInTheDocument();
   });
 });

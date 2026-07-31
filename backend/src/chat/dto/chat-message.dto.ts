@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class ChatMessageDto {
   @ApiProperty({ example: 'Opowiedz o portfolio.' })
@@ -8,10 +14,10 @@ export class ChatMessageDto {
   @MaxLength(1000)
   message: string;
 
-  @ApiPropertyOptional({ example: 'session-123' })
+  @ApiPropertyOptional({ example: '550e8400-e29b-41d4-a716-446655440000' })
   @IsOptional()
   @IsString()
-  @MaxLength(100)
+  @IsUUID('4')
   sessionId?: string;
 }
 
@@ -22,7 +28,7 @@ export class ChatResponseDto {
   @IsString()
   response: string;
 
-  @ApiProperty({ example: 'session-123' })
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
   @IsString()
   sessionId: string;
 }

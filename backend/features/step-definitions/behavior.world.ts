@@ -2,8 +2,11 @@ import 'reflect-metadata';
 import { setWorldConstructor } from '@cucumber/cucumber';
 import { INestApplication } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import { type ContactMessageRepositoryPort } from '../../src/contact/application/ports/contact-message-repository.port';
-import { type ContactNotificationPort } from '../../src/contact/application/ports/contact-notification.port';
+import {
+  type ClaimedContactNotification,
+  type ContactMessageRepositoryPort,
+} from '../../src/contact/application/ports/contact-message-repository.port';
+import { type ContactNotificationSenderPort } from '../../src/contact/application/ports/contact-notification.port';
 import { type ChatCompletionPort } from '../../src/chat/application/ports/chat-completion.port';
 import { type ChatContextPort } from '../../src/chat/application/ports/chat-context.port';
 import { type ChatSessionIdPort } from '../../src/chat/application/ports/chat-session-id.port';
@@ -23,6 +26,8 @@ export class BehaviorWorld {
   notificationCalls = 0;
   persistenceShouldFail = false;
   notificationShouldFail = false;
+  contactRetentionDays = 90;
+  deletedContactDataBefore?: Date;
 
   contextCalls = 0;
   completionCalls = 0;
@@ -46,9 +51,21 @@ export class BehaviorWorld {
 
       return { id: 'saved-123' };
     },
+    deleteExpired: async (before) => {
+      this.deletedContactDataBefore = before;
+      return { messages: 1, webhookEvents: 1 };
+    },
+    claimPendingNotifications: async () => [] as ClaimedContactNotification[],
+    claimSubmittedNotifications: async () => [],
+    markNotificationSubmitted: async () => undefined,
+    markNotificationDelivered: async () => undefined,
+    rescheduleSubmittedNotificationCheck: async () => undefined,
+    findNotificationIdByMessageId: async () => null,
+    markNotificationFailed: async () => undefined,
+    recordWebhookEvent: async () => 'recorded' as const,
   };
 
-  readonly notifier: ContactNotificationPort = {
+  readonly notifier: ContactNotificationSenderPort = {
     send: async () => {
       this.notificationCalls += 1;
 
@@ -56,7 +73,7 @@ export class BehaviorWorld {
         throw new Error('SMTP failure');
       }
 
-      return { messageId: 'msg-123' };
+      return { messageId: 'msg-123', deliveryState: 'delivered' };
     },
   };
 

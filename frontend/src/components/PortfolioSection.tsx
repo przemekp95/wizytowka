@@ -282,14 +282,18 @@ export default function PortfolioSection({
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <a
-                        href={p.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-black group/link underline-offset-4 hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-sm"
-                      >
-                        {displayTitle}
-                      </a>
+                      {p.href?.trim() ? (
+                        <a
+                          href={p.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-black group/link underline-offset-4 hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-sm"
+                        >
+                          {displayTitle}
+                        </a>
+                      ) : (
+                        <span className="text-black">{displayTitle}</span>
+                      )}
                     </motion.h3>
 
                     <p className="mt-2 text-sm text-black dark:text-gray-400">{displayDesc}</p>

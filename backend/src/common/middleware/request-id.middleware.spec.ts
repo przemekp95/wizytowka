@@ -74,6 +74,20 @@ describe('RequestIdMiddleware', () => {
     expect(mockNext).toHaveBeenCalled();
   });
 
+  it.each(['contains spaces', 'line\nbreak', 'a'.repeat(65)])(
+    'should replace an unsafe request ID header: %s',
+    (unsafeRequestId) => {
+      (mockRequest.header as jest.Mock).mockReturnValue(unsafeRequestId);
+
+      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+
+      expect(mockRequest.requestId).not.toBe(unsafeRequestId);
+      expect(mockRequest.requestId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      );
+    },
+  );
+
   it('should always call next function', () => {
     (mockRequest.header as jest.Mock).mockReturnValue('some-id');
 

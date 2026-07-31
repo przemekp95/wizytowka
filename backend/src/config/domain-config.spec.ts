@@ -41,6 +41,7 @@ describe('Domain config', () => {
   });
 
   it('maps contact and ops config values', () => {
+    process.env.CONTACT_NOTIFICATION_PROVIDER = 'resend';
     process.env.SMTP_HOST = 'smtp.example.com';
     process.env.SMTP_PORT = '2525';
     process.env.SMTP_SECURE = 'false';
@@ -49,9 +50,24 @@ describe('Domain config', () => {
     process.env.SMTP_USER = 'user@example.com';
     process.env.SMTP_PASS = 'secret';
     process.env.SMTP_DEBUG = 'true';
+    process.env.RESEND_API_KEY = 're_test_123';
+    process.env.RESEND_WEBHOOK_SECRET = 'whsec_test_123';
+    process.env.CONTACT_NOTIFICATION_DISPATCH_ENABLED = 'true';
+    process.env.CONTACT_NOTIFICATION_DISPATCH_INTERVAL_MS = '1500';
+    process.env.CONTACT_NOTIFICATION_DISPATCH_BATCH_SIZE = '25';
+    process.env.CONTACT_NOTIFICATION_LEASE_MS = '45000';
+    process.env.CONTACT_NOTIFICATION_MAX_ATTEMPTS = '6';
+    process.env.CONTACT_NOTIFICATION_BASE_DELAY_MS = '5000';
+    process.env.CONTACT_NOTIFICATION_MAX_DELAY_MS = '120000';
+    process.env.CONTACT_NOTIFICATION_SUBMITTED_RECHECK_MS = '180000';
+    process.env.CONTACT_NOTIFICATION_SUBMITTED_TIMEOUT_MS = '7200000';
+    process.env.CONTACT_DATA_RETENTION_ENABLED = 'true';
+    process.env.CONTACT_DATA_RETENTION_DAYS = '45';
+    process.env.CONTACT_RETENTION_SWEEP_INTERVAL_MS = '1800000';
     process.env.ADMIN_TOKEN = 'ops-secret';
 
     expect(contactConfig()).toEqual({
+      notificationProvider: 'resend',
       smtpHost: 'smtp.example.com',
       smtpPort: 2525,
       smtpSecure: false,
@@ -60,6 +76,20 @@ describe('Domain config', () => {
       smtpUser: 'user@example.com',
       smtpPass: 'secret',
       smtpDebug: true,
+      resendApiKey: 're_test_123',
+      resendWebhookSecret: 'whsec_test_123',
+      notificationDispatchEnabled: true,
+      notificationDispatchIntervalMs: 1500,
+      notificationDispatchBatchSize: 25,
+      notificationLeaseMs: 45000,
+      notificationMaxAttempts: 6,
+      notificationBaseDelayMs: 5000,
+      notificationMaxDelayMs: 120000,
+      notificationSubmittedRecheckMs: 180000,
+      notificationSubmittedTimeoutMs: 7200000,
+      dataRetentionEnabled: true,
+      dataRetentionMs: 45 * 24 * 60 * 60 * 1000,
+      retentionSweepIntervalMs: 1800000,
     });
     expect(opsConfig()).toEqual({
       adminToken: 'ops-secret',
@@ -80,6 +110,8 @@ describe('Domain config', () => {
       publicHttpTtlMs: 60_000,
       chatHttpLimit: 20,
       chatHttpTtlMs: 60_000,
+      chatHttpGlobalLimit: 100,
+      chatHttpGlobalTtlMs: 60_000,
     });
 
     process.env.NODE_ENV = 'production';
@@ -92,11 +124,14 @@ describe('Domain config', () => {
       publicHttpTtlMs: 60_000,
       chatHttpLimit: 20,
       chatHttpTtlMs: 60_000,
+      chatHttpGlobalLimit: 100,
+      chatHttpGlobalTtlMs: 60_000,
     });
   });
 
   it('maps chat, logging and mongo defaults', () => {
     delete process.env.OPENAI_API_KEY;
+    process.env.CHAT_SESSION_RETENTION_MS = '3600000';
     delete process.env.LOG_LEVEL;
     delete process.env.MONGODB_URI;
     delete process.env.MONGODB_URL;
@@ -109,7 +144,7 @@ describe('Domain config', () => {
       model: 'gpt-3.5-turbo',
       maxTokens: 500,
       temperature: 0.7,
-      sessionMaxAgeMs: 24 * 60 * 60 * 1000,
+      sessionMaxAgeMs: 60 * 60 * 1000,
     });
     expect(loggingConfig()).toEqual({
       level: 'info',

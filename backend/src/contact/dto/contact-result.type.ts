@@ -2,12 +2,12 @@ import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({
   description:
-    'Result returned after attempting to process a public contact submission.',
+    'Result returned after attempting to process a public contact submission and queue async delivery.',
 })
 export class ContactResult {
   @Field({
     description:
-      'Indicates whether the message was persisted and delivered successfully.',
+      'Indicates whether the message was persisted and accepted for async delivery.',
   })
   ok!: boolean;
 

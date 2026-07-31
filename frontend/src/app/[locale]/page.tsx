@@ -2,6 +2,7 @@ import '@/styles/custom.scss';
 import Image from 'next/image';
 import Script from 'next/script';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
@@ -15,7 +16,6 @@ import dynamicImport from 'next/dynamic';
 // Import PortfolioSection as client component
 const PortfolioSection = dynamicImport(() => import('@/components/PortfolioSection'));
 
-export const dynamic = 'force-static';
 export const revalidate = 300;
 
 type PortfolioItem = {
@@ -124,6 +124,7 @@ function createTranslator(messages: TranslationMessages) {
 
 export default async function OnePager({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   if (!['pl', 'en'].includes(locale)) {
     notFound();
@@ -204,6 +205,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     <>
       <Script
         id="structured-data"
+        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd),
@@ -222,6 +224,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   src="/images/PP-2-JPG-01.webp"
                   alt="Przemysław Pietrzak"
                   fill
+                  sizes="(min-width: 1024px) 448px, (min-width: 640px) 50vw, 100vw"
                   className="object-cover transition-all duration-500 brightness-110 contrast-110 saturate-110"
                   priority
                 />
@@ -270,14 +273,16 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
         <section id="about" className="bg-gray-800/60">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 grid gap-10 lg:grid-cols-5 lg:items-center">
             <div className="lg:col-span-2 flex justify-center">
-              <Image
-                src="/portfolio/ai-offline.jpg"
-                alt="Przemysław Pietrzak"
-                width={240}
-                height={240}
-                className="rounded-full shadow-lg object-cover"
-                priority
-              />
+              <div className="relative size-60 overflow-hidden rounded-full shadow-lg">
+                <Image
+                  src="/portfolio/ai-offline.jpg"
+                  alt="Przemysław Pietrzak"
+                  fill
+                  sizes="240px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
             <div className="lg:col-span-3">
               <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">

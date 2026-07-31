@@ -1,6 +1,6 @@
 # Personal Portfolio Website
 
-A full-stack portfolio application built with Next.js 16, React 19, NestJS 11, and TypeScript. The repo includes a public-facing frontend, a NestJS backend, automated tests, Docker/Kubernetes assets, and CI suitable for production hardening.
+A full-stack portfolio application built with Next.js 16, React 19, NestJS 11, and TypeScript. The repo includes a public-facing frontend, a NestJS backend, automated tests, Docker assets, and CI suitable for production hardening.
 
 ## Description
 
@@ -9,11 +9,11 @@ This repository contains:
 - **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
 - **Backend**: NestJS 11 with GraphQL and REST APIs
 - **Data Layer**: MongoDB, accessed through Prisma for contact data and the MongoDB driver for portfolio data
-- **Contact Flow**: strict success semantics, where a submission is considered successful only when both DB persistence and SMTP delivery succeed
+- **Contact Flow**: persistence-backed outbox semantics, where a submission is considered successful once it is stored and accepted for asynchronous provider delivery; `resend` mode adds idempotent submission plus signed webhook confirmation
 - **File Storage**: AWS S3 integration for portfolio assets
 - **Internationalization**: locale-aware frontend routes and translations
-- **Testing**: unit and integration coverage in backend/frontend, plus Playwright E2E coverage
-- **Deployment Assets**: Docker, Kubernetes, and CI workflow definitions
+- **Testing**: backend/frontend unit tests, executable Cucumber BDD scenarios, backend transport E2E, and Playwright browser E2E
+- **Deployment Assets**: Docker and CI workflow definitions
 
 ## Architecture Overview
 
@@ -26,8 +26,8 @@ This repository contains:
          │                        │
          ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐
-│   Contact Form  │    │    Portfolio    │
-│   (SMTP/AWS)    │    │      Items      │
+│  Contact Form   │    │    Portfolio    │
+│ Outbox/Provider │    │      Items      │
 └─────────────────┘    └─────────────────┘
 ```
 
@@ -35,7 +35,7 @@ This repository contains:
 
 ### Prerequisites
 
-- **Node.js** 20+
+- **Node.js** 20, 22, or 24+
 - **Corepack** (bundled with modern Node.js releases)
 - **Docker** and Docker Compose
 - **Git**
@@ -110,15 +110,15 @@ corepack pnpm -F backend dev
 corepack pnpm -F frontend dev
 ```
 
-**Production Mode:**
+**Local container mode:**
 
 ```bash
-# Using Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
-
-# Or using Kubernetes
-kubectl apply -f k8s/
+docker compose --profile dev up -d --build
 ```
+
+Production deployment should run the frontend and backend behind a managed TLS
+edge or reverse proxy, with databases supplied as managed/private services and
+secrets injected by the hosting platform.
 
 **Available URLs**
 
@@ -135,45 +135,66 @@ kubectl apply -f k8s/
 
 ### Backend (`backend/.env`)
 
-| Variable                | Description                                                                 | Example                                       |
-| ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
-| `NODE_ENV`              | Environment mode                                                            | `development`                                 |
-| `PORT`                  | Backend port                                                                | `4000`                                        |
-| `FRONTEND_URL`          | Primary frontend origin                                                     | `http://localhost:3000`                       |
-| `CORS_ORIGINS`          | Additional allowed origins                                                  | `http://localhost:3000,http://localhost:3001` |
-| `TRUST_PROXY`           | Trust reverse proxy for `req.ip`                                            | `false`                                       |
-| `THROTTLE_STORAGE`      | Shared throttle storage driver (`mongo` or explicit `memory`)               | `mongo`                                       |
-| `ENABLE_API_DOCS`       | Keep REST Swagger docs enabled in production                                | `false`                                       |
-| `ENABLE_GRAPHQL_SCHEMA_DOCS` | Keep `/api/graphql/schema` enabled in production                       | `false`                                       |
-| `PUBLIC_HTTP_THROTTLE_LIMIT` | Shared per-IP limit for public HTTP contact submissions                 | `30`                                          |
-| `PUBLIC_HTTP_THROTTLE_TTL_MS` | Window for the public HTTP contact limit                              | `60000`                                       |
-| `CHAT_HTTP_THROTTLE_LIMIT` | Per-IP limit for the public chat HTTP endpoint                            | `20`                                          |
-| `CHAT_HTTP_THROTTLE_TTL_MS` | Window for the public chat HTTP limit                                   | `60000`                                       |
-| `INTERNAL_PROXY_SHARED_SECRET` | Shared HMAC secret for signed client IP forwarding from the frontend proxy | `change-me`                              |
-| `MONGODB_URI`           | Preferred MongoDB connection string (`MONGODB_URL` / `MONGO_URL` also work) | `mongodb://localhost:27017/wizytowka`         |
-| `MONGODB_DB`            | MongoDB database name (falls back to the database in the URI)               | `wizytowka`                                   |
-| `SMTP_HOST`             | SMTP server host                                                            | `localhost`                                   |
-| `SMTP_PORT`             | SMTP port                                                                   | `1025`                                        |
-| `SMTP_SECURE`           | SMTP TLS flag                                                               | `false`                                       |
-| `SMTP_FROM`             | Sender address                                                              | `portfolio@example.com`                       |
-| `SMTP_TO`               | Recipient address                                                           | `owner@example.com`                           |
-| `ADMIN_TOKEN`           | Admin bearer token, or a comma-separated token set for zero-downtime rotation | `current-token,next-token`                  |
-| `OPENAI_API_KEY`        | Optional chat integration key                                               | `sk-...`                                      |
-| `AWS_REGION`            | AWS region                                                                  | `us-east-1`                                   |
-| `AWS_ACCESS_KEY_ID`     | AWS access key                                                              | `AKIA...`                                     |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key                                                              | `your-secret`                                 |
-| `AWS_S3_BUCKET_NAME`    | S3 bucket name                                                              | `your-bucket`                                 |
+| Variable                                    | Description                                                                   | Example                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------- |
+| `NODE_ENV`                                  | Environment mode                                                              | `development`                                 |
+| `PORT`                                      | Backend port                                                                  | `4000`                                        |
+| `FRONTEND_URL`                              | Primary frontend origin                                                       | `http://localhost:3000`                       |
+| `CORS_ORIGINS`                              | Additional allowed origins                                                    | `http://localhost:3000,http://localhost:3001` |
+| `TRUST_PROXY`                               | Trust reverse proxy for `req.ip`                                              | `false`                                       |
+| `THROTTLE_STORAGE`                          | Shared throttle storage driver (`mongo` or explicit `memory`)                 | `mongo`                                       |
+| `ENABLE_API_DOCS`                           | Keep REST Swagger docs enabled in production                                  | `false`                                       |
+| `ENABLE_GRAPHQL_SCHEMA_DOCS`                | Keep `/api/graphql/schema` enabled in production                              | `false`                                       |
+| `PUBLIC_HTTP_THROTTLE_LIMIT`                | Shared per-IP limit for public HTTP contact submissions                       | `30`                                          |
+| `PUBLIC_HTTP_THROTTLE_TTL_MS`               | Window for the public HTTP contact limit                                      | `60000`                                       |
+| `CHAT_HTTP_THROTTLE_LIMIT`                  | Per-IP limit for the public chat HTTP endpoint                                | `20`                                          |
+| `CHAT_HTTP_THROTTLE_TTL_MS`                 | Window for the public chat HTTP limit                                         | `60000`                                       |
+| `CHAT_HTTP_GLOBAL_THROTTLE_LIMIT`           | Shared global ceiling for paid chat completions across all clients            | `100`                                         |
+| `CHAT_HTTP_GLOBAL_THROTTLE_TTL_MS`          | Window for the global paid-chat ceiling                                       | `60000`                                       |
+| `INTERNAL_PROXY_SHARED_SECRET`              | Shared HMAC secret for signed client IP forwarding from the frontend proxy    | `change-me`                                   |
+| `MONGODB_URI`                               | Preferred MongoDB connection string (`MONGODB_URL` / `MONGO_URL` also work)   | `mongodb://localhost:27017/wizytowka`         |
+| `MONGODB_DB`                                | MongoDB database name (falls back to the database in the URI)                 | `wizytowka`                                   |
+| `CONTACT_NOTIFICATION_PROVIDER`             | Contact delivery transport (`smtp` or `resend`)                               | `smtp`                                        |
+| `SMTP_HOST`                                 | SMTP server host when `CONTACT_NOTIFICATION_PROVIDER=smtp`                    | `localhost`                                   |
+| `SMTP_PORT`                                 | SMTP port                                                                     | `1025`                                        |
+| `SMTP_SECURE`                               | SMTP TLS flag                                                                 | `false`                                       |
+| `SMTP_FROM`                                 | Sender address for contact emails, reused by SMTP and Resend modes            | `portfolio@example.com`                       |
+| `SMTP_TO`                                   | Recipient address for contact emails, reused by SMTP and Resend modes         | `owner@example.com`                           |
+| `SMTP_USER`                                 | Optional SMTP username                                                        | `mailer@example.com`                          |
+| `SMTP_PASS`                                 | Optional SMTP password                                                        | `super-secret`                                |
+| `SMTP_DEBUG`                                | Enable verbose nodemailer transport logs                                      | `false`                                       |
+| `RESEND_API_KEY`                            | Resend API key used when `CONTACT_NOTIFICATION_PROVIDER=resend`               | `re_...`                                      |
+| `RESEND_WEBHOOK_SECRET`                     | Svix signing secret for `POST /api/contact/webhooks/resend`                   | `whsec_...`                                   |
+| `CONTACT_NOTIFICATION_DISPATCH_ENABLED`     | Enable the background contact notification dispatcher                         | `true`                                        |
+| `CONTACT_NOTIFICATION_DISPATCH_INTERVAL_MS` | Poll interval for queued contact notifications                                | `1000`                                        |
+| `CONTACT_NOTIFICATION_DISPATCH_BATCH_SIZE`  | Max queued notifications claimed per dispatcher tick                          | `10`                                          |
+| `CONTACT_NOTIFICATION_LEASE_MS`             | Lease timeout before another worker can retry an in-flight notification       | `30000`                                       |
+| `CONTACT_NOTIFICATION_MAX_ATTEMPTS`         | Max asynchronous delivery attempts before marking a notification failed       | `5`                                           |
+| `CONTACT_NOTIFICATION_BASE_DELAY_MS`        | Base delay for exponential retry backoff                                      | `30000`                                       |
+| `CONTACT_NOTIFICATION_MAX_DELAY_MS`         | Maximum delay for exponential retry backoff                                   | `900000`                                      |
+| `CONTACT_NOTIFICATION_SUBMITTED_RECHECK_MS` | Delay before re-checking stale Resend `submitted` notifications               | `300000`                                      |
+| `CONTACT_NOTIFICATION_SUBMITTED_TIMEOUT_MS` | Max age of a Resend `submitted` notification before it is failed as timed out | `86400000`                                    |
+| `CONTACT_DATA_RETENTION_ENABLED`             | Enable the automatic contact-data retention worker                           | `true`                                        |
+| `CONTACT_DATA_RETENTION_DAYS`                | Maximum retention for contact messages, IPs, and related webhook records      | `90`                                          |
+| `CONTACT_RETENTION_SWEEP_INTERVAL_MS`        | Interval between automatic contact-data retention sweeps                      | `3600000`                                     |
+| `ADMIN_TOKEN`                               | Admin bearer token, or a comma-separated token set for zero-downtime rotation | `current-token,next-token`                    |
+| `OPENAI_API_KEY`                            | Optional chat integration key                                                 | `sk-...`                                      |
+| `CHAT_SESSION_RETENTION_MS`                  | Maximum in-memory retention for chat sessions                                 | `86400000`                                    |
+| `AWS_REGION`                                | AWS region                                                                    | `us-east-1`                                   |
+| `AWS_ACCESS_KEY_ID`                         | AWS access key                                                                | `AKIA...`                                     |
+| `AWS_SECRET_ACCESS_KEY`                     | AWS secret key                                                                | `your-secret`                                 |
+| `AWS_S3_BUCKET_NAME`                        | S3 bucket name                                                                | `your-bucket`                                 |
 
 ### Frontend (`frontend/.env.local`)
 
-| Variable                               | Description                                                | Example                         |
-| -------------------------------------- | ---------------------------------------------------------- | ------------------------------- |
-| `BACKEND_GRAPHQL_URL`                  | Backend GraphQL endpoint for server route handlers/codegen | `http://localhost:4000/graphql` |
-| `BACKEND_API_URL`                      | Backend origin for server-side REST fetches and proxies    | `http://localhost:4000`         |
-| `INTERNAL_PROXY_SHARED_SECRET`         | Same shared secret as the backend for signed client IP forwarding | `change-me`               |
-| `SITE_URL`                             | Public site URL for sitemap and metadata                   | `http://localhost:3000`         |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID`        | Optional Google Analytics GA4 ID                           | `G-XXXXXXXXXX`                  |
-| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional Search Console verification token                 | `token`                         |
+| Variable                               | Description                                                                         | Example                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| `BACKEND_GRAPHQL_URL`                  | Backend GraphQL endpoint for server route handlers/codegen                          | `http://localhost:4000/graphql` |
+| `BACKEND_API_URL`                      | Backend origin for server-side REST fetches and proxies                             | `http://localhost:4000`         |
+| `INTERNAL_PROXY_SHARED_SECRET`         | Same shared secret as the backend for signed client IP forwarding                   | `change-me`                     |
+| `INTERNAL_PROXY_CLIENT_IP_HEADER`      | Trusted platform IP header to sign (`cf-connecting-ip` or `x-vercel-forwarded-for`) | `cf-connecting-ip`              |
+| `SITE_URL`                             | Public site URL for sitemap and metadata                                            | `http://localhost:3000`         |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional Search Console verification token                                          | `token`                         |
 
 ## Project Structure
 
@@ -197,7 +218,6 @@ wizytowka/
 │   │   └── lib/           # Utility functions
 │   ├── test/              # Frontend tests
 │   └── public/            # Static assets
-├── k8s/                   # Kubernetes manifests
 ├── docker-compose.yml     # Docker Compose setup
 └── .github/workflows/     # CI/CD pipelines
 ```
@@ -263,16 +283,19 @@ corepack pnpm -F frontend coverage    # Run tests with coverage
 ```bash
 corepack pnpm lint         # Run lint in every workspace
 corepack pnpm typecheck    # Run TypeScript checks in every workspace
-corepack pnpm test         # Run backend unit + backend BDD + frontend unit tests
-corepack pnpm check        # Run lint + typecheck + tests + build
+corepack pnpm test:unit    # Run backend and frontend unit tests
+corepack pnpm test:bdd     # Run executable Cucumber scenarios
+corepack pnpm test:e2e     # Run backend transport and Playwright browser E2E
+corepack pnpm check        # Run lint + typecheck + build + unit + BDD + E2E
 ```
 
 ## Engineering Conventions
 
 - **TDD**: for behavior changes, prefer starting with the smallest failing test.
-- **DDD**: backend slices with real business rules should preserve domain,
-  application, and infrastructure boundaries. Contact, chat, and portfolio are
-  the current reference slices.
+- **Architecture**: the backend is a layered, ports-and-adapters hybrid rather
+  than a complete DDD implementation. Contact keeps notification lifecycle
+  rules in the domain layer and persistence/provider access behind ports; chat
+  and portfolio retain lighter application/infrastructure boundaries.
 - **BDD**: user-visible backend behavior should be captured in
   `backend/features/**/*.feature` and executed with
   `corepack pnpm -F backend test:bdd`. Contact and chat are covered there now.
@@ -294,7 +317,6 @@ corepack pnpm check        # Run lint + typecheck + tests + build
 | POST   | `/api/contact`          | Public contact submission                  |
 | POST   | `/api/chat/message`     | Chat message endpoint                      |
 | GET    | `/api/contact/messages` | Get contact messages (admin bearer token)  |
-| GET    | `/api/metrics`          | Prometheus metrics (admin bearer token)    |
 | GET    | `/api/links`            | List external links                        |
 | GET    | `/api/links/r/:slug`    | Redirect to external link                  |
 
@@ -305,10 +327,10 @@ The GraphQL API is documented through its schema and GraphQL-native tooling, not
 - Runtime endpoint: `http://localhost:4000/graphql`
 - Interactive explorer: Apollo Sandbox on `/graphql` outside production
 - Runtime SDL docs: `http://localhost:4000/api/graphql/schema`
-- Build artifact snapshot: [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql)
+- Build artifact snapshot: [`backend/schema.gql`](backend/schema.gql)
 - Swagger at `/api/docs` intentionally documents REST only
 
-In `NODE_ENV=production`, Apollo Sandbox and GraphQL introspection stay disabled. `/api/docs` and `/api/graphql/schema` are also hidden by default unless you explicitly set `ENABLE_API_DOCS=true` or `ENABLE_GRAPHQL_SCHEMA_DOCS=true`. Use [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql) as the default offline schema snapshot.
+In `NODE_ENV=production`, Apollo Sandbox and GraphQL introspection stay disabled. `/api/docs` and `/api/graphql/schema` are also hidden by default unless you explicitly set `ENABLE_API_DOCS=true` or `ENABLE_GRAPHQL_SCHEMA_DOCS=true`. Use [`backend/schema.gql`](backend/schema.gql) as the default offline schema snapshot.
 
 Current public operations:
 
@@ -347,90 +369,64 @@ query GraphqlDocs {
 
 ## Testing
 
-Run complete test suite:
+Run the complete local quality gate (including unit, executable BDD, backend
+E2E, and browser E2E):
 
 ```bash
-corepack pnpm -F backend test:e2e
-corepack pnpm -F frontend test:e2e
+corepack pnpm check
 ```
 
-Run the Kubernetes ingress throttle verification against an existing cluster:
+Test ownership is intentionally split to avoid duplicate scenarios:
 
-```bash
-K8S_INGRESS_KUBECONFIG=/path/to/kubeconfig \
-corepack pnpm -F backend test:e2e:k8s-ingress
-```
+- unit tests cover domain/application rules and adapter edge cases;
+- executable BDD owns visitor-facing contact and chat behavior;
+- backend E2E owns transport and infrastructure contracts such as GraphQL,
+  authorization, throttling, signed proxy metadata, health, and webhooks;
+- Playwright owns browser flows, accessibility, and SEO behavior.
 
-The ingress test now deploys a dedicated throttle-harness image inside the cluster, so it no longer needs `K8S_INGRESS_TARGET_HOST`.
-
-- On local `k3d`, `kind`, and `minikube` clusters it builds the harness image locally and loads it into the cluster automatically.
-- On other clusters, set `K8S_INGRESS_IMAGE` to a pullable image reference instead of relying on local image loading.
-- Optional overrides: `K8S_INGRESS_CONTEXT`, `K8S_INGRESS_CLASS_NAME`, `K8S_INGRESS_CONTROLLER_NAMESPACE`, `K8S_INGRESS_CONTROLLER_SERVICE`, `K8S_INGRESS_CONTROLLER_PORT`, `K8S_INGRESS_CLUSTER_PROVIDER`, `K8S_INGRESS_CLUSTER_NAME`.
-
-Run the AWS ALB throttle verification in dry-run mode:
-
-```bash
-AWS_ALB_DRY_RUN=1 \
-AWS_ALB_KUBECONFIG=/path/to/kubeconfig \
-AWS_ALB_IMAGE=ghcr.io/example/wizytowka-throttle-harness:latest \
-corepack pnpm -F backend test:e2e:aws-alb
-```
-
-Run the live AWS ALB verification by building and pushing the harness image to ECR:
-
-```bash
-AWS_ALB_KUBECONFIG=/path/to/kubeconfig \
-AWS_ALB_IMAGE_REPOSITORY=123456789012.dkr.ecr.eu-central-1.amazonaws.com/wizytowka-throttle-harness \
-AWS_ALB_REGION=eu-central-1 \
-corepack pnpm -F backend test:e2e:aws-alb
-```
-
-- `test:e2e:aws-alb` creates a temporary namespace, MongoDB, two harness replicas, and an `Ingress` handled by AWS Load Balancer Controller, then proves that the `30x 200 + 31st = 429` contract still holds through a real ALB.
-- Optional ALB overrides: `AWS_ALB_CONTEXT`, `AWS_ALB_IMAGE`, `AWS_ALB_IMAGE_TAG`, `AWS_ALB_INGRESS_CLASS`, `AWS_ALB_SCHEME`, `AWS_ALB_TARGET_TYPE`, `AWS_ALB_LISTEN_PORTS_JSON`, `AWS_ALB_CERTIFICATE_ARN`, `AWS_ALB_SUBNETS`, `AWS_ALB_SECURITY_GROUPS`, `AWS_ALB_GROUP_NAME`, `AWS_ALB_ORIGIN_SCHEME`, `AWS_ALB_WAIT_SECONDS`, `AWS_ALB_HTTP_READY_SECONDS`.
+Playwright owns isolated local ports `3100` (frontend) and `4100` (backend) and
+does not reuse unrelated development servers. Override them with
+`E2E_FRONTEND_PORT` and `E2E_BACKEND_PORT` when necessary.
 
 ## Operational Notes
 
 - Frontend browser requests use same-origin `/api/contact` and `/api/chat` route handlers; the browser no longer talks to backend absolute URLs directly.
-- Frontend same-origin `/api/contact` and `/api/chat` route handlers can forward the real client IP with an HMAC signature when `INTERNAL_PROXY_SHARED_SECRET` is set to the same value on both frontend and backend.
+- The frontend does not load third-party analytics. Search Console verification, when configured, is metadata only.
+- Frontend same-origin `/api/contact` and `/api/chat` route handlers can forward a signed client IP only when `INTERNAL_PROXY_SHARED_SECRET` is set on both apps and `INTERNAL_PROXY_CLIENT_IP_HEADER` points to a trusted platform header such as `cf-connecting-ip` or `x-vercel-forwarded-for`.
 - `/api/health/ready` returns `200` only when Prisma and MongoDB are healthy; otherwise it returns `503` with dependency details.
-- `/api/contact/messages` and `/api/metrics` require `Authorization: Bearer ${ADMIN_TOKEN}`.
+- `/api/contact/messages` requires `Authorization: Bearer ${ADMIN_TOKEN}`.
 - `POST /api/portfolio`, `PATCH /api/portfolio/:id`, and `DELETE /api/portfolio/:id` also require `Authorization: Bearer ${ADMIN_TOKEN}`.
 - Public `POST /api/contact`, GraphQL `sendContact`, and `POST /api/chat/message` are rate-limited per tracker using the shared throttle storage.
+- `POST /api/contact` and GraphQL `sendContact` return success once the message is persisted and accepted for async delivery, not when the owner mailbox has already received it.
+- When `CONTACT_NOTIFICATION_PROVIDER=resend`, background delivery is submitted with an idempotency key and finalized through signed callbacks on `POST /api/contact/webhooks/resend`.
+- If a Resend callback is delayed or lost, the dispatcher periodically reconciles stale `submitted` records through `GET /emails/:id` until they reach a terminal state.
+- If confirmation still cannot be obtained before `CONTACT_NOTIFICATION_SUBMITTED_TIMEOUT_MS`, the notification is marked as failed instead of remaining in `submitted` forever.
+- Contact form content, stored IP/request metadata, and related webhook records are deleted after `CONTACT_DATA_RETENTION_DAYS` (90 days by default).
 - `/api/chat/message` is always mounted; when `OPENAI_API_KEY` is missing it returns `503` with `{ error, code: "CHAT_UNAVAILABLE" }`.
-- Portfolio image uploads only accept `image/jpeg`, `image/png`, and `image/webp` up to `5 MiB`.
+- Chat text is sent to OpenAI when chat is enabled; server-side sessions remain in memory for at most `CHAT_SESSION_RETENTION_MS` (24 hours by default) and are not persisted by the application.
+- Portfolio image uploads only accept JPEG, PNG, and WebP up to `5 MiB`; both the declared MIME type and file signature are verified before upload.
+- JSON proxy and backend bodies are capped at `16 KiB`. The portfolio multipart upload keeps its separate `5 MiB` file limit.
+- Chat session continuation accepts only opaque UUIDv4 identifiers generated by the backend. Per-IP throttling is supplemented by a shared global completion ceiling.
 - GraphQL contact throttling uses shared Mongo-backed storage by default; use `THROTTLE_STORAGE=memory` only for isolated local/test scenarios.
-- GraphQL schema documentation lives in [backend/schema.gql](/home/przemekp95/Dokumenty/wizytowka/backend/schema.gql); the runtime `/api/graphql/schema` endpoint and `/api/docs` stay disabled by default in production.
-- `test:e2e:k8s-ingress` verifies the same shared throttling contract through a real Kubernetes ingress controller and is opt-in by design because it needs an existing cluster.
-- `test:e2e:aws-alb` verifies the same contract through AWS Load Balancer Controller and a real ALB. It is intentionally opt-in because it touches cloud infrastructure.
-
-### Test Coverage Requirements
-
-- **Unit Tests**: Minimum 80% coverage
-- **Integration Tests**: All critical paths
-- **E2E Tests**: Full user journeys
+- GraphQL schema documentation lives in [`backend/schema.gql`](backend/schema.gql); the runtime `/api/graphql/schema` endpoint and `/api/docs` stay disabled by default in production.
+CI reports unit-test coverage and requires lint, typecheck, build, unit, BDD,
+backend E2E, and browser E2E to pass. The repository does not currently enforce
+a numeric coverage threshold.
 
 ## Deployment
 
-### Docker Deployment
+### Container Deployment
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
-
-# Production deployment
-docker-compose -f docker-compose.prod.yml up -d
+# Local integration environment
+cp compose.env.example .env
+# Fill every required value in .env with a fresh local secret.
+docker compose --profile dev up -d --build
 ```
 
-### Kubernetes Deployment
-
-```bash
-# Apply Kubernetes manifests
-kubectl apply -f k8s/
-
-# Check deployment status
-kubectl get pods
-kubectl get services
-```
+The Compose file is a local integration environment, not a production
+deployment recipe. In production, keep databases off public ports and place the
+application services behind TLS and request-size/rate-limit controls.
 
 ## Contributing
 
@@ -465,34 +461,31 @@ chore: maintenance
 
 ## Security
 
-- Rate limiting implemented
-- Input validation with class-validator
-- CORS configuration
-- Helmet security headers
-- hCaptcha integration
-- CSRF protection
-- Secure cookie configuration
+- Rate limiting for public contact and chat endpoints
+- Input validation with `class-validator` and GraphQL DTO metadata
+- CORS configuration on the backend API
+- Helmet security headers on the backend
+- GraphQL CSRF prevention enabled in Apollo Server
+- Bearer-token protection for ops and portfolio mutation endpoints
 
 ## Performance
 
-- Next.js optimizations (ISR, SSG where applicable)
+- Next.js App Router static generation where applicable
 - Image optimization with next/image
 - Code splitting and lazy loading
 - Database query optimization
-- Redis caching (recommended for production)
 - CDN integration for static assets
 
-## Monitoring & Logging
+## Operations & Logging
 
 - Structured logging with Winston
 - Health checks implemented
-- Error tracking ready for Sentry integration
-- Performance monitoring setup
 - Database query logging
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+No license file is currently included. Do not assume permission to redistribute
+or reuse the source without authorization from the repository owner.
 
 ## Acknowledgments
 

@@ -4,7 +4,6 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.bootstrap';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { MetricsService } from '../src/metrics/metrics.service';
 import { PortfolioService } from '../src/portfolio/portfolio.service';
 
 describe('Ops auth (e2e)', () => {
@@ -13,11 +12,6 @@ describe('Ops auth (e2e)', () => {
     contactMessage: {
       findMany: jest.fn(),
     },
-  };
-  const metricsService = {
-    getMetrics: jest.fn(),
-    recordHttpRequest: jest.fn(),
-    recordError: jest.fn(),
   };
   const portfolioService = {
     listPublished: jest.fn(),
@@ -40,8 +34,6 @@ describe('Ops auth (e2e)', () => {
       .useValue(prismaService)
       .overrideProvider(PortfolioService)
       .useValue(portfolioService)
-      .overrideProvider(MetricsService)
-      .useValue(metricsService)
       .compile();
 
     app = mod.createNestApplication();
@@ -51,12 +43,10 @@ describe('Ops auth (e2e)', () => {
 
   beforeEach(() => {
     prismaService.contactMessage.findMany.mockReset();
-    metricsService.getMetrics.mockReset();
     portfolioService.createPortfolioItem.mockReset();
     portfolioService.updatePortfolioItem.mockReset();
     portfolioService.deletePortfolioItem.mockReset();
     prismaService.contactMessage.findMany.mockResolvedValue([]);
-    metricsService.getMetrics.mockResolvedValue('# mock metrics');
     portfolioService.createPortfolioItem.mockResolvedValue({
       _id: 'item-1',
       title: 'Project',
@@ -96,10 +86,6 @@ describe('Ops auth (e2e)', () => {
       .expect(200);
 
     expect(prismaService.contactMessage.findMany).toHaveBeenCalled();
-  });
-
-  it('rejects missing bearer token for metrics', async () => {
-    await request(app.getHttpServer()).get('/api/metrics').expect(401);
   });
 
   it('rejects missing bearer token for portfolio create', async () => {
@@ -167,15 +153,5 @@ describe('Ops auth (e2e)', () => {
       .expect(200);
 
     expect(portfolioService.deletePortfolioItem).toHaveBeenCalledWith('item-1');
-  });
-
-  it('accepts valid bearer token for metrics', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/api/metrics')
-      .set('Authorization', 'Bearer test-admin-token')
-      .expect(200);
-
-    expect(metricsService.getMetrics).toHaveBeenCalled();
-    expect(res.text).toBe('# mock metrics');
   });
 });

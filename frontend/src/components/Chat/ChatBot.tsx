@@ -32,6 +32,9 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedRef = useRef(false);
+  const dialogTitleId = 'portfolio-chat-title';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,9 +45,25 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      hasOpenedRef.current = true;
+      inputRef.current?.focus();
+    } else if (hasOpenedRef.current) {
+      openButtonRef.current?.focus();
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
   }, [isOpen]);
 
   useEffect(() => {
@@ -121,7 +140,7 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -138,12 +157,16 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
   if (!isOpen) {
     return (
       <button
+        ref={openButtonRef}
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 group"
         aria-label={t('openButtonLabel')}
       >
         <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
-        <div className="absolute -top-12 right-0 bg-slate-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <div
+          className="absolute -top-12 right-0 bg-slate-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+          aria-hidden="true"
+        >
           {t('tooltip')}
         </div>
       </button>
@@ -151,13 +174,20 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[28rem] max-w-[calc(100vw-2rem)] h-[36rem] bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+    <div
+      className="fixed bottom-6 right-6 z-50 w-[28rem] max-w-[calc(100vw-2rem)] h-[36rem] bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={dialogTitleId}
+    >
       {/* Header */}
       <div className="bg-indigo-600 text-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Bot className="w-6 h-6" />
           <div>
-            <h3 className="font-semibold">{t('title')}</h3>
+            <h3 id={dialogTitleId} className="font-semibold">
+              {t('title')}
+            </h3>
             <p className="text-sm opacity-90">{t('subtitle')}</p>
           </div>
         </div>
@@ -171,7 +201,12 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 p-4 h-80 overflow-y-auto space-y-4">
+      <div
+        className="flex-1 p-4 h-80 overflow-y-auto space-y-4"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
         {messages.map((message) => (
           <div
             key={message.id}
@@ -205,11 +240,14 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
         ))}
 
         {isLoading && (
-          <div className="flex gap-3 justify-start">
+          <div className="flex gap-3 justify-start" role="status">
             <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-indigo-600 animate-pulse" />
             </div>
             <div className="bg-slate-100 rounded-2xl px-4 py-3">
+              <span className="sr-only">
+                {locale === 'en' ? 'Assistant is responding' : 'Asystent odpowiada'}
+              </span>
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-75"></div>
@@ -224,6 +262,7 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
 
       {/* Input */}
       <div className="p-4 border-t border-slate-200 bg-slate-50">
+        <p className="mb-2 text-xs leading-relaxed text-slate-600">{t('privacyNotice')}</p>
         <div className="flex gap-2">
           <input
             data-chat-input
@@ -231,7 +270,7 @@ export function ChatBot({ locale, translations }: ChatBotProps) {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={t('placeholder')}
             autoComplete="off"
             spellCheck={false}

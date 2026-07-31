@@ -1,21 +1,27 @@
 # Security Policy
 
-## Supported Versions
+## Supported code
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Security fixes target the current `main` branch. Historical snapshots and
+locally modified deployments are not maintained as separate supported release
+lines.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please use GitHub's private vulnerability-reporting flow:
 
-Use this section to tell people how to report a vulnerability.
+https://github.com/przemekp95/wizytowka/security/advisories/new
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Do not include credentials, production personal data, or working exploit data
+in a public issue. Include the affected endpoint or component, reproduction
+conditions, impact, and the smallest safe proof needed to confirm the report.
+
+If private reporting is unavailable, open a public issue containing only a
+request for a private contact channel; do not disclose vulnerability details.
+
+## Operational boundary
+
+The repository's Compose configuration is a local integration reference.
+Production operators must provide managed TLS, private databases, secret
+management, request-size and rate limits, backups, and monitoring appropriate
+to their hosting environment.

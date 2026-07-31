@@ -1,4 +1,6 @@
 process.env.SKIP_PRISMA = 'true';
+process.env.GRAPHQL_SCHEMA_FILE ??=
+  `/tmp/wizytowka-schema-${process.env.JEST_WORKER_ID ?? process.pid}.gql`;
 
 // Mock problematic ES6 modules for Jest E2E tests
 // @ts-ignore

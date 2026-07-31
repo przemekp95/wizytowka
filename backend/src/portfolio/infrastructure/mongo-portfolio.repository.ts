@@ -159,14 +159,21 @@ export class MongoPortfolioRepository
 
       this.logger.log('Attempting MongoDB connection...');
       const connectPromise = nextClient.connect();
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
           () => reject(new Error('Connection timeout after 5s')),
           5000,
-        ),
-      );
+        );
+      });
 
-      await Promise.race([connectPromise, timeoutPromise]);
+      try {
+        await Promise.race([connectPromise, timeoutPromise]);
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
       this.logger.log('MongoDB connection established');
 
       const nextDb = nextClient.db(this.mongoConfiguration.dbName);
