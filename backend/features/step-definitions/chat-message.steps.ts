@@ -70,6 +70,8 @@ import { BehaviorWorld } from './behavior.world';
         publicHttpTtlMs: 60_000,
         chatHttpLimit: 20,
         chatHttpTtlMs: 60_000,
+        chatHttpGlobalLimit: 100,
+        chatHttpGlobalTtlMs: 60_000,
       },
     },
     {
@@ -146,9 +148,8 @@ When('I submit a valid chat message', async function (this: BehaviorWorld) {
 When('I submit an invalid chat message', async function (this: BehaviorWorld) {
   const httpServer = this.app!.getHttpServer() as Parameters<typeof request>[0];
   const response = await request(httpServer).post('/api/chat/message').send({
-    message: '',
-    sessionId:
-      'too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long-too-long',
+    message: 'Opowiedz o portfolio',
+    sessionId: 'shared-session',
   });
 
   this.response = {

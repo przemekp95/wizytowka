@@ -12,11 +12,11 @@ import { LinkDto } from './links.openapi.dto';
 type Link = { slug: string; title: string; url: string };
 
 const LINKS: Link[] = [
-  { slug: 'github', title: 'GitHub', url: 'https://github.com/TwojNick' },
+  { slug: 'github', title: 'GitHub', url: 'https://github.com/przemekp95' },
   {
     slug: 'linkedin',
     title: 'LinkedIn',
-    url: 'https://www.linkedin.com/in/TwojProfil',
+    url: 'https://www.linkedin.com/in/przempietrzak/',
   },
 ];
 

@@ -46,7 +46,8 @@
     "success": "Message sent ✅",
     "error": "Fill in all fields.",
     "sendError": "Send error",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "privacyNotice": "Your name, email, message and technical connection data are used only to handle your enquiry and stored for up to 90 days."
   },
   "footer": {
     "copyright": "© {year} Przemysław Pietrzak",
@@ -86,6 +87,7 @@
     "placeholder": "Type a message...",
     "title": "AI Assistant",
     "subtitle": "Przemysław's Portfolio",
-    "tooltip": "Talk with AI"
+    "tooltip": "Talk with AI",
+    "privacyNotice": "Messages are sent to OpenAI and kept in server memory for up to 24 hours. Do not include sensitive data."
   }
 }

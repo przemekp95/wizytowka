@@ -24,6 +24,22 @@ export function CustomCursor() {
   const [isClickable, setIsClickable] = useState(false);
   const [trails, setTrails] = useState<CursorTrail[]>([]);
   const [theme, setTheme] = useState('dark');
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  useEffect(() => {
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateEnabledState = () => setIsEnabled(finePointer.matches && !reducedMotion.matches);
+
+    updateEnabledState();
+    finePointer.addEventListener('change', updateEnabledState);
+    reducedMotion.addEventListener('change', updateEnabledState);
+
+    return () => {
+      finePointer.removeEventListener('change', updateEnabledState);
+      reducedMotion.removeEventListener('change', updateEnabledState);
+    };
+  }, []);
 
   // Use useCallback for stable references
   const updateCursorPosition = useCallback(
@@ -39,6 +55,8 @@ export function CustomCursor() {
   const animationFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
+    if (!isEnabled) return;
+
     // Detect theme changes less frequently
     const handleThemeChange = () => {
       const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
@@ -135,17 +153,19 @@ export function CustomCursor() {
       document.body.classList.remove('custom-cursor-active');
       observer.disconnect();
     };
-  }, [mouseX, mouseY, updateCursorPosition, theme]);
+  }, [isEnabled, mouseX, mouseY, updateCursorPosition, theme]);
 
   // Periodically prune stale trail points.
   useEffect(() => {
+    if (!isEnabled) return;
+
     const interval = setInterval(() => {
       const now = Date.now();
       setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 600)); // Keep trails visible for up to 600ms.
     }, 80); // Run often enough to avoid trail buildup.
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isEnabled]);
 
   // Use separate state for trail animations to avoid Date.now in render
   const [trailAnimations, setTrailAnimations] = useState<{
@@ -154,6 +174,8 @@ export function CustomCursor() {
 
   // Recompute trail animation state when trail data changes.
   useEffect(() => {
+    if (!isEnabled) return;
+
     const updateAnimations = () => {
       const currentTime = Date.now();
       const newAnimations: { [key: string]: { opacity: number; scale: number } } = {};
@@ -172,9 +194,9 @@ export function CustomCursor() {
     // Refresh animation interpolation at a steady interval.
     const interval = setInterval(updateAnimations, 100);
     return () => clearInterval(interval);
-  }, [trails]);
+  }, [isEnabled, trails]);
 
-  if (!isVisible) return null;
+  if (!isEnabled || !isVisible) return null;
 
   return (
     <>

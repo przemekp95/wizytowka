@@ -38,7 +38,8 @@
     "success": "Wiadomość wysłana ✅",
     "error": "Wypełnij wszystkie pola.",
     "sendError": "Błąd wysyłania",
-    "unknownError": "Nieznany błąd"
+    "unknownError": "Nieznany błąd",
+    "privacyNotice": "Imię, e-mail, wiadomość i techniczne dane połączenia są używane wyłącznie do obsługi zapytania i przechowywane maksymalnie przez 90 dni."
   },
   "footer": {
     "copyright": "© {year} Przemysław Pietrzak",
@@ -87,6 +88,7 @@
     "placeholder": "Wpisz wiadomość...",
     "title": "AI Asystent",
     "subtitle": "Portfolio Przemysława",
-    "tooltip": "Porozmawiaj z AI"
+    "tooltip": "Porozmawiaj z AI",
+    "privacyNotice": "Wiadomości są wysyłane do OpenAI i przechowywane w pamięci serwera maksymalnie przez 24 godziny. Nie podawaj danych wrażliwych."
   }
 }

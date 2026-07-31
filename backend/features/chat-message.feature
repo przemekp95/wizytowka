@@ -23,7 +23,7 @@ Feature: Public chat messaging
       {"error":"Chat is unavailable because OPENAI_API_KEY is not configured.","code":"CHAT_UNAVAILABLE"}
       """
 
-  Scenario: Invalid chat payload is rejected before application handling
+  Scenario: A client-chosen non-UUID chat session is rejected before application handling
     When I submit an invalid chat message
     Then the chat response status should be 400
     And no chat context or completion should run

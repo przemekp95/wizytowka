@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { ContactDto } from './contact.dto';
+import { ContactDto } from './dto/contact.dto';
 import { ContactMessageInput } from './dto/contact-message.input';
 
 describe('Contact validation contracts', () => {

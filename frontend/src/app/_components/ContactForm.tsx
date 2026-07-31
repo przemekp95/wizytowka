@@ -47,6 +47,8 @@ const polishDefaults: ContactTranslations = {
   namePlaceholder: 'Imię i nazwisko',
   emailPlaceholder: 'E-mail',
   messagePlaceholder: 'Treść wiadomości...',
+  privacyNotice:
+    'Imię, e-mail, wiadomość i techniczne dane połączenia są używane wyłącznie do obsługi zapytania i przechowywane maksymalnie przez 90 dni.',
 };
 
 const englishDefaults: ContactTranslations = {
@@ -65,6 +67,8 @@ const englishDefaults: ContactTranslations = {
   namePlaceholder: 'Enter your full name',
   emailPlaceholder: 'Enter your email address',
   messagePlaceholder: 'Write your message here...',
+  privacyNotice:
+    'Your name, email, message and technical connection data are used only to handle your enquiry and stored for up to 90 days.',
 };
 
 const nameInputId = 'contact-name';
@@ -359,6 +363,10 @@ export default function ContactSection({ locale, translations }: ContactSectionP
           </AnimatePresence>
         </div>
       </motion.div>
+
+      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+        {t('privacyNotice')}
+      </p>
 
       {/* Submit Button with Progress */}
       <motion.div

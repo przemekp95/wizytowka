@@ -26,7 +26,6 @@ import { HelloResolver } from './graphql/hello.resolver';
 import { HealthController } from './health.controller';
 import { LinksController } from './links.controller';
 import { LoggingModule } from './logging/logging.module';
-import { MetricsModule } from './metrics/metrics.module';
 import { PortfolioApiController } from './portfolio/portfolio.controller';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -55,7 +54,8 @@ import { PrismaModule } from './prisma/prisma.module';
         appConfiguration: ConfigType<typeof appConfig>,
       ): ApolloDriverConfig => ({
         driver: ApolloDriver,
-        autoSchemaFile: join(process.cwd(), 'schema.gql'),
+        autoSchemaFile:
+          process.env.GRAPHQL_SCHEMA_FILE ?? join(process.cwd(), 'schema.gql'),
         sortSchema: true,
         playground: false,
         introspection: appConfiguration.graphqlIntrospection,
@@ -64,6 +64,7 @@ import { PrismaModule } from './prisma/prisma.module';
             ? ApolloServerPluginLandingPageLocalDefault()
             : ApolloServerPluginLandingPageDisabled(),
         ],
+        preserveHttpStatusForExecutionErrors: false,
         path: '/graphql',
         csrfPrevention: true,
         context: ({ req, res }: { req: Request; res: Response }) => ({
@@ -77,7 +78,6 @@ import { PrismaModule } from './prisma/prisma.module';
     PortfolioModule,
     AwsModule,
     LoggingModule,
-    MetricsModule,
     ChatModule,
   ],
   controllers: [

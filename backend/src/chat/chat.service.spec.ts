@@ -106,7 +106,8 @@ describe('ChatService', () => {
     const result = await service.sendMessage('  Opowiedz o portfolio  ');
 
     expect(result).toEqual({
-      response: 'Hej, moge pomoc.',
+      kind: 'completed',
+      content: 'Hej, moge pomoc.',
       sessionId: 'chat-session-1',
     });
     expect(contextPort.buildSystemPrompt).toHaveBeenCalledTimes(1);
@@ -193,8 +194,7 @@ describe('ChatService', () => {
     const result = await service.sendMessage('Pomoz');
 
     expect(result).toEqual({
-      response:
-        'Przepraszam, wystąpił błąd podczas przetwarzania Twojej wiadomości.',
+      kind: 'completion_failed',
       sessionId: 'chat-session-1',
     });
     expect(sessionStore.save).not.toHaveBeenCalled();

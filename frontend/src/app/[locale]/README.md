@@ -1,55 +1,9 @@
-# Localized Pages
+# Localized pages
 
-Internationalized pages and locale-specific content for the frontend application.
+The Next.js 16 App Router serves the public page at `/en` and `/pl`. Each locale
+has its own canonical URL and the same `hreflang` set (`en`, `pl`, and
+`x-default`). The request proxy forwards the route locale so the root document
+emits the matching `<html lang>` value.
 
-## Description
-
-This directory contains Next.js pages with internationalization support, including dynamic routes for different locales and locale-specific content and layouts.
-
-## Getting Started
-
-### Dependencies
-
-- Next.js 15+
-- React 18+
-- TypeScript 5.9+
-- Internationalization libraries
-- Locale routing
-
-### Installing
-
-- Internationalization is configured in the main application
-- Locale files are in src/i18n directory
-- No additional installation required
-
-### Executing program
-
-- Localized pages are served based on URL locale parameter
-- Content is dynamically loaded based on user locale
-
-```
-npm run dev
-```
-
-## Help
-
-For internationalization issues, check locale configuration, ensure translation files exist, and verify routing setup.
-
-## Authors
-
-TBD
-
-## Version History
-
-- 0.1
-  - Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-- Next.js internationalization
-- React i18n patterns
-- Locale management
+Translations live in `src/i18n/messages`. Unsupported locale routes return a
+404 rather than silently publishing another canonical page.

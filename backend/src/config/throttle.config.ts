@@ -29,4 +29,12 @@ export default registerAs('throttle', () => ({
   ),
   chatHttpLimit: readEnvNumber(process.env.CHAT_HTTP_THROTTLE_LIMIT, 20),
   chatHttpTtlMs: readEnvNumber(process.env.CHAT_HTTP_THROTTLE_TTL_MS, 60_000),
+  chatHttpGlobalLimit: readEnvNumber(
+    process.env.CHAT_HTTP_GLOBAL_THROTTLE_LIMIT,
+    100,
+  ),
+  chatHttpGlobalTtlMs: readEnvNumber(
+    process.env.CHAT_HTTP_GLOBAL_THROTTLE_TTL_MS,
+    60_000,
+  ),
 }));

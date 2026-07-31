@@ -5,7 +5,7 @@ export class ContactHttpResponseDto {
   ok!: boolean;
 
   @ApiPropertyOptional({
-    example: 'Nie udalo sie dostarczyc wiadomosci. Sprobuj ponownie pozniej.',
+    example: 'Nie udalo sie zapisac wiadomosci. Sprobuj ponownie pozniej.',
   })
   error?: string;
 }

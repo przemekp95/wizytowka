@@ -13,6 +13,7 @@ const translations = {
   title: 'AI Assistant',
   subtitle: 'Portfolio',
   tooltip: 'Talk with AI',
+  privacyNotice: 'Messages are sent to OpenAI and kept in server memory for up to 24 hours.',
 };
 
 describe('ChatBot', () => {
@@ -56,5 +57,24 @@ describe('ChatBot', () => {
     });
 
     expect(await screen.findByText('Cześć')).toBeInTheDocument();
+  });
+
+  it('exposes dialog semantics, announces messages and closes with Escape', async () => {
+    render(<ChatBot locale="en" translations={translations} />);
+
+    const openButton = screen.getByRole('button', { name: /open chat with ai assistant/i });
+    openButton.focus();
+    await userEvent.click(openButton);
+
+    const dialog = screen.getByRole('dialog', { name: /ai assistant/i });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('log')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByText(/sent to OpenAI.*24 hours/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Type a message...')).toHaveFocus();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /open chat with ai assistant/i })).toHaveFocus();
   });
 });

@@ -11,6 +11,7 @@ const logger = new Logger('Bootstrap');
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    rawBody: true,
   });
   const appConfiguration = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
 
