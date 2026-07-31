@@ -4,7 +4,12 @@ const appBaseUrl = process.env.E2E_BASE_URL ?? '';
 
 test('localized metadata and accessible chat controls', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto(`${appBaseUrl}/en`);
+  const response = await page.goto(`${appBaseUrl}/en`);
+  const policy = response?.headers()['content-security-policy'];
+
+  expect(policy).toContain("script-src 'self' 'nonce-");
+  expect(policy).not.toContain("script-src 'self' 'unsafe-inline'");
+  await expect(page.locator('script[nonce]').first()).toBeAttached();
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
