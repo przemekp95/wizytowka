@@ -9,7 +9,7 @@ function createContentSecurityPolicy(nonce: string): string {
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    "img-src 'self' data: blob: https://wizytowka.s3.eu-north-1.amazonaws.com",
+    "img-src 'self' data: blob: https://wizytowka.s3.eu-north-1.amazonaws.com https://ppsolutions.com.pl https://krainakarpat.pl",
     "font-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
     `script-src 'self' 'nonce-${nonce}'`,

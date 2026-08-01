@@ -124,6 +124,64 @@ export class CreatePortfolioItemDto {
   @MaxLength(2000)
   desc_en?: string;
 
+  @ApiPropertyOptional({
+    example: 'Proces był rozproszony między kilka narzędzi.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  problem?: string;
+
+  @ApiPropertyOptional({
+    example: 'The process was split across several tools.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  problem_en?: string;
+
+  @ApiPropertyOptional({ example: 'Full-stack developer and maintainer.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  role?: string;
+
+  @ApiPropertyOptional({ example: 'Full-stack developer and maintainer.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  role_en?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  decisions?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  decisions_en?: string[];
+
+  @ApiPropertyOptional({ example: 'Wdrożony i zweryfikowany przepływ.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  result?: string;
+
+  @ApiPropertyOptional({ example: 'A deployed and verified workflow.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  result_en?: string;
+
   @ApiProperty({ type: [String], example: ['NestJS', 'MongoDB'] })
   @Transform(({ value }) => normalizeStringArray(value))
   @IsArray()
@@ -210,6 +268,60 @@ export class UpdatePortfolioItemDto {
   @MaxLength(2000)
   desc_en?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  problem?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  problem_en?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  role?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  role_en?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  decisions?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @Transform(({ value }) => normalizeStringArray(value))
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  decisions_en?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  result?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  result_en?: string;
+
   @ApiPropertyOptional({ type: [String], example: ['React', 'TypeScript'] })
   @Transform(({ value }) => normalizeStringArray(value))
   @ApiPropertyOptional({ example: 'https://example.com/image.jpg' })
@@ -277,6 +389,30 @@ export class PortfolioItemDto {
 
   @ApiPropertyOptional({ example: 'Project description in English.' })
   desc_en?: string;
+
+  @ApiPropertyOptional()
+  problem?: string;
+
+  @ApiPropertyOptional()
+  problem_en?: string;
+
+  @ApiPropertyOptional()
+  role?: string;
+
+  @ApiPropertyOptional()
+  role_en?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  decisions?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  decisions_en?: string[];
+
+  @ApiPropertyOptional()
+  result?: string;
+
+  @ApiPropertyOptional()
+  result_en?: string;
 
   @ApiProperty({ type: [String], example: ['NestJS', 'MongoDB'] })
   tags!: string[];

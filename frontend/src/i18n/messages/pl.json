@@ -4,24 +4,25 @@
     "portfolio": "Portfolio",
     "about": "O mnie",
     "skills": "Umiejętności i technologie",
-    "techAnalysis": "Analiza portfela projektów",
     "contact": "Kontakt",
     "contactMe": "Napisz do mnie"
   },
   "hero": {
     "title": "Full-stack TypeScript Developer",
-    "description": "Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP. Pracuję z REST, GraphQL, SQL i MongoDB.",
+    "description": "Buduję i wdrażam aplikacje full-stack w TypeScript: React/Next.js na frontendzie oraz Node.js/NestJS na backendzie. Rozwijam też projekty PHP/Symfony, API, kolejki i integracje z PostgreSQL, MySQL i MongoDB.",
     "viewProjects": "Zobacz projekty",
     "contactMe": "Skontaktuj się"
   },
   "about": {
     "title": "O mnie",
-    "description": "Jestem developerem łączącym prawo i technologię. Buduję aplikacje w React/Next.js i Node/NestJS, a także rozwijam projekty PHP w Laravelu i Symfony. Pracuję z REST, GraphQL, PostgreSQL, MySQL i MongoDB oraz automatyzuję testy i dostarczanie zmian za pomocą Dockera i GitHub Actions.",
-    "techStack": "Stack technologiczny",
-    "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
-    "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
-    "databases": "Bazy danych: Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL",
-    "devops": "Dostarczanie: Docker / GitHub Actions / Passenger (Cyber_Folks) / Render / Vercel / AWS"
+    "description": "Tworzę i wdrażam aplikacje full-stack w TypeScript: React i Next.js po stronie frontendu oraz Node.js i NestJS po stronie backendu. Rozwijam też projekty PHP w Symfony i Laravelu. Pracuję z API, kolejkami, relacyjnymi bazami danych i MongoDB, a jakość oraz wdrożenia automatyzuję za pomocą testów, Dockera i GitHub Actions."
+  },
+  "skillsSection": {
+    "title": "Umiejętności i technologie",
+    "intro": "Technologie, których używam w pokazanych projektach — od interfejsu i API po bazy danych, testy i wdrożenie.",
+    "primary": "Główny stack",
+    "backend": "Backend i integracje",
+    "delivery": "Dane, testy i wdrożenie"
   },
   "contact": {
     "title": "Kontakt",
@@ -72,12 +73,20 @@
     "english": "English"
   },
   "portfolio": {
-    "title": "Moje projekty",
-    "noItems": "Brak projektów do wyświetlenia.",
+    "title": "Wybrane projekty",
+    "intro": "Pięć projektów, przy których odpowiadałem za kod, decyzje techniczne i wdrożenie.",
+    "noItems": "Brak case studies do wyświetlenia.",
     "unavailable": "Portfolio jest chwilowo niedostępne. Spróbuj ponownie później.",
     "newTech": "Nowa technologia",
     "repository": "Repozytorium",
-    "technologies": "Wykorzystane technologie"
+    "technologies": "Wykorzystane technologie",
+    "problem": "Cel projektu",
+    "role": "Mój zakres",
+    "decisions": "Co zrobiłem",
+    "result": "Efekt",
+    "stack": "Stack",
+    "liveProof": "Zobacz projekt",
+    "sourceRepository": "Kod na GitHubie"
   },
   "chat": {
     "openButtonLabel": "Otwórz czat z AI asystentem",

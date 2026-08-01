@@ -12,6 +12,14 @@ describe('Portfolio REST validation contracts', () => {
       slug: 'project-one',
       href: '/portfolio/project-one',
       desc: 'To jest poprawny opis projektu portfolio.',
+      problem: 'Problem projektu.',
+      problem_en: 'Project problem.',
+      role: 'Implementacja full-stack.',
+      role_en: 'Full-stack implementation.',
+      decisions: '["Decyzja pierwsza.", "Decyzja druga."]',
+      decisions_en: 'Decision one., Decision two.',
+      result: 'Zweryfikowany wynik.',
+      result_en: 'Verified result.',
       tags: 'NestJS, MongoDB',
       img: 'https://example.com/image.jpg',
       status: 'published',
@@ -23,6 +31,8 @@ describe('Portfolio REST validation contracts', () => {
     expect(payload.tags).toEqual(['NestJS', 'MongoDB']);
     expect(payload.order).toBe(2);
     expect(payload.isLogo).toBe(true);
+    expect(payload.decisions).toEqual(['Decyzja pierwsza.', 'Decyzja druga.']);
+    expect(payload.decisions_en).toEqual(['Decision one.', 'Decision two.']);
   });
 
   it('rejects create payload without required fields', async () => {
