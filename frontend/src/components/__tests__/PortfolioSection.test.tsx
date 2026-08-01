@@ -56,5 +56,6 @@ describe('PortfolioSection', () => {
     expect(heading).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Private project' })).not.toBeInTheDocument();
     expect(heading.querySelector('a')).not.toBeInTheDocument();
+    expect(screen.getByText('Private project description')).toHaveClass('text-slate-700');
   });
 });
