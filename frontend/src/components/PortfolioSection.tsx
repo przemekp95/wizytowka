@@ -296,11 +296,11 @@ export default function PortfolioSection({
                       )}
                     </motion.h3>
 
-                    <p className="mt-2 text-sm text-black dark:text-gray-400">{displayDesc}</p>
+                    <p className="mt-2 text-sm text-slate-700">{displayDesc}</p>
 
                     {p.repoUrl?.trim() && (
                       <div className="mt-4">
-                        <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-gray-500">
+                        <div className="text-xs uppercase tracking-wide text-slate-700">
                           {t('repository')}
                         </div>
                         <a
