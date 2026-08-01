@@ -26,6 +26,17 @@ describe('PortfolioService', () => {
     deleteImage: jest.fn(),
   };
 
+  const caseStudyFields = {
+    problem: 'Problem projektu.',
+    problem_en: 'Project problem.',
+    role: 'Implementacja full-stack.',
+    role_en: 'Full-stack implementation.',
+    decisions: ['Decyzja pierwsza.', 'Decyzja druga.'],
+    decisions_en: ['Decision one.', 'Decision two.'],
+    result: 'Zweryfikowany wynik.',
+    result_en: 'Verified result.',
+  };
+
   const mockPortfolioItem = {
     _id: 'item-1',
     title: 'Project One',
@@ -43,6 +54,7 @@ describe('PortfolioService', () => {
     createdAt: new Date('2026-03-20T10:00:00.000Z'),
     updatedAt: new Date('2026-03-20T10:00:00.000Z'),
     repoUrl: 'https://github.com/user/project-one',
+    ...caseStudyFields,
   };
 
   beforeEach(async () => {
@@ -133,6 +145,7 @@ describe('PortfolioService', () => {
         tags: ['NestJS'],
         img: '',
         status: 'published',
+        ...caseStudyFields,
       },
       {
         originalname: 'portfolio.jpg',
@@ -167,6 +180,7 @@ describe('PortfolioService', () => {
           tags: ['NestJS'],
           img: '',
           status: 'published',
+          ...caseStudyFields,
         },
         {
           originalname: 'portfolio.jpg',

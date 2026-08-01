@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface PortfolioItem {
   _id: string;
@@ -12,14 +11,19 @@ interface PortfolioItem {
   href: string;
   desc: string;
   desc_en?: string;
+  problem?: string;
+  problem_en?: string;
+  role?: string;
+  role_en?: string;
+  decisions?: string[];
+  decisions_en?: string[];
+  result?: string;
+  result_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;
-  newTech?: boolean;
   category?: string;
   repoUrl?: string | null;
-  dateFrom?: Date;
-  dateTo?: Date;
 }
 
 interface PortfolioSectionProps {
@@ -29,317 +33,229 @@ interface PortfolioSectionProps {
   degradedMessage?: string | null;
 }
 
+type LocalizedCaseStudy = {
+  title: string;
+  summary: string;
+  problem?: string;
+  role?: string;
+  decisions: string[];
+  result?: string;
+};
+
+function localize(item: PortfolioItem, locale: string): LocalizedCaseStudy {
+  const isEnglish = locale === 'en';
+
+  return {
+    title: isEnglish && item.title_en ? item.title_en : item.title,
+    summary: isEnglish && item.desc_en ? item.desc_en : item.desc,
+    problem: isEnglish && item.problem_en ? item.problem_en : item.problem,
+    role: isEnglish && item.role_en ? item.role_en : item.role,
+    decisions: isEnglish && item.decisions_en ? item.decisions_en : (item.decisions ?? []),
+    result: isEnglish && item.result_en ? item.result_en : item.result,
+  };
+}
+
 export default function PortfolioSection({
   items,
   locale,
   translations,
   degradedMessage,
 }: PortfolioSectionProps) {
-  const [activeFilter, setActiveFilter] = useState<string>('all');
-
-  const t = (key: string) =>
-    translations[key] ??
-    {
-      title: locale === 'en' ? 'Portfolio' : 'Moje projekty',
-      noItems:
-        locale === 'en'
-          ? 'No projects found for this filter.'
-          : 'Nie znaleziono projektów dla tego filtru.',
-      newTech: locale === 'en' ? 'New Tech' : 'Nowy Tech',
-      technologies: locale === 'en' ? 'Technologies' : 'Wykorzystane technologie',
-      repository: locale === 'en' ? 'Repository' : 'Repozytorium',
-    }[key] ??
-    key;
-
-  // Extract all unique categories from portfolio items
-  const allCategories = useMemo(() => {
-    const categorySet = new Set<string>();
-    items.forEach((item) => {
-      if (item.category) {
-        // Split by comma and process each category
-        const categories = item.category
-          .split(',')
-          .map((cat) => cat.trim().toLowerCase())
-          .filter((cat) => cat.length > 0);
-        categories.forEach((cat) => categorySet.add(cat));
-      }
-    });
-    return Array.from(categorySet).sort();
-  }, [items]);
-
-  // Filter items based on active filter
-  const filteredItems = useMemo(() => {
-    if (activeFilter === 'all') return items;
-    return items.filter((item) => {
-      if (!item.category) return false;
-      const itemCategories = item.category
-        .split(',')
-        .map((cat) => cat.trim().toLowerCase())
-        .filter((cat) => cat.length > 0);
-      return itemCategories.includes(activeFilter);
-    });
-  }, [items, activeFilter]);
-
+  const fallback = {
+    title: locale === 'en' ? 'Selected projects' : 'Wybrane projekty',
+    intro:
+      locale === 'en'
+        ? 'Five projects where I was responsible for the code, technical decisions and delivery.'
+        : 'Pięć projektów, przy których odpowiadałem za kod, decyzje techniczne i wdrożenie.',
+    noItems: locale === 'en' ? 'No case studies to display.' : 'Brak case studies do wyświetlenia.',
+    problem: locale === 'en' ? 'Project goal' : 'Cel projektu',
+    role: locale === 'en' ? 'My scope' : 'Mój zakres',
+    decisions: locale === 'en' ? 'What I did' : 'Co zrobiłem',
+    result: locale === 'en' ? 'Outcome' : 'Efekt',
+    stack: 'Stack',
+    liveProof: locale === 'en' ? 'View project' : 'Zobacz projekt',
+    sourceRepository: locale === 'en' ? 'Code on GitHub' : 'Kod na GitHubie',
+  };
+  const t = (key: keyof typeof fallback) => translations[key] ?? fallback[key];
   const showDegradedState = Boolean(degradedMessage && items.length === 0);
 
-  const getCategoryDisplayName = (category?: string, locale: string = 'pl'): string | null => {
-    if (!category) return null;
-
-    const categories = category
-      .split(',')
-      .map((cat) => cat.trim().toLowerCase())
-      .filter((cat) => cat.length > 0);
-
-    const mappedCategories: string[] = [];
-
-    for (const normalizedCategory of categories) {
-      let displayName: string | null = null;
-
-      if (locale === 'en') {
-        if (normalizedCategory === 'web-app' || normalizedCategory === 'webapp')
-          displayName = 'Web App';
-        else if (normalizedCategory === 'ecommerce' || normalizedCategory === 'e-commerce')
-          displayName = 'E-commerce';
-        else if (normalizedCategory === 'api') displayName = 'API';
-        else if (
-          normalizedCategory === 'mobile-apps' ||
-          normalizedCategory === 'mobile' ||
-          normalizedCategory === 'mobile-app'
-        )
-          displayName = 'Mobile';
-        else if (normalizedCategory === 'landing') displayName = 'Landing';
-        else if (normalizedCategory === 'tools' || normalizedCategory === 'tools & utilities')
-          displayName = 'Tools';
-        else if (normalizedCategory === 'services') displayName = 'Services';
-        else if (normalizedCategory === 'ai') displayName = 'AI';
-      } else {
-        if (
-          normalizedCategory === 'web-app' ||
-          normalizedCategory === 'webapp' ||
-          normalizedCategory === 'web'
-        )
-          displayName = 'Web';
-        else if (
-          normalizedCategory === 'ecommerce' ||
-          normalizedCategory === 'e-commerce' ||
-          normalizedCategory === 'sklep'
-        )
-          displayName = 'E-commerce';
-        else if (normalizedCategory === 'api') displayName = 'API';
-        else if (normalizedCategory === 'services' || normalizedCategory === 'usługi')
-          displayName = 'Services';
-        else if (
-          normalizedCategory === 'mobile-apps' ||
-          normalizedCategory === 'mobile' ||
-          normalizedCategory === 'mobilne'
-        )
-          displayName = 'Mobile';
-        else if (
-          normalizedCategory === 'landing' ||
-          normalizedCategory === 'portfolio' ||
-          normalizedCategory === 'wizytówka'
-        )
-          displayName = 'Landing';
-        else if (
-          normalizedCategory === 'tools' ||
-          normalizedCategory === 'narzędzia' ||
-          normalizedCategory === 'utilities'
-        )
-          displayName = 'Tools';
-        else if (normalizedCategory === 'ai') displayName = 'AI';
-      }
-
-      if (displayName) {
-        mappedCategories.push(displayName);
-      }
-    }
-
-    return mappedCategories.length > 0 ? mappedCategories.join('\n') : null;
-  };
-
   return (
-    <section className="py-20 md:py-28 bg-transparent">
-      <div className="mx-auto max-w-6xl px-4">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold tracking-tight text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          {t('title')}
-        </motion.h2>
-
-        {/* Filter Buttons */}
+    <section className="bg-slate-950 py-24 text-white md:py-32" aria-labelledby="portfolio-heading">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          className="flex flex-wrap justify-center gap-3 mt-12 mb-8"
-          initial={{ opacity: 0, y: 20 }}
+          className="grid gap-6 border-b border-white/15 pb-14 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16"
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
+          transition={{ duration: 0.55 }}
+          viewport={{ once: true, amount: 0.35 }}
         >
-          <button
-            onClick={() => setActiveFilter('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-              activeFilter === 'all'
-                ? 'bg-indigo-600 text-white shadow-lg scale-105'
-                : 'bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 text-black dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:scale-105'
-            }`}
-          >
-            {locale === 'en' ? 'All' : 'Wszystkie'}
-          </button>
-          {allCategories.slice(0, 8).map((category) => {
-            const displayName =
-              getCategoryDisplayName(category, locale) ||
-              category.charAt(0).toUpperCase() + category.slice(1);
-            return (
-              <button
-                key={category}
-                onClick={() => setActiveFilter(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 capitalize ${
-                  activeFilter === category
-                    ? 'bg-indigo-600 text-white shadow-lg scale-105'
-                    : 'bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 text-black dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:scale-105'
-                }`}
-              >
-                {displayName}
-              </button>
-            );
-          })}
+          <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-300">
+            01 — 05 / portfolio
+          </p>
+          <div>
+            <h2
+              id="portfolio-heading"
+              className="text-4xl font-semibold tracking-tight sm:text-5xl"
+            >
+              {t('title')}
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+              {t('intro')}
+            </p>
+          </div>
         </motion.div>
 
-        {/* Portfolio Grid */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeFilter}
-            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
+        {showDegradedState ? (
+          <p
+            className="mt-12 border-l-2 border-amber-300 bg-amber-300/10 px-6 py-5 text-sm text-amber-100"
+            role="status"
+            aria-live="polite"
           >
-            {showDegradedState ? (
-              <motion.p
-                className="col-span-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-100"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                role="status"
-                aria-live="polite"
-              >
-                {degradedMessage}
-              </motion.p>
-            ) : filteredItems.length === 0 ? (
-              <motion.p
-                className="col-span-full text-center text-black dark:text-gray-500 py-12"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                {t('noItems')}
-              </motion.p>
-            ) : (
-              filteredItems.map((p, index) => {
-                const imgClasses = p.isLogo ? 'object-contain bg-white p-6' : 'object-cover';
-                const displayTitle = locale === 'en' && p.title_en ? p.title_en : p.title;
-                const displayDesc = locale === 'en' && p.desc_en ? p.desc_en : p.desc;
+            {degradedMessage}
+          </p>
+        ) : items.length === 0 ? (
+          <p className="py-16 text-center text-slate-400">{t('noItems')}</p>
+        ) : (
+          <div>
+            {items.map((item, index) => {
+              const content = localize(item, locale);
+              const articleNumber = String(index + 1).padStart(2, '0');
 
-                return (
-                  <motion.article
-                    key={p._id}
-                    className="card group flex flex-col h-full text-center"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.6,
-                      delay: index * 0.1,
-                      ease: [0.4, 0.0, 0.2, 1],
-                    }}
-                    whileHover={{
-                      y: -5,
-                      transition: { duration: 0.2 },
-                    }}
-                  >
-                    <div className="relative overflow-hidden rounded-xl h-64 sm:h-72 lg:h-80">
-                      <Image
-                        src={p.img}
-                        alt={displayTitle}
-                        fill
-                        className={`${imgClasses} transition-transform duration-500 group-hover:scale-[1.02]`}
-                        sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                        unoptimized
-                      />
-                      {getCategoryDisplayName(p.category, locale) && (
-                        <span className="badge category">
-                          {getCategoryDisplayName(p.category, locale)}
+              return (
+                <motion.article
+                  key={item._id}
+                  className="group grid gap-8 border-b border-white/15 py-14 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16 lg:py-20"
+                >
+                  <div>
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-mono text-sm text-cyan-300">{articleNumber}</span>
+                      {item.category && (
+                        <span className="text-right font-mono text-[0.68rem] uppercase tracking-[0.18em] text-slate-500">
+                          {item.category.replaceAll(',', ' /')}
                         </span>
                       )}
-                      {p.newTech && <span className="badge new-tech">{t('newTech')}</span>}
                     </div>
-
-                    <motion.h3
-                      className="mt-4 text-lg font-bold"
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ duration: 0.2 }}
+                    <div
+                      className={`relative mt-6 overflow-hidden ${
+                        item.isLogo
+                          ? 'aspect-[16/9] bg-white lg:aspect-[4/3]'
+                          : 'aspect-[4/3] bg-white/5'
+                      }`}
                     >
-                      {p.href?.trim() ? (
-                        <a
-                          href={p.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-black group/link underline-offset-4 hover:underline focus:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-sm"
-                        >
-                          {displayTitle}
-                        </a>
-                      ) : (
-                        <span className="text-black">{displayTitle}</span>
-                      )}
-                    </motion.h3>
-
-                    <p className="mt-2 text-sm text-slate-700">{displayDesc}</p>
-
-                    {p.repoUrl?.trim() && (
-                      <div className="mt-4">
-                        <div className="text-xs uppercase tracking-wide text-slate-700">
-                          {t('repository')}
-                        </div>
-                        <a
-                          href={p.repoUrl!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-black text-sm font-medium underline underline-offset-4 hover:no-underline break-all"
-                          aria-label={`Repository ${p.title}`}
-                        >
-                          {p.repoUrl}
-                        </a>
-                      </div>
-                    )}
-
-                    <div className="mt-4 flex-1 flex flex-col justify-end">
-                      <div className="font-semibold text-black mb-2">{t('technologies')}</div>
-                      <div className="flex flex-wrap items-start gap-1.5">
-                        {p.tags?.map((tag) => (
-                          <motion.span
-                            key={tag}
-                            className={`chip shrink-0 ${
-                              activeFilter === tag
-                                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200'
-                                : 'bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-300'
-                            }`}
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {tag}
-                          </motion.span>
-                        ))}
-                      </div>
+                      <Image
+                        src={item.img}
+                        alt=""
+                        fill
+                        className={`${
+                          item.isLogo ? 'object-contain bg-white p-8' : 'object-cover'
+                        } transition-transform duration-700 group-hover:scale-[1.025]`}
+                        sizes="(min-width: 1024px) 34vw, 100vw"
+                        unoptimized
+                      />
                     </div>
-                  </motion.article>
-                );
-              })
-            )}
-          </motion.div>
-        </AnimatePresence>
+                  </div>
+
+                  <div>
+                    <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                      {content.title}
+                    </h3>
+                    <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">
+                      {content.summary}
+                    </p>
+
+                    <dl className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2">
+                      {content.problem && (
+                        <div className="border-l border-cyan-300/50 pl-5">
+                          <dt className="font-mono text-xs uppercase tracking-[0.2em] text-cyan-300">
+                            {t('problem')}
+                          </dt>
+                          <dd className="mt-3 text-sm leading-6 text-slate-200">
+                            {content.problem}
+                          </dd>
+                        </div>
+                      )}
+                      {content.role && (
+                        <div className="border-l border-cyan-300/50 pl-5">
+                          <dt className="font-mono text-xs uppercase tracking-[0.2em] text-cyan-300">
+                            {t('role')}
+                          </dt>
+                          <dd className="mt-3 text-sm leading-6 text-slate-200">{content.role}</dd>
+                        </div>
+                      )}
+                      {content.decisions.length > 0 && (
+                        <div className="border-l border-cyan-300/50 pl-5 sm:col-span-2">
+                          <dt className="font-mono text-xs uppercase tracking-[0.2em] text-cyan-300">
+                            {t('decisions')}
+                          </dt>
+                          <dd className="mt-3">
+                            <ul className="grid gap-3 text-sm leading-6 text-slate-200 sm:grid-cols-2">
+                              {content.decisions.map((decision) => (
+                                <li
+                                  key={decision}
+                                  className="relative pl-5 before:absolute before:left-0 before:text-cyan-300 before:content-['→']"
+                                >
+                                  {decision}
+                                </li>
+                              ))}
+                            </ul>
+                          </dd>
+                        </div>
+                      )}
+                      {content.result && (
+                        <div className="border-l border-cyan-300/50 pl-5 sm:col-span-2">
+                          <dt className="font-mono text-xs uppercase tracking-[0.2em] text-cyan-300">
+                            {t('result')}
+                          </dt>
+                          <dd className="mt-3 text-sm leading-6 text-slate-200">
+                            {content.result}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+
+                    <div className="mt-10 border-t border-white/10 pt-7">
+                      <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500">
+                        {t('stack')}
+                      </p>
+                      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2" aria-label={t('stack')}>
+                        {item.tags.map((tag) => (
+                          <li key={tag} className="text-sm text-slate-300">
+                            {tag}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
+                      {item.href.trim() && (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border-b border-cyan-300 pb-1 text-sm font-semibold text-white transition-colors hover:text-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                          aria-label={t('liveProof')}
+                        >
+                          {t('liveProof')} ↗
+                        </a>
+                      )}
+                      {item.repoUrl?.trim() && (
+                        <a
+                          href={item.repoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border-b border-slate-500 pb-1 text-sm font-semibold text-slate-200 transition-colors hover:border-cyan-300 hover:text-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                          aria-label={t('sourceRepository')}
+                        >
+                          {t('sourceRepository')} ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

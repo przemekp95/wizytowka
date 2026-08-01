@@ -4,32 +4,41 @@
     "portfolio": "Portfolio",
     "about": "About me",
     "skills": "Skills & Technologies",
-    "techAnalysis": "Project Portfolio Analysis",
     "contact": "Contact",
     "contactMe": "Contact me"
   },
   "hero": {
     "title": "Full-stack TypeScript Developer",
-    "description": "I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP projects. I work with REST, GraphQL, SQL and MongoDB.",
+    "description": "I build and deploy full-stack TypeScript applications with React/Next.js on the frontend and Node.js/NestJS on the backend. I also develop PHP/Symfony projects, APIs, queues and integrations with PostgreSQL, MySQL and MongoDB.",
     "viewProjects": "View projects",
     "contactMe": "Contact me"
   },
   "portfolio": {
-    "title": "Portfolio",
-    "noItems": "No items to display.",
+    "title": "Selected projects",
+    "intro": "Five projects where I was responsible for the code, technical decisions and delivery.",
+    "noItems": "No case studies to display.",
     "unavailable": "Portfolio is temporarily unavailable. Please try again later.",
     "newTech": "New technology",
     "repository": "Repository",
-    "technologies": "Technologies"
+    "technologies": "Technologies",
+    "problem": "Project goal",
+    "role": "My scope",
+    "decisions": "What I did",
+    "result": "Outcome",
+    "stack": "Stack",
+    "liveProof": "View project",
+    "sourceRepository": "Code on GitHub"
   },
   "about": {
     "title": "About me",
-    "description": "I am a developer combining law and technology. I build applications with React/Next.js and Node/NestJS, and maintain PHP projects in Laravel and Symfony. I work with REST, GraphQL, PostgreSQL, MySQL and MongoDB, and automate testing and delivery with Docker and GitHub Actions.",
-    "techStack": "Technology stack",
-    "frontend": "Frontend: Next.js / React / Tailwind / SCSS / JavaScript, TypeScript",
-    "backend": "Backend: Laravel / Symfony / PHP, Node / NestJS (Typescript)",
-    "databases": "Databases: Prisma / SQL (MySQL, PostgreSQL), MongoDB / NoSQL",
-    "devops": "Delivery: Docker / GitHub Actions / Passenger (Cyber_Folks) / Render / Vercel / AWS"
+    "description": "I build and deploy full-stack applications in TypeScript, using React and Next.js on the frontend and Node.js and NestJS on the backend. I also develop PHP projects with Symfony and Laravel. I work with APIs, queues, relational databases and MongoDB, and automate quality and delivery with tests, Docker and GitHub Actions."
+  },
+  "skillsSection": {
+    "title": "Skills and technologies",
+    "intro": "Technologies I use in the projects shown above, from interfaces and APIs to databases, testing and delivery.",
+    "primary": "Primary stack",
+    "backend": "Backend and integrations",
+    "delivery": "Data, testing and delivery"
   },
   "contact": {
     "title": "Contact",

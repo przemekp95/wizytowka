@@ -17,6 +17,30 @@ export class PortfolioGQL {
   @Field()
   desc!: string;
 
+  @Field({ nullable: true })
+  problem?: string;
+
+  @Field({ nullable: true })
+  problem_en?: string;
+
+  @Field({ nullable: true })
+  role?: string;
+
+  @Field({ nullable: true })
+  role_en?: string;
+
+  @Field(() => [String], { nullable: true })
+  decisions?: string[];
+
+  @Field(() => [String], { nullable: true })
+  decisions_en?: string[];
+
+  @Field({ nullable: true })
+  result?: string;
+
+  @Field({ nullable: true })
+  result_en?: string;
+
   @Field(() => [String])
   tags!: string[];
 

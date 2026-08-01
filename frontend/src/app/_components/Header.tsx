@@ -77,9 +77,6 @@ export default function Header({ translations }: HeaderProps) {
           <Link className="nav-link" href={sectionHref('#skills')}>
             {t('skills')}
           </Link>
-          <Link className="nav-link" href={sectionHref('#tech-analysis')}>
-            {t('techAnalysis')}
-          </Link>
           <Link className="nav-link" href={sectionHref('#contact')}>
             {t('contact')}
           </Link>
@@ -135,7 +132,6 @@ export default function Header({ translations }: HeaderProps) {
                 { href: sectionHref('#portfolio'), key: 'portfolio' },
                 { href: sectionHref('#about'), key: 'about' },
                 { href: sectionHref('#skills'), key: 'skills' },
-                { href: sectionHref('#tech-analysis'), key: 'techAnalysis' },
                 { href: sectionHref('#contact'), key: 'contact' },
               ].map((item, index) => (
                 <motion.div
