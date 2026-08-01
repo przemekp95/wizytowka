@@ -24,6 +24,14 @@ type PortfolioItem = {
   href: string;
   desc: string;
   desc_en?: string;
+  problem?: string;
+  problem_en?: string;
+  role?: string;
+  role_en?: string;
+  decisions?: string[];
+  decisions_en?: string[];
+  result?: string;
+  result_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;

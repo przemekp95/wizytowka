@@ -32,7 +32,7 @@ function resolveHtmlLocale(rawLocale: string | null): string {
 export const metadata: Metadata = {
   title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
   description:
-    'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+    'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
   keywords:
     'Next.js, PHP, Laravel, Node.js, React, TypeScript, Web Developer, Full Stack Developer',
   authors: [{ name: 'Przemysław Pietrzak' }],
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description:
-      'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+      'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
 
     url: 'https://pietrzakprzemyslaw.pl',
     siteName: 'Przemyslaw Pietrzak - Developer Portfolio',
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description:
-      'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+      'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
     creator: '@przemekp95',
   },
   verification: googleSiteVerification

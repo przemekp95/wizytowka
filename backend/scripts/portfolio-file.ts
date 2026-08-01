@@ -13,6 +13,14 @@ export type PortfolioFileItem = {
   href: string;
   desc: string;
   desc_en?: string;
+  problem?: string;
+  problem_en?: string;
+  role?: string;
+  role_en?: string;
+  decisions?: string[];
+  decisions_en?: string[];
+  result?: string;
+  result_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;
@@ -33,6 +41,14 @@ export type PortfolioMongoDocument = {
   href: string;
   desc: string;
   desc_en?: string;
+  problem?: string;
+  problem_en?: string;
+  role?: string;
+  role_en?: string;
+  decisions?: string[];
+  decisions_en?: string[];
+  result?: string;
+  result_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;
@@ -122,19 +138,35 @@ function normalizeOptionalString(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
-function normalizeTags(value: unknown, slug: string): string[] {
+function normalizeStringList(
+  value: unknown,
+  fieldName: string,
+  slug: string,
+): string[] {
   if (!Array.isArray(value)) {
-    throw new Error(`Item "${slug}" must define "tags" as an array.`);
+    throw new Error(`Item "${slug}" must define "${fieldName}" as an array.`);
   }
 
   return value
     .map((entry) => {
       if (typeof entry !== 'string') {
-        throw new Error(`Item "${slug}" contains a non-string tag.`);
+        throw new Error(
+          `Item "${slug}" contains a non-string entry in "${fieldName}".`,
+        );
       }
       return entry.trim();
     })
     .filter(Boolean);
+}
+
+function normalizeOptionalStringList(
+  value: unknown,
+  fieldName: string,
+  slug: string,
+): string[] | undefined {
+  return value === undefined
+    ? undefined
+    : normalizeStringList(value, fieldName, slug);
 }
 
 function parseDateString(value: string, fieldName: string, slug: string): Date {
@@ -270,25 +302,78 @@ export function toPortfolioMongoDocument(
   const slug = normalizeRequiredString(item.slug, 'slug');
   const dateFrom = normalizeOptionalDate(item.dateFrom, 'dateFrom', slug);
   const dateTo = normalizeOptionalDate(item.dateTo, 'dateTo', slug);
+  const status = normalizeStatus(item.status, slug);
+  const problem = normalizeOptionalString(item.problem);
+  const problemEn = normalizeOptionalString(item.problem_en);
+  const role = normalizeOptionalString(item.role);
+  const roleEn = normalizeOptionalString(item.role_en);
+  const decisions = normalizeOptionalStringList(
+    item.decisions,
+    'decisions',
+    slug,
+  );
+  const decisionsEn = normalizeOptionalStringList(
+    item.decisions_en,
+    'decisions_en',
+    slug,
+  );
+  const result = normalizeOptionalString(item.result);
+  const resultEn = normalizeOptionalString(item.result_en);
+  const href = normalizeRequiredString(item.href, 'href', { allowEmpty: true });
+  const repoUrl = normalizeOptionalString(item.repoUrl);
+  const tags = normalizeStringList(item.tags, 'tags', slug);
+
+  if (status === 'published') {
+    if (
+      !problem ||
+      !problemEn ||
+      !role ||
+      !roleEn ||
+      !result ||
+      !resultEn ||
+      !decisions ||
+      decisions.length < 2 ||
+      !decisionsEn ||
+      decisionsEn.length !== decisions.length
+    ) {
+      throw new Error(
+        `Published item "${slug}" must define complete Polish and English case-study fields with at least two matching decisions.`,
+      );
+    }
+
+    if (tags.length === 0 || (!href && !repoUrl)) {
+      throw new Error(
+        `Published item "${slug}" must define a stack and at least one evidence URL.`,
+      );
+    }
+  }
 
   return compactObject({
     _id: existing?._id ?? slug,
     title: normalizeRequiredString(item.title, 'title'),
     title_en: normalizeOptionalString(item.title_en),
     slug,
-    href: normalizeRequiredString(item.href, 'href', { allowEmpty: true }),
+    href,
     desc: normalizeRequiredString(item.desc, 'desc'),
     desc_en: normalizeOptionalString(item.desc_en),
-    tags: normalizeTags(item.tags, slug),
+    problem,
+    problem_en: problemEn,
+    role,
+    role_en: roleEn,
+    decisions,
+    decisions_en: decisionsEn,
+    result,
+    result_en: resultEn,
+    tags,
     img: normalizeRequiredString(item.img, 'img'),
     isLogo: normalizeBoolean(item.isLogo, 'isLogo', slug),
     newTech: normalizeBoolean(item.newTech, 'newTech', slug),
     category: normalizeOptionalString(item.category),
-    repoUrl: normalizeOptionalString(item.repoUrl),
+    repoUrl,
     dateFrom,
     dateTo: item.dateTo === null ? null : (dateTo ?? null),
     order: normalizeOrder(item.order, slug, index + 1),
-    status: normalizeStatus(item.status, slug),
+    status,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   });
@@ -308,6 +393,16 @@ export function toPortfolioFileItem(
     href: document.href,
     desc: document.desc,
     desc_en: normalizeOptionalString(document.desc_en),
+    problem: normalizeOptionalString(document.problem),
+    problem_en: normalizeOptionalString(document.problem_en),
+    role: normalizeOptionalString(document.role),
+    role_en: normalizeOptionalString(document.role_en),
+    decisions: document.decisions ? [...document.decisions] : undefined,
+    decisions_en: document.decisions_en
+      ? [...document.decisions_en]
+      : undefined,
+    result: normalizeOptionalString(document.result),
+    result_en: normalizeOptionalString(document.result_en),
     tags: [...document.tags],
     img: document.img,
     isLogo: document.isLogo,

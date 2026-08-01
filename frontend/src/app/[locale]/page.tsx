@@ -6,11 +6,8 @@ import { headers } from 'next/headers';
 
 import Header from '@/app/_components/Header';
 import ContactForm from '@/app/_components/ContactForm';
-import { SkillBar } from '@/components/SkillBar';
-import { TechStackChart } from '@/components/TechStackChart';
 import { ChatBot } from '@/components/Chat/ChatBot';
 import { ThreeBackground } from '@/components/ThreeBackground';
-import { calculatePortfolioCategories, calculateDynamicSkills } from '@/data/skills.data';
 import dynamicImport from 'next/dynamic';
 
 // Import PortfolioSection as client component
@@ -26,6 +23,14 @@ type PortfolioItem = {
   href: string;
   desc: string;
   desc_en?: string;
+  problem?: string;
+  problem_en?: string;
+  role?: string;
+  role_en?: string;
+  decisions?: string[];
+  decisions_en?: string[];
+  result?: string;
+  result_en?: string;
   tags: string[];
   img: string;
   isLogo?: boolean;
@@ -144,9 +149,30 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     ? (portfolioTranslations.unavailable ?? getPortfolioUnavailableMessage(locale))
     : null;
 
-  // Compute project categories and dynamic skills from the portfolio data.
-  const portfolioCategories = calculatePortfolioCategories(portfolioState.items);
-  const dynamicSkills = calculateDynamicSkills(portfolioState.items);
+  const skillGroups = [
+    {
+      title: t('skillsSection.primary'),
+      technologies: ['TypeScript', 'React', 'Next.js', 'Node.js', 'NestJS', 'Fastify'],
+    },
+    {
+      title: t('skillsSection.backend'),
+      technologies: ['PHP', 'Symfony', 'Laravel', 'REST', 'GraphQL', 'OpenAPI', 'Messenger'],
+    },
+    {
+      title: t('skillsSection.delivery'),
+      technologies: [
+        'PostgreSQL',
+        'MySQL',
+        'MongoDB',
+        'Redis',
+        'Docker',
+        'GitHub Actions',
+        'Playwright',
+        'Railway',
+        'Render',
+      ],
+    },
+  ];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -155,15 +181,18 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
     jobTitle: 'Full-stack TypeScript Developer',
     description:
       locale === 'en'
-        ? 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.'
-        : 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.',
+        ? 'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues and databases.'
+        : 'Full-stack TypeScript Developer: React, Next.js, Node.js i NestJS oraz PHP/Symfony, API, kolejki i bazy danych.',
     knowsAbout: [
       'Next.js',
       'React',
       'TypeScript',
       'Node.js',
+      'NestJS',
       'PHP',
+      'Symfony',
       'Laravel',
+      'Messenger',
       'PostgreSQL',
       'MongoDB',
       'REST API',
@@ -278,7 +307,7 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
                   alt="Przemysław Pietrzak"
                   fill
                   sizes="240px"
-                  className="object-cover"
+                  className="object-cover object-top"
                   priority
                 />
               </div>
@@ -290,77 +319,45 @@ export default async function OnePager({ params }: { params: Promise<{ locale: s
               <p className="mt-3 text-gray-300 leading-relaxed text-justify">
                 {t('about.description')}
               </p>
-
-              <div className="mt-8">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
-                  {t('about.techStack')}
-                </h3>
-                <ul className="mt-4 space-y-3 text-gray-300">
-                  <li className="bullet">
-                    <strong>{t('about.frontend')}</strong>
-                  </li>
-                  <li className="bullet">
-                    <strong>{t('about.backend')}</strong>
-                  </li>
-                  <li className="bullet">
-                    <strong>{t('about.databases')}</strong>
-                  </li>
-                  <li className="bullet">
-                    <strong>{t('about.devops')}</strong>
-                  </li>
-                </ul>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* Skills section - showing top technologies by project count */}
+        {/* Skills section - curated around the public case studies. */}
         <section id="skills" className="py-20 md:py-28 bg-transparent text-white">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center text-white mb-16">
-              {locale === 'en' ? 'Skills & Technologies' : 'Umiejętności i technologie'}
-            </h2>
-
-            <div className="flex flex-col items-center">
-              <div className="w-full max-w-4xl">
-                {dynamicSkills && dynamicSkills.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {dynamicSkills
-                      .filter(
-                        (skill) => skill.category === 'frontEnd' || skill.category === 'backEnd'
-                      )
-                      .slice(0, 10)
-                      .map((skill) => (
-                        <SkillBar
-                          key={skill.id}
-                          skill={skill}
-                          locale={locale as 'pl' | 'en'}
-                          maxProjects={Math.max(...dynamicSkills.map((s) => s.projectCount))}
-                        />
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-300">
-                    {locale === 'en' ? 'No skills data available' : 'Brak danych o umiejętnościach'}
-                  </p>
-                )}
+            <div className="grid gap-8 border-b border-white/15 pb-12 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-300">
+                stack / focus
+              </p>
+              <div>
+                <h2 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                  {t('skillsSection.title')}
+                </h2>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-gray-300 sm:text-lg">
+                  {t('skillsSection.intro')}
+                </p>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section id="tech-analysis" className="py-20 md:py-28 bg-transparent text-white">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center text-white mb-16">
-              {locale === 'en' ? 'Project Portfolio Analysis' : 'Analiza portfela projektów'}
-            </h2>
-
-            {/* Portfolio Categories Chart - using NEW TechStackChart component */}
-            <div className="flex flex-col items-center">
-              <TechStackChart
-                locale={locale as 'pl' | 'en'}
-                portfolioCategories={portfolioCategories}
-              />
+            <div className="grid gap-10 pt-12 md:grid-cols-3 md:gap-8">
+              {skillGroups.map((group, index) => (
+                <div key={group.title} className="border-t border-white/20 pt-5">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <h3 className="text-lg font-semibold text-white">{group.title}</h3>
+                    <span className="font-mono text-xs text-cyan-300">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-3 text-sm leading-6 text-gray-300">
+                    {group.technologies.map((technology) => (
+                      <li key={technology} className="border-b border-white/10 pb-1">
+                        {technology}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </section>

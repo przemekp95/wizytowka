@@ -14,6 +14,45 @@ describe('portfolio file sync helpers', () => {
     process.env = { ...originalEnv };
   });
 
+  it('publishes exactly five complete evidence-backed case studies', () => {
+    const items = portfolioData as PortfolioFileItem[];
+    const publishedItems = items.filter((item) => item.status === 'published');
+
+    expect(publishedItems.map((item) => item.slug)).toEqual([
+      'orgon-platform',
+      'pp-solutions-website',
+      'kraina-karpat-storefront',
+      'casn-modernization',
+      'strona-wizytowka',
+    ]);
+
+    for (const item of publishedItems) {
+      const caseStudy = item as PortfolioFileItem & {
+        problem?: string;
+        problem_en?: string;
+        role?: string;
+        role_en?: string;
+        decisions?: string[];
+        decisions_en?: string[];
+        result?: string;
+        result_en?: string;
+      };
+
+      expect(caseStudy.problem?.trim()).toBeTruthy();
+      expect(caseStudy.problem_en?.trim()).toBeTruthy();
+      expect(caseStudy.role?.trim()).toBeTruthy();
+      expect(caseStudy.role_en?.trim()).toBeTruthy();
+      expect(caseStudy.decisions?.length).toBeGreaterThanOrEqual(2);
+      expect(caseStudy.decisions_en?.length).toBe(caseStudy.decisions?.length);
+      expect(caseStudy.result?.trim()).toBeTruthy();
+      expect(caseStudy.result_en?.trim()).toBeTruthy();
+      expect(item.tags.length).toBeGreaterThan(0);
+      expect(Boolean(item.href.trim()) || Boolean(item.repoUrl?.trim())).toBe(
+        true,
+      );
+    }
+  });
+
   afterAll(() => {
     process.env = originalEnv;
   });
@@ -22,8 +61,10 @@ describe('portfolio file sync helpers', () => {
     const items = portfolioData as PortfolioFileItem[];
     const publishedItems = items.filter((item) => item.status === 'published');
     const businessCard = items.find((item) => item.slug === 'strona-wizytowka');
-    const orgonSystem = items.find((item) => item.slug === 'my-hr-vision-system');
-    const ppSolutions = items.find((item) => item.slug === 'pp-solutions-website');
+    const orgon = items.find((item) => item.slug === 'orgon-platform');
+    const ppSolutions = items.find(
+      (item) => item.slug === 'pp-solutions-website',
+    );
 
     expect(
       publishedItems.every(
@@ -32,7 +73,7 @@ describe('portfolio file sync helpers', () => {
     ).toBe(true);
     expect(ppSolutions?.repoUrl).toBeUndefined();
     expect(businessCard?.tags).toEqual(
-      expect.arrayContaining(['NextJS', 'NestJS', 'Prisma', 'MongoDB']),
+      expect.arrayContaining(['Next.js 16', 'NestJS 11', 'Prisma', 'MongoDB']),
     );
     expect(businessCard?.tags).not.toEqual(
       expect.arrayContaining([
@@ -42,12 +83,24 @@ describe('portfolio file sync helpers', () => {
         'Kubernetes',
       ]),
     );
-    expect(orgonSystem?.status).toBe('draft');
-    expect(orgonSystem?.tags).toEqual(
-      expect.arrayContaining(['Symfony', 'NextJS', 'Go', 'PostgreSQL']),
+    expect(orgon?.status).toBe('published');
+    expect(orgon?.tags).toEqual(
+      expect.arrayContaining(['Symfony 7.4', 'Next.js 16', 'Go', 'PostgreSQL']),
     );
-    expect(orgonSystem?.tags).not.toEqual(
+    expect(orgon?.tags).not.toEqual(
       expect.arrayContaining(['MySQL', 'Twig', 'Kubernetes', 'Microservices']),
+    );
+    expect(ppSolutions?.tags).toEqual(
+      expect.arrayContaining([
+        'Next.js',
+        'Fastify',
+        'OpenAPI',
+        'PostgreSQL',
+        'Redis',
+      ]),
+    );
+    expect(ppSolutions?.tags).not.toEqual(
+      expect.arrayContaining(['Vite', 'Express', 'GCP']),
     );
   });
 
@@ -81,9 +134,17 @@ describe('portfolio file sync helpers', () => {
       title: '  Project title  ',
       title_en: '  Project title EN  ',
       slug: '  project-slug  ',
-      href: '  ',
+      href: '  https://example.com/project  ',
       desc: '  Project description  ',
       desc_en: '  Project description EN  ',
+      problem: '  A documented problem.  ',
+      problem_en: '  A documented problem EN.  ',
+      role: '  Full-stack implementation.  ',
+      role_en: '  Full-stack implementation EN.  ',
+      decisions: [' Decision one ', ' Decision two '],
+      decisions_en: [' Decision one EN ', ' Decision two EN '],
+      result: '  A verified result.  ',
+      result_en: '  A verified result EN.  ',
       tags: [' TypeScript ', ' NestJS '],
       img: '  https://example.com/next.png  ',
       isLogo: true,
@@ -101,9 +162,17 @@ describe('portfolio file sync helpers', () => {
       title: 'Project title',
       title_en: 'Project title EN',
       slug: 'project-slug',
-      href: '',
+      href: 'https://example.com/project',
       desc: 'Project description',
       desc_en: 'Project description EN',
+      problem: 'A documented problem.',
+      problem_en: 'A documented problem EN.',
+      role: 'Full-stack implementation.',
+      role_en: 'Full-stack implementation EN.',
+      decisions: ['Decision one', 'Decision two'],
+      decisions_en: ['Decision one EN', 'Decision two EN'],
+      result: 'A verified result.',
+      result_en: 'A verified result EN.',
       tags: ['TypeScript', 'NestJS'],
       img: 'https://example.com/next.png',
       isLogo: true,

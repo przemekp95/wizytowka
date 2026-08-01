@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="orgon-logo-title">
+  <title id="orgon-logo-title">ORGON</title>
+  <rect width="64" height="64" rx="12" fill="#111714" />
+  <path fill="#b8f35a" d="M17 17h30v30H17z" opacity=".18" />
+  <path
+    fill="#b8f35a"
+    d="M32 13a19 19 0 1 0 0 38 19 19 0 0 0 0-38Zm0 8a11 11 0 1 1 0 22 11 11 0 0 1 0-22Z"
+  />
+</svg>

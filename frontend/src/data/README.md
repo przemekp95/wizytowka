@@ -122,6 +122,10 @@ Portfolio projects stored in MongoDB should use the `category` field with the fo
 ## Updating Portfolio Data
 
 The canonical portfolio data source is `backend/scripts/portfolio.data.json`.
+Published records are complete Polish and English case studies. In addition to
+the short description and technology tags, each one defines `problem`, `role`,
+`decisions`, and `result` fields with matching `_en` variants, plus a working
+`href` or `repoUrl` as evidence. Draft records can stay intentionally partial.
 
 Recommended workflow:
 

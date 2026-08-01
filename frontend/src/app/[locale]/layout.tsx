@@ -28,8 +28,8 @@ export async function generateMetadata({
       ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
       : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
     description: isPolish
-      ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
-      : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+      ? 'Full-stack TypeScript Developer: React, Next.js, Node.js i NestJS. Projekty PHP/Symfony, API, kolejki, PostgreSQL, MySQL i MongoDB.'
+      : 'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
     keywords: isPolish
       ? 'Przemysław Pietrzak, Full Stack Developer, Next.js, React, TypeScript, PHP, Laravel, Node.js, AI, Web Applications, Portfolio'
       : 'Next.js, PHP, Laravel, Web Developer, React, Prisma, Docker, AI, Web Applications, Przemysław Pietrzak',
@@ -50,8 +50,8 @@ export async function generateMetadata({
         ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
         : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
       description: isPolish
-        ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
-        : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+        ? 'Full-stack TypeScript Developer: React, Next.js, Node.js i NestJS. Projekty PHP/Symfony, API, kolejki, PostgreSQL, MySQL i MongoDB.'
+        : 'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
       url: `${siteUrl}/${locale}`,
       siteName: isPolish ? 'Portfolio Przemysława Pietrzaka' : 'Przemysław Pietrzak Portfolio',
       images: [
@@ -73,8 +73,8 @@ export async function generateMetadata({
         ? 'Przemysław Pietrzak - Full-stack TypeScript Developer'
         : 'Przemysław Pietrzak - Full-stack TypeScript Developer',
       description: isPolish
-        ? 'Tworzę aplikacje webowe w TypeScript, React/Next.js i Node/NestJS oraz rozwijam projekty PHP/Symfony.'
-        : 'I build web applications with TypeScript, React/Next.js and Node/NestJS, and maintain PHP/Symfony projects.',
+        ? 'Full-stack TypeScript Developer: React, Next.js, Node.js i NestJS. Projekty PHP/Symfony, API, kolejki, PostgreSQL, MySQL i MongoDB.'
+        : 'Full-stack TypeScript Developer working with React, Next.js, Node.js and NestJS, plus PHP/Symfony, APIs, queues, PostgreSQL, MySQL and MongoDB.',
       images: ['/images/PP-2-JPG-01.webp'],
       creator: '@przemekp95',
     },

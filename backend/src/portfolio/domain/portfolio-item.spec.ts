@@ -1,6 +1,20 @@
 import { PortfolioItemAggregate } from './portfolio-item';
 
 describe('PortfolioItemAggregate', () => {
+  it('rejects a published item without a complete evidence-backed case study', () => {
+    expect(() =>
+      PortfolioItemAggregate.createNew({
+        title: 'Incomplete project',
+        slug: 'incomplete-project',
+        href: '',
+        desc: 'Opis niekompletnego projektu.',
+        tags: ['TypeScript'],
+        img: 'https://example.com/image.jpg',
+        status: 'published',
+      }),
+    ).toThrow('complete case-study fields');
+  });
+
   it('creates a normalized new portfolio item', () => {
     const item = PortfolioItemAggregate.createNew({
       title: '  Project One  ',
@@ -9,6 +23,14 @@ describe('PortfolioItemAggregate', () => {
       href: '  /portfolio/project-one  ',
       desc: '  Testowy opis projektu.  ',
       desc_en: '  English description.  ',
+      problem: '  Problem projektu.  ',
+      problem_en: '  Project problem.  ',
+      role: '  Implementacja full-stack.  ',
+      role_en: '  Full-stack implementation.  ',
+      decisions: [' Decyzja pierwsza. ', ' Decyzja druga. '],
+      decisions_en: [' Decision one. ', ' Decision two. '],
+      result: '  Zweryfikowany wynik.  ',
+      result_en: '  Verified result.  ',
       tags: [' React ', 'TypeScript', '   '],
       img: '  https://example.com/image.jpg  ',
       isLogo: false,
@@ -26,6 +48,14 @@ describe('PortfolioItemAggregate', () => {
         href: '/portfolio/project-one',
         desc: 'Testowy opis projektu.',
         desc_en: 'English description.',
+        problem: 'Problem projektu.',
+        problem_en: 'Project problem.',
+        role: 'Implementacja full-stack.',
+        role_en: 'Full-stack implementation.',
+        decisions: ['Decyzja pierwsza.', 'Decyzja druga.'],
+        decisions_en: ['Decision one.', 'Decision two.'],
+        result: 'Zweryfikowany wynik.',
+        result_en: 'Verified result.',
         tags: ['React', 'TypeScript'],
         img: 'https://example.com/image.jpg',
         repoUrl: 'https://github.com/user/project-one',

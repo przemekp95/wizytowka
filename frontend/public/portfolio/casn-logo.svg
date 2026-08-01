@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="casn-logo-title">
+  <title id="casn-logo-title">CASN</title>
+  <rect width="400" height="400" fill="#ffffff" />
+  <rect x="8" y="8" width="192" height="192" fill="#d71920" />
+  <rect x="200" y="200" width="192" height="192" fill="#a71919" />
+  <rect x="200" y="8" width="192" height="192" fill="#ffffff" stroke="#a71919" stroke-width="6" />
+  <rect x="8" y="200" width="192" height="192" fill="#ffffff" stroke="#d71920" stroke-width="6" />
+  <g font-family="Arial, Helvetica, sans-serif" font-size="142" font-weight="700" text-anchor="middle">
+    <text x="104" y="154" fill="#ffffff">C</text>
+    <text x="296" y="154" fill="#303030">A</text>
+    <text x="104" y="348" fill="#303030">S</text>
+    <text x="296" y="348" fill="#ffffff">N</text>
+  </g>
+</svg>

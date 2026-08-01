@@ -56,6 +56,60 @@ describe('PortfolioSection', () => {
     expect(heading).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Private project' })).not.toBeInTheDocument();
     expect(heading.querySelector('a')).not.toBeInTheDocument();
-    expect(screen.getByText('Private project description')).toHaveClass('text-slate-700');
+    expect(screen.getByText('Private project description')).toHaveClass('text-slate-300');
+  });
+
+  it('renders a localized case study as goal, scope, decisions, outcome, stack, and evidence', () => {
+    const caseStudyFields = {
+      problem: 'Polski problem.',
+      problem_en: 'An English problem.',
+      role: 'Polska rola.',
+      role_en: 'An English role.',
+      decisions: ['Polska decyzja 1.', 'Polska decyzja 2.'],
+      decisions_en: ['English decision one.', 'English decision two.'],
+      result: 'Polski wynik.',
+      result_en: 'An English result.',
+    };
+
+    render(
+      <PortfolioSection
+        locale="en"
+        translations={{ title: 'Selected case studies' }}
+        items={[
+          {
+            _id: 'case-study',
+            title: 'Studium przypadku',
+            title_en: 'Case study',
+            slug: 'case-study',
+            href: 'https://example.com',
+            repoUrl: 'https://github.com/example/case-study',
+            desc: 'Polski opis.',
+            desc_en: 'English summary.',
+            tags: ['TypeScript'],
+            img: '/project.png',
+            ...caseStudyFields,
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('heading', { name: 'Case study' })).toBeInTheDocument();
+    expect(screen.getByText('Project goal')).toBeInTheDocument();
+    expect(screen.getByText('An English problem.')).toBeInTheDocument();
+    expect(screen.getByText('My scope')).toBeInTheDocument();
+    expect(screen.getByText('An English role.')).toBeInTheDocument();
+    expect(screen.getByText('What I did')).toBeInTheDocument();
+    expect(screen.getByText('English decision one.')).toBeInTheDocument();
+    expect(screen.getByText('Outcome')).toBeInTheDocument();
+    expect(screen.getByText('An English result.')).toBeInTheDocument();
+    expect(screen.getByText('Stack')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View project' })).toHaveAttribute(
+      'href',
+      'https://example.com'
+    );
+    expect(screen.getByRole('link', { name: 'Code on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/example/case-study'
+    );
   });
 });
